@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "ro47005-project"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+packages = [{include = "ro47005_project"}]
+
+[tool.poetry.dependencies]
+python = ">=3.8,<3.10"
+gym = "0.21.0"
+urdfenvs = {extras = ["scenes"], version = "^0.4.0"}
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
