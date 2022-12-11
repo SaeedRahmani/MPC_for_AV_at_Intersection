@@ -23,8 +23,10 @@ class AStar(Generic[TNode]):
         while q:
             gh, g, node, predecessor = heappop(q)
 
-            if node in pred_dict:
+            if node in pred_dict and g >= pred_dict[node][0]:
                 # we have seen this node before -> skip
+                # TODO: if our heuristic is consistent,
+                #  we can remove `and g >= pred_dict[node][0]`
                 continue
 
             if debug:
