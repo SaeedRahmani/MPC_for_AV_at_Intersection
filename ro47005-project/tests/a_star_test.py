@@ -224,17 +224,9 @@ Opening Goal in distance 14, with predecessor C.
         # check manhattan strictly better than euclidean
         self.assertLess(manhattan_n_openings, euclidean_n_openings)
 
-        print("Dijkstra")
-        print(dijkstra_debug)
-        print()
-
-        print("Euclidean")
-        print(euclidean_debug)
-        print()
-
-        print("Manhattan")
-        print(manhattan_debug)
-        print()
+        print(f" Dijkstra: opened {dijkstra_n_openings} nodes")
+        print(f"Euclidean: opened {euclidean_n_openings} nodes")
+        print(f"Manhattan: opened {manhattan_n_openings} nodes")
 
 
 if __name__ == '__main__':

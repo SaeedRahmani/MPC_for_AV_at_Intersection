@@ -23,12 +23,8 @@ class AStar(Generic[TNode]):
         while q:
             gh, g, node, predecessor = heappop(q)
 
-            if node in pred_dict and pred_dict[node][0] <= g:
-                # we have been in this node before and with a shorter or the same path -> skip
-
-                # TODO: if your heuristic is admissible,
-                #  then the `pred_dict[node][0] <= g` check can be removed
-                #  because it will be guaranteed!
+            if node in pred_dict:
+                # we have seen this node before -> skip
                 continue
 
             if debug:
@@ -52,9 +48,11 @@ class AStar(Generic[TNode]):
             # process neighbors
             for edge_value, neighbor in self.neighbor_function(node):
                 neighbor_g = g + edge_value
-                neighbor_gh = neighbor_g + heuristic_function(neighbor, end)
 
-                heappush(q, (neighbor_gh, neighbor_g, neighbor, node))
+                if neighbor not in pred_dict or neighbor_g < pred_dict[neighbor][0]:
+                    # this is a better path to the node in question than we had before
+                    neighbor_gh = neighbor_g + heuristic_function(neighbor, end)
+                    heappush(q, (neighbor_gh, neighbor_g, neighbor, node))
 
         raise Exception("No solution found.")
 
