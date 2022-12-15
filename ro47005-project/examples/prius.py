@@ -14,7 +14,7 @@ def run_prius(n_steps=200, render=False, goal=True, obstacles=True):
     )
     # action = 2x1 with [forward_speed, steering_angle_dot]
     # forward_speed is used to set the angular speed of the wheel
-    action = np.array([0., 0.5])
+    action = np.array([0., 0.])
     # pos0 = 3x1 with (x-pos, y-pos, orientation]
     pos0 = np.array([0, 0, 0])
     ob = env.reset(pos=pos0)
@@ -27,11 +27,11 @@ def run_prius(n_steps=200, render=False, goal=True, obstacles=True):
     points = []
     for i in range(n_steps):
         ob, _, _, _ = env.step(action)
-        if ob['robot_0']['joint_state']['steering'] > 0.2:
-            # Stop steering
-            action[1] = 0.
-            # Increase the forward velocity
-            action[0] = 1.
+        # if ob['robot_0']['joint_state']['steering'] > 0.2:
+        # Stop steering
+        action[1] = 0.
+        # Increase the forward velocity
+        action[0] = 1.
         history.append(ob)
         points.append(ob['robot_0']['joint_state']['position'])
     # env.close()

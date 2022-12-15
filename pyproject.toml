@@ -9,6 +9,7 @@ packages = [{include = "ro47005-project"}]
 [tool.poetry.dependencies]
 python = ">=3.8,<3.10"
 gym = "0.21.0"
+tqdm = "4.64.1"
 urdfenvs = {extras = ["scenes"], version = "^0.4.0"}
 
 
