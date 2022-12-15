@@ -43,6 +43,7 @@ def run_prius(forward_speed: float, steering_angle: float, n_seconds=1., render=
         ob, _, _, _ = env.step(action)
         if end_time is None and ob['robot_0']['joint_state']['steering'] >= steering_angle:
             end_time = step * DT + n_seconds
+            print(step)
 
         if end_time is not None:
             # Stop steering
@@ -77,8 +78,8 @@ if __name__ == "__main__":
             render=True
         )
 
-        points = [p.tolist() for p in points]
-
-        file_name = f'./data/motion_primitives/{conf.n_seconds}_{conf.forward_speed}_{conf.steering_angle}.json'
-        with open(file_name, 'w') as file:
-            json.dump({'points': points}, file, indent=4)
+        # points = [p.tolist() for p in points]
+        #
+        # file_name = f'./data/motion_primitives/{conf.n_seconds}_{conf.forward_speed}_{conf.steering_angle}.json'
+        # with open(file_name, 'w') as file:
+        #     json.dump({'points': points}, file, indent=4)
