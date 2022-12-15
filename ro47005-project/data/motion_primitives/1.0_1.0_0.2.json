@@ -1,4 +1,8 @@
 {
+    "n_seconds": 1.0,
+    "forward_speed_wheel_angular": 1.0,
+    "steering_angle": 0.2,
+    "total_length": 0.9917267666108365,
     "points": [
         [
             -5.147362487356588e-07,

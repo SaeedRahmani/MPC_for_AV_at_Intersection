@@ -78,8 +78,18 @@ if __name__ == "__main__":
             render=True
         )
 
-        # points = [p.tolist() for p in points]
-        #
-        # file_name = f'./data/motion_primitives/{conf.n_seconds}_{conf.forward_speed}_{conf.steering_angle}.json'
-        # with open(file_name, 'w') as file:
-        #     json.dump({'points': points}, file, indent=4)
+        points = np.array(points)
+
+        file_name = f'./data/motion_primitives/{conf.n_seconds}_{conf.forward_speed}_{conf.steering_angle}.json'
+
+        # compute total length
+        total_length = np.linalg.norm(points[:-1, :2] - points[1:, :2], axis=1).sum()
+
+        with open(file_name, 'w') as file:
+            json.dump({
+                'n_seconds': conf.n_seconds,
+                'forward_speed_wheel_angular': conf.forward_speed,
+                'steering_angle': conf.steering_angle,
+                'total_length': total_length,
+                'points': points.tolist()
+            }, file, indent=4)
