@@ -5,7 +5,7 @@ from typing import Tuple, Iterable
 from lib.a_star import AStar
 
 
-def dummy_heuristic(node, end):
+def dummy_heuristic(node):
     # turns A* into Dijkstra
     return 0
 
@@ -60,11 +60,15 @@ class MyTestCase(unittest.TestCase):
         # the node type in this case is plain string
         a_star: AStar[str] = AStar(neighbor_function=networkx_neighbor_function)
 
+        def is_goal(node: str) -> bool:
+            return node == 'Goal'
+
         # ------ RUN THE CODE ------
 
         # dummy heuristic turns A* into Dijkstra
         # run Dijkstra
-        value, path, debug_out = a_star.run_with_debug(start='Start', end='Goal', heuristic_function=dummy_heuristic)
+        value, path, debug_out = a_star.run_with_debug(start='Start', is_goal_function=is_goal,
+                                                       heuristic_function=dummy_heuristic)
 
         # ------ ASSERT RESULTS CORRECT ------
 
@@ -117,21 +121,26 @@ Opening Goal in distance 14, with predecessor C.
         start_node: NodeType = 0
         end_node: NodeType = 10
 
-        def distance(node: NodeType, end: NodeType) -> float:
-            return abs(node - end)
+        def distance(node: NodeType) -> float:
+            return abs(node - end_node)
+
+        def is_goal_function(node: NodeType) -> bool:
+            return node == end_node
 
         # ------ RUN THE CODE ------
 
-        dijkstra_value, dijkstra_path, dijkstra_debug = a_star.run_with_debug(start=start_node, end=end_node,
+        dijkstra_value, dijkstra_path, dijkstra_debug = a_star.run_with_debug(start=start_node,
+                                                                              is_goal_function=is_goal_function,
                                                                               heuristic_function=dummy_heuristic)
 
-        astar_value, astar_path, astar_debug = a_star.run_with_debug(start=start_node, end=end_node,
+        astar_value, astar_path, astar_debug = a_star.run_with_debug(start=start_node,
+                                                                     is_goal_function=is_goal_function,
                                                                      heuristic_function=distance)
 
         # ------ ASSERT RESULTS CORRECT ------
 
         # check value
-        expected_value = distance(end_node, start_node)
+        expected_value = distance(start_node)
         self.assertEqual(expected_value, dijkstra_value)
         self.assertEqual(expected_value, astar_value)
 
@@ -175,35 +184,41 @@ Opening Goal in distance 14, with predecessor C.
         start_node: NodeType = (0, 0)
         end_node: NodeType = (10, 10)
 
-        def euclidean_distance(node: NodeType, end: NodeType) -> float:
+        def euclidean_distance(node: NodeType) -> float:
             xa, ya = node
-            xb, yb = end
+            xb, yb = end_node
 
             return math.sqrt((xa - xb) ** 2 + (ya - yb) ** 2)
 
-        def manhattan_distance(node: NodeType, end: NodeType) -> float:
+        def manhattan_distance(node: NodeType) -> float:
             xa, ya = node
-            xb, yb = end
+            xb, yb = end_node
 
             return abs(xa - xb) + abs(ya - yb)
+
+        def is_goal_function(node: NodeType) -> bool:
+            return node == end_node
 
         # ------ RUN THE CODE ------
 
         # run Dijkstra (dummy heuristic)
-        dijkstra_value, dijkstra_path, dijkstra_debug = a_star.run_with_debug(start=start_node, end=end_node,
+        dijkstra_value, dijkstra_path, dijkstra_debug = a_star.run_with_debug(start=start_node,
+                                                                              is_goal_function=is_goal_function,
                                                                               heuristic_function=dummy_heuristic)
 
         # run A* with Euclidean distance heuristic
-        euclidean_value, euclidean_path, euclidean_debug = a_star.run_with_debug(start=start_node, end=end_node,
+        euclidean_value, euclidean_path, euclidean_debug = a_star.run_with_debug(start=start_node,
+                                                                                 is_goal_function=is_goal_function,
                                                                                  heuristic_function=euclidean_distance)
         # run A* with Manhattan distance heuristic
-        manhattan_value, manhattan_path, manhattan_debug = a_star.run_with_debug(start=start_node, end=end_node,
+        manhattan_value, manhattan_path, manhattan_debug = a_star.run_with_debug(start=start_node,
+                                                                                 is_goal_function=is_goal_function,
                                                                                  heuristic_function=manhattan_distance)
 
         # ------ ASSERT RESULTS CORRECT ------
 
         # check value correct
-        expected_value = manhattan_distance(start_node, end_node)
+        expected_value = manhattan_distance(start_node)
         self.assertEqual(expected_value, dijkstra_value)
         self.assertEqual(expected_value, euclidean_value)
         self.assertEqual(expected_value, manhattan_value)

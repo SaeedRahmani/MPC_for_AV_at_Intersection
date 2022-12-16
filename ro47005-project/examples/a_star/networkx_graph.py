@@ -44,11 +44,15 @@ if __name__ == '__main__':
         return neighbor_function
 
 
+    def is_goal(node: str) -> bool:
+        return node == 'Goal'
+
+
     neighbor_function = create_neighbor_function_for_graph(g)
 
     a_star: AStar[str] = AStar(neighbor_function=neighbor_function)
 
-    value, path = a_star.run('Start', 'Goal', heuristic_function=lambda node, end: 0, debug=True, debug_file=sys.stdout)
+    value, path = a_star.run('Start', is_goal_function=is_goal, heuristic_function=lambda node: 0, debug=True, debug_file=sys.stdout)
 
     print()
     print(f"Optimal length: {value}")

@@ -12,8 +12,8 @@ class AStar(Generic[TNode]):
     def __init__(self, neighbor_function: Callable[[TNode], Iterable[Tuple[float, TNode]]]):
         self.neighbor_function = neighbor_function
 
-    def run(self, start: TNode, end: TNode,
-            heuristic_function: Callable[[TNode, TNode], float],
+    def run(self, start: TNode, is_goal_function: Callable[[TNode], bool],
+            heuristic_function: Callable[[TNode], float],
             debug=False, debug_file=sys.stderr) -> Tuple[float, List[TNode]]:
         q: List[Tuple[float, float, TNode, TNode]] = [(0, 0, start, start)]  # G + H value, G value, node, predecessor
 
@@ -35,10 +35,10 @@ class AStar(Generic[TNode]):
             # store value predecessor
             pred_dict[node] = g, predecessor
 
-            if node == end:
+            if is_goal_function(node):
                 # we are done
                 # reconstruct path
-                path = [end]
+                path = [node]
 
                 while node != start:
                     path.append(predecessor)
@@ -53,15 +53,15 @@ class AStar(Generic[TNode]):
 
                 if neighbor not in pred_dict or neighbor_g < pred_dict[neighbor][0]:
                     # this is a better path to the node in question than we had before
-                    neighbor_gh = neighbor_g + heuristic_function(neighbor, end)
+                    neighbor_gh = neighbor_g + heuristic_function(neighbor)
                     heappush(q, (neighbor_gh, neighbor_g, neighbor, node))
 
         raise Exception("No solution found.")
 
-    def run_with_debug(self, start: TNode, end: TNode,
-                       heuristic_function: Callable[[TNode, TNode], float]) -> Tuple[float, List[TNode], str]:
+    def run_with_debug(self, start: TNode, is_goal_function: Callable[[TNode], bool],
+                       heuristic_function: Callable[[TNode], float]) -> Tuple[float, List[TNode], str]:
         with StringIO() as debug_file:
-            value, path = self.run(start=start, end=end, heuristic_function=heuristic_function,
+            value, path = self.run(start=start, is_goal_function=is_goal_function, heuristic_function=heuristic_function,
                                    debug=True, debug_file=debug_file)
             debug_file.seek(0)
 
