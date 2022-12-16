@@ -94,8 +94,8 @@ def run_prius(forward_speed: float, steering_angle: float, n_seconds=1., render=
 if __name__ == "__main__":
     CONFIGURATIONS: List[Configuration] = [
         Configuration(n_seconds=0.3, forward_speed=8.3, steering_angle=0., name='straight'),
-        Configuration(n_seconds=0.3, forward_speed=8.3, steering_angle=0.1, name='right1'),
-        Configuration(n_seconds=0.3, forward_speed=8.3, steering_angle=0.2, name='right2'),
+        Configuration(n_seconds=0.3, forward_speed=8.3, steering_angle=0.1, name='left1'),
+        Configuration(n_seconds=0.3, forward_speed=8.3, steering_angle=0.2, name='left2'),
     ]
 
     for conf in tqdm(CONFIGURATIONS):
