@@ -16,7 +16,7 @@ class Configuration(NamedTuple):
 
 
 def run_prius(forward_speed: float, steering_angle: float, n_seconds=1., render=False):
-    DT = 0.01
+    DT = 0.005
 
     robots = [
         Prius(mode="vel"),  # vel is only possibility
