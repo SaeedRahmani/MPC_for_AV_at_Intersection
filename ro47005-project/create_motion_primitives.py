@@ -47,9 +47,9 @@ def run_prius(forward_speed: float, steering_angle: float, n_seconds=1., render=
 
         if state == 2:
             action[0] = forward_speed
-            action[1] = 0.2
+            action[1] = np.sign(steering_angle) * 0.2
 
-            if ob['robot_0']['joint_state']['steering'] >= steering_angle:
+            if abs(ob['robot_0']['joint_state']['steering']) >= abs(steering_angle):
                 state = 3
                 end_time = step * DT + n_seconds
                 start_pos = ob['robot_0']['joint_state']['position']
@@ -91,6 +91,8 @@ if __name__ == "__main__":
         MotionPrimitive(n_seconds=0.3, forward_speed=8.3, steering_angle=0., name='straight'),
         MotionPrimitive(n_seconds=0.3, forward_speed=8.3, steering_angle=0.1, name='left1'),
         MotionPrimitive(n_seconds=0.3, forward_speed=8.3, steering_angle=0.2, name='left2'),
+        MotionPrimitive(n_seconds=0.3, forward_speed=8.3, steering_angle=-0.1, name='right1'),
+        MotionPrimitive(n_seconds=0.3, forward_speed=8.3, steering_angle=-0.2, name='right2'),
     ]
 
     for mp in tqdm(CONFIGURATIONS):

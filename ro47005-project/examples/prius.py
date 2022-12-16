@@ -2,30 +2,36 @@ import gym
 from urdfenvs.robots.prius import Prius
 import numpy as np
 from envs.t_intersection import t_intersection
+from lib.obstacles import add_obstacles_to_env
 
 
 def run_prius(n_steps=200, render=False, goal=True, obstacles=True):
+    prius = Prius(mode="vel")  # vel is only possibility
+    prius._spawn_offset[0] = 0.0
+
     robots = [
-        Prius(mode="vel"),  # vel is only possibility
+        prius,
     ]
     env = gym.make(
         "urdf-env-v0",
         dt=0.01, robots=robots, render=render
     )
+    # Build the T-intersection
+    scenario = t_intersection()
+
     # action = 2x1 with [forward_speed, steering_angle_dot]
     # forward_speed is used to set the angular speed of the wheel
     action = np.array([0., 0.])
     # pos0 = 3x1 with (x-pos, y-pos, orientation]
-    pos0 = np.array([0, 0, 0])
+    pos0 = np.array(scenario.start)
     ob = env.reset(pos=pos0)
     print(f"Initial observation : {ob}")
 
-    # Build the T-intersection
-    # t_intersection(env)
+    add_obstacles_to_env(scenario.obstacles, env)
 
     history = []
     points = []
-    for i in range(n_steps):
+    while True:
         ob, _, _, _ = env.step(action)
         # if ob['robot_0']['joint_state']['steering'] > 0.2:
         # Stop steering
