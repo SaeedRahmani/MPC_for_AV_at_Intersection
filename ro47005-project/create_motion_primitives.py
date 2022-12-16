@@ -1,18 +1,13 @@
 import itertools
-import json
-from typing import Optional, NamedTuple, List
+import pickle
+from typing import Optional, List
 
 import gym
-from urdfenvs.robots.prius import Prius
 import numpy as np
 from tqdm.auto import tqdm
+from urdfenvs.robots.prius import Prius
 
-
-class Configuration(NamedTuple):
-    name: str
-    forward_speed: float
-    steering_angle: float
-    n_seconds: float
+from lib.motion_primitive import MotionPrimitive
 
 
 def run_prius(forward_speed: float, steering_angle: float, n_seconds=1., render=False):
@@ -92,32 +87,28 @@ def run_prius(forward_speed: float, steering_angle: float, n_seconds=1., render=
 # 'velocity' = 3x1 with [xdot, ydot, orientationdot]
 # 'steering' = 1x1 with [steering_angle]
 if __name__ == "__main__":
-    CONFIGURATIONS: List[Configuration] = [
-        Configuration(n_seconds=0.3, forward_speed=8.3, steering_angle=0., name='straight'),
-        Configuration(n_seconds=0.3, forward_speed=8.3, steering_angle=0.1, name='left1'),
-        Configuration(n_seconds=0.3, forward_speed=8.3, steering_angle=0.2, name='left2'),
+    CONFIGURATIONS: List[MotionPrimitive] = [
+        MotionPrimitive(n_seconds=0.3, forward_speed=8.3, steering_angle=0., name='straight'),
+        MotionPrimitive(n_seconds=0.3, forward_speed=8.3, steering_angle=0.1, name='left1'),
+        MotionPrimitive(n_seconds=0.3, forward_speed=8.3, steering_angle=0.2, name='left2'),
     ]
 
-    for conf in tqdm(CONFIGURATIONS):
+    for mp in tqdm(CONFIGURATIONS):
         points = run_prius(
-            n_seconds=conf.n_seconds,
-            forward_speed=conf.forward_speed,
-            steering_angle=conf.steering_angle,
+            n_seconds=mp.n_seconds,
+            forward_speed=mp.forward_speed,
+            steering_angle=mp.steering_angle,
             render=True
         )
 
         points = np.array(points)
 
-        file_name = f'./data/motion_primitives/{conf.name}.json'
+        file_name = f'./data/motion_primitives/{mp.name}.pkl'
 
         # compute total length
-        total_length = np.linalg.norm(points[:-1, :2] - points[1:, :2], axis=1).sum()
+        mp.total_length = np.linalg.norm(points[:-1, :2] - points[1:, :2], axis=1).sum()
 
-        with open(file_name, 'w') as file:
-            json.dump({
-                'n_seconds': conf.n_seconds,
-                'forward_speed_wheel_angular': conf.forward_speed,
-                'steering_angle': conf.steering_angle,
-                'total_length': total_length,
-                'points': points.tolist()
-            }, file, indent=4)
+        mp.points = points
+
+        with open(file_name, 'wb') as file:
+            pickle.dump(mp, file)
