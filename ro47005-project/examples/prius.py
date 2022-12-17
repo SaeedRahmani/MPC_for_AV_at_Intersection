@@ -40,7 +40,7 @@ def run_prius(n_steps=200, render=False, goal=True, obstacles=True):
         action[0] = 1.
         history.append(ob)
         points.append(ob['robot_0']['joint_state']['position'])
-    # env.close()
+    env.close()
     return history, points
 
 # history is a dictionary with the following keys:

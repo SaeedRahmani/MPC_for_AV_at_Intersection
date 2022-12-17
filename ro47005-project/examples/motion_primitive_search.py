@@ -9,6 +9,7 @@ from lib.motion_primitive import load_motion_primitives, create_transform_mtx, t
     MotionPrimitiveSearchMetadata
 from lib.obstacles import check_collision
 from lib.obstacles import draw_obstacle
+from lib.obstacles import obstacle_to_convex
 
 if __name__ == '__main__':
     mps = load_motion_primitives()
