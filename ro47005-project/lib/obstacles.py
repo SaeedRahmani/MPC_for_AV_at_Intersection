@@ -72,18 +72,18 @@ def obstacle_to_convex(obstacle: Obstacle, margin=None) -> np.ndarray:
 
     if obstacle.type == "GEOM_BOX":
         w_x, w_y = obstacle.dim[:2]
-        return np.array([[1, 0, -(c_x + w_x/2 + m_x)],
-                         [-1, 0, c_x - w_x/2 - m_x],
-                         [0, 1, -(c_y + w_y/2 + m_y)],
-                         [0, -1, c_y - w_y/2 - m_y]])
+        return np.array([[1, 0, -(c_x + w_x/2 + m_x)], # right
+                         [-1, 0, c_x - w_x/2 - m_x], # left
+                         [0, 1, -(c_y + w_y/2 + m_y)], # top
+                         [0, -1, c_y - w_y/2 - m_y]]) # bottom
     elif obstacle.type == "GEOM_CYLINDER":
         r = obstacle.dim[0]
         off = r * np.tan(np.pi/8)
-        return np.array([[1, 0, -(c_x + r + m_x)],
-                         [-1, 0, c_x - r - m_x],
-                         [0, 1, -(c_y + r + m_y)],
-                         [0, -1, c_y - r - m_y],
-                         [-1, 1, c_x - c_y - r * np.sqrt(2)],
-                         [1, -1, -c_x + c_y - r * np.sqrt(2)],
-                         [-1, -1, c_x + c_y - r * np.sqrt(2)],
-                         [1, 1, -c_x - c_y - r * np.sqrt(2)]])
+        return np.array([[1, 0, -(c_x + r + m_x)], # right
+                         [-1, 0, c_x - r - m_x], # left
+                         [0, 1, -(c_y + r + m_y)], # top
+                         [0, -1, c_y - r - m_y], # bottom
+                         [-1, 1, c_x - c_y - r * np.sqrt(2) - m_x - m_y], # top left
+                         [1, -1, -c_x + c_y - r * np.sqrt(2) - m_x - m_y], # bottom right
+                         [-1, -1, c_x + c_y - r * np.sqrt(2) - m_x - m_y], # bottom left
+                         [1, 1, -c_x - c_y - r * np.sqrt(2) - m_x - m_y]]) # top right
