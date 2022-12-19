@@ -1,3 +1,5 @@
+import sys
+
 import numpy as np
 
 from lib.obstacles import BoxObstacle, CircleObstacle
@@ -12,12 +14,24 @@ def t_intersection() -> Scenario:
     length = 5
     height = 0.2
     distance_center = 3
+    flip_start_position = False
+    flip_goal_position = False
+    allowed_goal_theta_difference = np.pi / 16
 
-    start = (1.25, -6, 0.5 * np.pi)
-    goal = (-(distance_center + length * 0.8), (width_traffic_island + width_road) / 2, -np.pi)
-    goal_area = BoxObstacle(xy_width=(width_road * 2, width_road), height=height,
+    if flip_goal_position and not flip_start_position:
+        print("The goal position is flipped and start is not. This will probably take a bit longer to compute.",
+              file=sys.stderr)
+    elif flip_start_position and not flip_goal_position:
+        print("The start position is flipped and goal is not. "
+              "This will take REALLY REALLY REALLY long to compute.\n"
+              "It is not worth it.",
+              file=sys.stderr)
+
+    start = (1.25, -6, -0.5 * np.pi if flip_start_position else 0.5 * np.pi)
+    goal = (
+        -(distance_center + length * 0.6), (width_traffic_island + width_road) / 2, -(1 - flip_goal_position) * np.pi)
+    goal_area = BoxObstacle(xy_width=(width_road * 1.8, width_road), height=height,
                             xy_center=(goal[0], goal[1]))
-    allowed_goal_theta_difference = np.pi / 8
 
     obstacles = [
         # T-intersection
@@ -26,10 +40,11 @@ def t_intersection() -> Scenario:
                     xy_center=(0, -(length / 2 + distance_center))),
         BoxObstacle(xy_width=(width_pavement, length), height=height,
                     xy_center=(
-                    (width_traffic_island / 2 + width_road + width_pavement / 2), -(length / 2 + distance_center))),
+                        (width_traffic_island / 2 + width_road + width_pavement / 2), -(length / 2 + distance_center))),
         BoxObstacle(xy_width=(width_pavement, length), height=height,
                     xy_center=(
-                    -(width_traffic_island / 2 + width_road + width_pavement / 2), -(length / 2 + distance_center))),
+                        -(width_traffic_island / 2 + width_road + width_pavement / 2),
+                        -(length / 2 + distance_center))),
         CircleObstacle(radius=(width_traffic_island / 2), height=height,
                        xy_center=(0, -distance_center)),
 
@@ -38,7 +53,8 @@ def t_intersection() -> Scenario:
                     xy_center=(-(length / 2 + distance_center), 0.)),
         BoxObstacle(xy_width=(length, width_pavement), height=height,
                     xy_center=(
-                    -(length / 2 + distance_center), -(width_traffic_island / 2 + width_road + width_pavement / 2))),
+                        -(length / 2 + distance_center),
+                        -(width_traffic_island / 2 + width_road + width_pavement / 2))),
         CircleObstacle(radius=(distance_center - width_traffic_island / 2 - width_road), height=height,
                        xy_center=(-distance_center, -distance_center)),
         CircleObstacle(radius=(width_traffic_island / 2), height=height,
@@ -49,7 +65,7 @@ def t_intersection() -> Scenario:
                     xy_center=((length / 2 + distance_center), 0)),
         BoxObstacle(xy_width=(length, width_pavement), height=height,
                     xy_center=(
-                    (length / 2 + distance_center), -(width_traffic_island / 2 + width_road + width_pavement / 2))),
+                        (length / 2 + distance_center), -(width_traffic_island / 2 + width_road + width_pavement / 2))),
         CircleObstacle(radius=(distance_center - width_traffic_island / 2 - width_road), height=height,
                        xy_center=(distance_center, -distance_center)),
         CircleObstacle(radius=(width_traffic_island / 2), height=height,
