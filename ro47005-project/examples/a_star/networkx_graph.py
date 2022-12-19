@@ -1,8 +1,8 @@
-import sys
 from typing import Callable, Tuple, Iterable
 
-from lib.a_star import AStar
 import networkx as nx
+
+from lib.a_star import AStar
 
 if __name__ == '__main__':
     # directed graph from Assignment 1 task 5
@@ -52,7 +52,10 @@ if __name__ == '__main__':
 
     a_star: AStar[str] = AStar(neighbor_function=neighbor_function)
 
-    value, path = a_star.run('Start', is_goal_function=is_goal, heuristic_function=lambda node: 0, debug=True, debug_file=sys.stdout)
+    value, path = a_star.run('Start', is_goal_function=is_goal, heuristic_function=lambda node: 0, debug=True)
+
+    for node, g, predecessor in a_star.debug_data:
+        print(f"Opened {node} in distance {g}, with predecessor {predecessor}.")
 
     print()
     print(f"Optimal length: {value}")

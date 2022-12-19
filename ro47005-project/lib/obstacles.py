@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 import numpy as np
 
@@ -25,7 +25,6 @@ def add_obstacles_to_env(obstacles: List[Obstacle], env):
 
 
 def draw_obstacle(obstacle: Obstacle, ax, color=None):
-    import matplotlib.pylab as plt
     from matplotlib.patches import Rectangle, Circle
 
     if obstacle.type == "GEOM_BOX":
@@ -40,19 +39,36 @@ def draw_obstacle(obstacle: Obstacle, ax, color=None):
         ax.add_patch(Circle((x, y), radius, edgecolor=color, facecolor='none'))
 
 
-def check_collision(x: float, y: float, obstacle: Obstacle) -> bool:
-    # TODO make it use proper methods
-    if obstacle.type == "GEOM_BOX":
-        xc, yc, _ = tuple(obstacle.pos)
-        w, h, _ = tuple(obstacle.dim)
-        x1, y1 = xc - w / 2, yc - h / 2
-        x2, y2 = xc + w / 2, yc + h / 2
-        return x1 <= x <= x2 and y1 <= y <= y2
-    elif obstacle.type == "GEOM_CYLINDER":
-        raise Exception("Not supported")
+def draw_point_arrow(point: Tuple[float, float, float], ax, color=None):
+    x, y, theta = point
+    u = np.cos(theta)
+    v = np.sin(theta)
+    ax.quiver(x, y, u, v, color=color)
 
 
-def obstacle_to_convex(obstacle: Obstacle, margin=None) -> np.ndarray:
+def check_collision(obstacle_halfplanes: np.ndarray, points: np.ndarray) -> bool:
+    """
+    Checks whether a single obstacle (defined by a union of half-planes) collides with ANY (i.e. at least one) point
+    from the set of points
+    :param obstacle_halfplanes: Matrix of shape (M, 3) where each row are the [a, b, c] coordinates of a halfplane
+    :param points: Matrix of shape (2, N) where each column is a point in 2D with [x, y] coordinates
+    :return:
+    """
+
+    n_halfplanes, n_hp_coords = obstacle_halfplanes.shape
+    assert n_hp_coords == 3
+
+    n_p_coords, n_points = points.shape
+    assert n_p_coords == 2
+
+    points = np.vstack([points, np.ones((n_points,))])
+    result_all = (obstacle_halfplanes @ points) <= 0
+    result_per_point = np.all(result_all, axis=0)
+
+    return bool(np.any(result_per_point))
+
+
+def obstacle_to_convex(obstacle: Obstacle, margin: Optional[Tuple[float, float]] = None) -> np.ndarray:
     """
         This function represents each obstacle by a set of half planes.
         The half planes are given as: ax + by + c.
@@ -61,7 +77,7 @@ def obstacle_to_convex(obstacle: Obstacle, margin=None) -> np.ndarray:
         :return np.ndarray[[a, b, c], ...]
     """
     if margin is None:
-        margin = [0, 0]
+        margin = (0, 0)
 
     # Check if the rotation of the obstacle is zero
     assert obstacle.pos[2] == 0
@@ -72,18 +88,18 @@ def obstacle_to_convex(obstacle: Obstacle, margin=None) -> np.ndarray:
 
     if obstacle.type == "GEOM_BOX":
         w_x, w_y = obstacle.dim[:2]
-        return np.array([[1, 0, -(c_x + w_x/2 + m_x)], # right
-                         [-1, 0, c_x - w_x/2 - m_x], # left
-                         [0, 1, -(c_y + w_y/2 + m_y)], # top
-                         [0, -1, c_y - w_y/2 - m_y]]) # bottom
+        return np.array([[1, 0, -(c_x + w_x / 2 + m_x)],  # right
+                         [-1, 0, c_x - w_x / 2 - m_x],  # left
+                         [0, 1, -(c_y + w_y / 2 + m_y)],  # top
+                         [0, -1, c_y - w_y / 2 - m_y]])  # bottom
     elif obstacle.type == "GEOM_CYLINDER":
         r = obstacle.dim[0]
-        off = r * np.tan(np.pi/8)
-        return np.array([[1, 0, -(c_x + r + m_x)], # right
-                         [-1, 0, c_x - r - m_x], # left
-                         [0, 1, -(c_y + r + m_y)], # top
-                         [0, -1, c_y - r - m_y], # bottom
-                         [-1, 1, c_x - c_y - r * np.sqrt(2) - m_x - m_y], # top left
-                         [1, -1, -c_x + c_y - r * np.sqrt(2) - m_x - m_y], # bottom right
-                         [-1, -1, c_x + c_y - r * np.sqrt(2) - m_x - m_y], # bottom left
-                         [1, 1, -c_x - c_y - r * np.sqrt(2) - m_x - m_y]]) # top right
+        off = r * np.tan(np.pi / 8)
+        return np.array([[1, 0, -(c_x + r + m_x)],  # right
+                         [-1, 0, c_x - r - m_x],  # left
+                         [0, 1, -(c_y + r + m_y)],  # top
+                         [0, -1, c_y - r - m_y],  # bottom
+                         [-1, 1, c_x - c_y - r * np.sqrt(2) - m_x - m_y],  # top left
+                         [1, -1, -c_x + c_y - r * np.sqrt(2) - m_x - m_y],  # bottom right
+                         [-1, -1, c_x + c_y - r * np.sqrt(2) - m_x - m_y],  # bottom left
+                         [1, 1, -c_x - c_y - r * np.sqrt(2) - m_x - m_y]])  # top right

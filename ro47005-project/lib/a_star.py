@@ -1,6 +1,4 @@
-import sys
 from heapq import heappop, heappush
-from io import StringIO
 from typing import Callable, Iterable, List, TypeVar, Hashable, Tuple, Dict, Generic
 
 # generic node type -> can be any type in practice; this is just for IDE autocompletion hints
@@ -11,11 +9,23 @@ class AStar(Generic[TNode]):
 
     def __init__(self, neighbor_function: Callable[[TNode], Iterable[Tuple[float, TNode]]]):
         self.neighbor_function = neighbor_function
+        self._debug_data: List[Tuple[TNode, float, TNode]] = []
+
+    @property
+    def debug_data(self):
+        """
+        Read-only debug data property (accessible if debug=True on run() function)
+        :return:
+        """
+        return self._debug_data
 
     def run(self, start: TNode, is_goal_function: Callable[[TNode], bool],
             heuristic_function: Callable[[TNode], float],
-            debug=False, debug_file=sys.stderr) -> Tuple[float, List[TNode]]:
+            debug=False) -> Tuple[float, List[TNode]]:
         q: List[Tuple[float, float, TNode, TNode]] = [(0, 0, start, start)]  # G + H value, G value, node, predecessor
+
+        if debug:
+            self._debug_data = []
 
         # best predecessor dict
         pred_dict: Dict[TNode, Tuple[float, TNode]] = {}
@@ -30,7 +40,7 @@ class AStar(Generic[TNode]):
                 continue
 
             if debug:
-                print(f"Opening {node} in distance {g}, with predecessor {predecessor}.", file=debug_file)
+                self._debug_data.append((node, g, predecessor))
 
             # store value predecessor
             pred_dict[node] = g, predecessor
@@ -57,12 +67,3 @@ class AStar(Generic[TNode]):
                     heappush(q, (neighbor_gh, neighbor_g, neighbor, node))
 
         raise Exception("No solution found.")
-
-    def run_with_debug(self, start: TNode, is_goal_function: Callable[[TNode], bool],
-                       heuristic_function: Callable[[TNode], float]) -> Tuple[float, List[TNode], str]:
-        with StringIO() as debug_file:
-            value, path = self.run(start=start, is_goal_function=is_goal_function, heuristic_function=heuristic_function,
-                                   debug=True, debug_file=debug_file)
-            debug_file.seek(0)
-
-            return value, path, debug_file.read()

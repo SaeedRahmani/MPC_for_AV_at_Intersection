@@ -44,7 +44,7 @@ obstacle = scenario.obstacles[3] # Example of a circle
 # obstacle = scenario.obstacles[0] # Example of a box
 
 plt.figure()
-plot_obstacle_region(obstacle, margin=[0.1, 0.2])
+plot_obstacle_region(obstacle, margin=(0.1, 0.2))
 plot_obstacle_region(obstacle)
 plt.show()
 

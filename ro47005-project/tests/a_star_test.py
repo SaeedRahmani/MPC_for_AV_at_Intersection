@@ -67,8 +67,9 @@ class MyTestCase(unittest.TestCase):
 
         # dummy heuristic turns A* into Dijkstra
         # run Dijkstra
-        value, path, debug_out = a_star.run_with_debug(start='Start', is_goal_function=is_goal,
-                                                       heuristic_function=dummy_heuristic)
+        value, path = a_star.run(start='Start', is_goal_function=is_goal,
+                                 heuristic_function=dummy_heuristic,
+                                 debug=True)
 
         # ------ ASSERT RESULTS CORRECT ------
 
@@ -79,25 +80,25 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(['Start', 'A', 'C', 'Goal'], path)
 
         # check that the debug output says that the items are opened in the exact order that we expect Dijkstra to do
-        self.assertEqual(
-            """Opening Start in distance 0, with predecessor Start.
-Opening B in distance 1, with predecessor Start.
-Opening H in distance 2, with predecessor B.
-Opening A in distance 3, with predecessor Start.
-Opening D in distance 4, with predecessor Start.
-Opening O in distance 4, with predecessor H.
-Opening C in distance 5, with predecessor A.
-Opening F in distance 6, with predecessor C.
-Opening G in distance 6, with predecessor H.
-Opening L in distance 6, with predecessor D.
-Opening E in distance 7, with predecessor B.
-Opening I in distance 8, with predecessor H.
-Opening K in distance 9, with predecessor G.
-Opening N in distance 10, with predecessor K.
-Opening J in distance 11, with predecessor E.
-Opening M in distance 12, with predecessor N.
-Opening Goal in distance 14, with predecessor C.
-""", debug_out)
+        self.assertEqual([
+            ('Start', 0, 'Start'),
+            ('B', 1, 'Start'),
+            ('H', 2, 'B'),
+            ('A', 3, 'Start'),
+            ('D', 4, 'Start'),
+            ('O', 4, 'H'),
+            ('C', 5, 'A'),
+            ('F', 6, 'C'),
+            ('G', 6, 'H'),
+            ('L', 6, 'D'),
+            ('E', 7, 'B'),
+            ('I', 8, 'H'),
+            ('K', 9, 'G'),
+            ('N', 10, 'K'),
+            ('J', 11, 'E'),
+            ('M', 12, 'N'),
+            ('Goal', 14, 'C'),
+        ], a_star.debug_data)
 
     def assert_path_correct(self, neighbor_function, path: list):
         for node, neighbor_actual in zip(path[:-1], path[1:]):
@@ -129,13 +130,19 @@ Opening Goal in distance 14, with predecessor C.
 
         # ------ RUN THE CODE ------
 
-        dijkstra_value, dijkstra_path, dijkstra_debug = a_star.run_with_debug(start=start_node,
-                                                                              is_goal_function=is_goal_function,
-                                                                              heuristic_function=dummy_heuristic)
+        dijkstra_value, dijkstra_path = a_star.run(start=start_node,
+                                                   is_goal_function=is_goal_function,
+                                                   heuristic_function=dummy_heuristic,
+                                                   debug=True)
 
-        astar_value, astar_path, astar_debug = a_star.run_with_debug(start=start_node,
-                                                                     is_goal_function=is_goal_function,
-                                                                     heuristic_function=distance)
+        dijkstra_debug = a_star.debug_data
+
+        astar_value, astar_path = a_star.run(start=start_node,
+                                             is_goal_function=is_goal_function,
+                                             heuristic_function=distance,
+                                             debug=True)
+
+        astar_debug = a_star.debug_data
 
         # ------ ASSERT RESULTS CORRECT ------
 
@@ -148,15 +155,11 @@ Opening Goal in distance 14, with predecessor C.
         self.assert_path_correct(neighbor_function, dijkstra_path)
         self.assert_path_correct(neighbor_function, astar_path)
 
-        # count the number of lines in the debug output
-        dijkstra_n_openings = dijkstra_debug.count("Opening")
-        astar_n_openings = astar_debug.count("Opening")
-
         # check that Dijkstra opens exactly 1 + 10 + 10 nodes (i.e. all in the range [-10, +10])
-        self.assertEqual(21, dijkstra_n_openings)
+        self.assertEqual(21, len(dijkstra_debug))
 
         # check that A* opens exactly 1 + 10 nodes (i.e. only those in the range [0, +10])
-        self.assertEqual(11, astar_n_openings)
+        self.assertEqual(11, len(astar_debug))
 
         print("Dijkstra")
         print(dijkstra_debug)
@@ -202,18 +205,26 @@ Opening Goal in distance 14, with predecessor C.
         # ------ RUN THE CODE ------
 
         # run Dijkstra (dummy heuristic)
-        dijkstra_value, dijkstra_path, dijkstra_debug = a_star.run_with_debug(start=start_node,
-                                                                              is_goal_function=is_goal_function,
-                                                                              heuristic_function=dummy_heuristic)
+        dijkstra_value, dijkstra_path = a_star.run(start=start_node,
+                                                   is_goal_function=is_goal_function,
+                                                   heuristic_function=dummy_heuristic,
+                                                   debug=True)
+
+        dijkstra_debug = a_star.debug_data
 
         # run A* with Euclidean distance heuristic
-        euclidean_value, euclidean_path, euclidean_debug = a_star.run_with_debug(start=start_node,
-                                                                                 is_goal_function=is_goal_function,
-                                                                                 heuristic_function=euclidean_distance)
+        euclidean_value, euclidean_path = a_star.run(start=start_node,
+                                                     is_goal_function=is_goal_function,
+                                                     heuristic_function=euclidean_distance,
+                                                     debug=True)
+        euclidean_debug = a_star.debug_data
+
         # run A* with Manhattan distance heuristic
-        manhattan_value, manhattan_path, manhattan_debug = a_star.run_with_debug(start=start_node,
-                                                                                 is_goal_function=is_goal_function,
-                                                                                 heuristic_function=manhattan_distance)
+        manhattan_value, manhattan_path = a_star.run(start=start_node,
+                                                     is_goal_function=is_goal_function,
+                                                     heuristic_function=manhattan_distance,
+                                                     debug=True)
+        manhattan_debug = a_star.debug_data
 
         # ------ ASSERT RESULTS CORRECT ------
 
@@ -229,9 +240,9 @@ Opening Goal in distance 14, with predecessor C.
         self.assert_path_correct(infinite_grid_neighbor_function, manhattan_path)
 
         # count the number of lines in the debug output
-        dijkstra_n_openings = dijkstra_debug.count("Opening")
-        euclidean_n_openings = euclidean_debug.count("Opening")
-        manhattan_n_openings = manhattan_debug.count("Opening")
+        dijkstra_n_openings = len(dijkstra_debug)
+        euclidean_n_openings = len(euclidean_debug)
+        manhattan_n_openings = len(manhattan_debug)
 
         # check euclidean strictly better than dijkstra
         self.assertLess(euclidean_n_openings, dijkstra_n_openings)

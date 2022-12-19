@@ -1,4 +1,3 @@
-import sys
 from typing import Tuple, Iterable
 
 from lib.a_star import AStar
@@ -44,8 +43,10 @@ if __name__ == '__main__':
 
     a_star: AStar[NodeType] = AStar(neighbor_function=neighbor_function)
 
-    value, path = a_star.run(start=START_NODE, is_goal_function=is_goal, heuristic_function=HEURISTIC, debug=True,
-                             debug_file=sys.stdout)
+    value, path = a_star.run(start=START_NODE, is_goal_function=is_goal, heuristic_function=HEURISTIC, debug=True)
+
+    for node, g, predecessor in a_star.debug_data:
+        print(f"Opened {node} in distance {g}, with predecessor {predecessor}.")
 
     print()
     print(f"Optimal length: {value}")

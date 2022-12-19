@@ -13,8 +13,8 @@ def t_intersection() -> Scenario:
     distance_center = 3
 
     start = (1.25, -6, 0.5 * np.pi)
-    goal = (-(distance_center + length * 0.8), (width_traffic_island + width_road) / 2, np.pi)
-    goal_area = Obstacle(type="GEOM_BOX", dim=[width_road, width_road * 0.5, 0],
+    goal = (-(distance_center + length * 0.8), (width_traffic_island + width_road) / 2, -np.pi)
+    goal_area = Obstacle(type="GEOM_BOX", dim=[width_road * 2, width_road, 0],
                     pos=[goal[0], goal[1], 0])
 
     obstacles = [

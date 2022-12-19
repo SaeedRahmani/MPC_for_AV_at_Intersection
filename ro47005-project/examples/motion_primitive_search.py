@@ -1,19 +1,16 @@
-from typing import Tuple
-
 import matplotlib.pyplot as plt
 import numpy as np
 
 from envs.t_intersection import t_intersection
-from lib.a_star import AStar
+from lib.helpers import measure_time
 from lib.motion_primitive import load_motion_primitives, create_transform_mtx, transform_pts, \
-    MotionPrimitiveSearchMetadata
-from lib.obstacles import check_collision
-from lib.obstacles import draw_obstacle
-from lib.obstacles import obstacle_to_convex
+    MotionPrimitiveSearch
+from lib.obstacles import draw_obstacle, draw_point_arrow
 
-if __name__ == '__main__':
+
+@measure_time
+def run():
     mps = load_motion_primitives()
-
     scenario = t_intersection()
 
     fig, ax = plt.subplots()
@@ -24,37 +21,38 @@ if __name__ == '__main__':
     for obstacle in scenario.obstacles:
         draw_obstacle(obstacle, ax, color='b')
 
+    # draw goal area
     draw_obstacle(scenario.goal_area, ax, color='r')
+    # draw goal area with direction
+    draw_point_arrow(scenario.goal_point, ax, color='r')
 
+    # draw the immediate motion primitives, right at the start position of the car
     mtx = create_transform_mtx(*scenario.start)
-
     for mp in mps.values():
         points = transform_pts(scenario.start[2], mtx, mp.points)
         ax.plot(points[:, 0], points[:, 1], color='b')
 
-    a_star_data = MotionPrimitiveSearchMetadata(scenario, mps)
+    search = MotionPrimitiveSearch(scenario, mps, margin=(0.5, 0.5))
+    try:
+        cost, trajectory = search.run(debug=True)
 
-    a_star = AStar(neighbor_function=a_star_data.mp_neighbor_function)
+        # draw resulting trajectory
+        ax.plot(trajectory[:, 0], trajectory[:, 1], color='b')
+        print("Total cost:", cost)
+        print("Nodes searched:", len(search.debug_data))
+    except KeyboardInterrupt:
+        # break the search on keyboard interrupt
+        pass
 
-    goal_area = scenario.goal_area
-    gx, gy, gtheta = scenario.goal_point
-
-
-    def is_goal(node: Tuple[float, float, float]) -> bool:
-        x, y, theta = node
-        return check_collision(x, y, goal_area) and abs(gtheta - theta) <= np.pi / 8
-
-
-    def distance_to_goal(node: Tuple[float, float, float]) -> float:
-        x, y, theta = node
-        return np.sqrt((gx - x) ** 2 + (gy - y) ** 2) + np.abs(np.sin((gtheta - theta) / 2))
-
-
-    cost, path = a_star.run(start=scenario.start, is_goal_function=is_goal, heuristic_function=distance_to_goal)
-
-    points = a_star_data.augment_path(path)
-    ax.plot(points[:, 0], points[:, 1], color='b')
+    # draw all search points
+    debug_points = np.array([p[0] for p in search.debug_data])
+    debug_point_dists = np.array([[p[1] for p in search.debug_data]])
+    ax.scatter(debug_points[:, 0], debug_points[:, 1], c=debug_point_dists)
 
     ax.axis('equal')
 
     plt.show()
+
+
+if __name__ == '__main__':
+    run()
