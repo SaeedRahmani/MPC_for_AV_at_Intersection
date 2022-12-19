@@ -20,7 +20,7 @@ class MotionPrimitiveSearch:
         self._start = scenario.start
         self._goal_area = scenario.goal_area
         self._allowed_goal_theta_difference = scenario.allowed_goal_theta_difference
-        self._goal_area_hp = self._goal_area.to_convex(margin=margin)
+        self._goal_area_hp = self._goal_area.to_convex(margin=(0., 0.))  # goal area already defines its own margin!
         self._obstacles_hp: List[np.ndarray] = [o.to_convex(margin=margin) for o in scenario.obstacles]
         self._gx, self._gy, self._gtheta = scenario.goal_point
 
@@ -37,9 +37,8 @@ class MotionPrimitiveSearch:
         return self._a_star.debug_data
 
     def is_goal(self, node: Tuple[float, float, float]) -> bool:
-        x, y, theta = node
-
-        result = check_collision(self._goal_area_hp, np.atleast_2d([x, y]).T) \
+        _, _, theta = node
+        result = self._goal_area.distance_to_point(node[:2]) <= 1e-5 \
                  and abs(theta - self._gtheta) <= self._allowed_goal_theta_difference
 
         return result
