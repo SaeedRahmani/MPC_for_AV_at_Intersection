@@ -40,14 +40,14 @@ def run():
         # draw resulting trajectory
         ax.plot(trajectory[:, 0], trajectory[:, 1], color='b')
         print("Total cost:", cost)
-        print("Nodes searched:", len(search.debug_data))
     except KeyboardInterrupt:
         # break the search on keyboard interrupt
         pass
 
+    print("Nodes searched:", len(search.debug_data))
     # draw all search points
-    debug_points = np.array([p[0] for p in search.debug_data])
-    debug_point_dists = np.array([[p[1] for p in search.debug_data]])
+    debug_points = np.array([p.node for p in search.debug_data])
+    debug_point_dists = np.array([[p.h for p in search.debug_data]])
     ax.scatter(debug_points[:, 0], debug_points[:, 1], c=debug_point_dists)
 
     ax.axis('equal')

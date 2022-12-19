@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from heapq import heappop, heappush
 from typing import Callable, Iterable, List, TypeVar, Hashable, Tuple, Dict, Generic
 
@@ -5,11 +6,19 @@ from typing import Callable, Iterable, List, TypeVar, Hashable, Tuple, Dict, Gen
 TNode = TypeVar("TNode", bound=Hashable)
 
 
+@dataclass
+class AStarDebugData(Generic[TNode]):
+    g: float
+    h: float
+    node: TNode
+    predecessor: TNode
+
+
 class AStar(Generic[TNode]):
 
     def __init__(self, neighbor_function: Callable[[TNode], Iterable[Tuple[float, TNode]]]):
         self.neighbor_function = neighbor_function
-        self._debug_data: List[Tuple[TNode, float, TNode]] = []
+        self._debug_data: List[AStarDebugData[TNode]] = []
 
     @property
     def debug_data(self):
@@ -40,7 +49,7 @@ class AStar(Generic[TNode]):
                 continue
 
             if debug:
-                self._debug_data.append((node, g, predecessor))
+                self._debug_data.append(AStarDebugData(g=g, h=gh - g, node=node, predecessor=predecessor))
 
             # store value predecessor
             pred_dict[node] = g, predecessor

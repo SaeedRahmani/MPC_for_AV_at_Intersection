@@ -54,8 +54,8 @@ if __name__ == '__main__':
 
     value, path = a_star.run('Start', is_goal_function=is_goal, heuristic_function=lambda node: 0, debug=True)
 
-    for node, g, predecessor in a_star.debug_data:
-        print(f"Opened {node} in distance {g}, with predecessor {predecessor}.")
+    for d in a_star.debug_data:
+        print(f"Opened {d.node} in distance {d.g}, with predecessor {d.predecessor}.")
 
     print()
     print(f"Optimal length: {value}")
