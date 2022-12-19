@@ -3,8 +3,9 @@ import numpy as np
 
 from envs.t_intersection import t_intersection
 from lib.helpers import measure_time
-from lib.motion_primitive import load_motion_primitives, create_transform_mtx, transform_pts, \
-    MotionPrimitiveSearch
+from lib.motion_primitive import load_motion_primitives
+from lib.linalg import create_2d_transform_mtx, transform_2d_pts
+from lib.motion_primitive_search import MotionPrimitiveSearch
 from lib.obstacles import draw_obstacle, draw_point_arrow
 
 
@@ -27,9 +28,9 @@ def run():
     draw_point_arrow(scenario.goal_point, ax, color='r')
 
     # draw the immediate motion primitives, right at the start position of the car
-    mtx = create_transform_mtx(*scenario.start)
+    mtx = create_2d_transform_mtx(*scenario.start)
     for mp in mps.values():
-        points = transform_pts(scenario.start[2], mtx, mp.points)
+        points = transform_2d_pts(scenario.start[2], mtx, mp.points)
         ax.plot(points[:, 0], points[:, 1], color='b')
 
     search = MotionPrimitiveSearch(scenario, mps, margin=(0.5, 0.5))
