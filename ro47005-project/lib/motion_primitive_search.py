@@ -14,18 +14,20 @@ NodeType = Tuple[float, float, float]
 
 class MotionPrimitiveSearch:
     def __init__(self, scenario: Scenario, mps: Dict[str, MotionPrimitive], margin: Tuple[float, float]):
-        self._scenario = scenario
         self._mps = mps
         self._points_map: Dict[Tuple[NodeType, NodeType], np.ndarray] = {}
 
-        self._goal_area_hp = self._scenario.goal_area.to_convex(margin=margin)
-        self._obstacles_hp: List[np.ndarray] = [o.to_convex(margin=margin) for o in self._scenario.obstacles]
-        self._gx, self._gy, self._gtheta = self._scenario.goal_point
+        self._start = scenario.start
+        self._goal_area = scenario.goal_area
+        self._allowed_goal_theta_difference = scenario.allowed_goal_theta_difference
+        self._goal_area_hp = self._goal_area.to_convex(margin=margin)
+        self._obstacles_hp: List[np.ndarray] = [o.to_convex(margin=margin) for o in scenario.obstacles]
+        self._gx, self._gy, self._gtheta = scenario.goal_point
 
         self._a_star: AStar[NodeType] = AStar(neighbor_function=self.neighbor_function)
 
     def run(self, debug=False) -> Tuple[float, np.ndarray]:
-        cost, path = self._a_star.run(self._scenario.start, is_goal_function=self.is_goal,
+        cost, path = self._a_star.run(self._start, is_goal_function=self.is_goal,
                                       heuristic_function=self.distance_to_goal, debug=debug)
         trajectory = self.path_to_full_trajectory(path)
         return cost, trajectory
@@ -38,13 +40,15 @@ class MotionPrimitiveSearch:
         x, y, theta = node
 
         result = check_collision(self._goal_area_hp, np.atleast_2d([x, y]).T) \
-                 and abs(theta - self._gtheta) <= np.pi / 8
+                 and abs(theta - self._gtheta) <= self._allowed_goal_theta_difference
 
         return result
 
     def distance_to_goal(self, node: Tuple[float, float, float]) -> float:
         x, y, theta = node
-        return np.sqrt((self._gx - x) ** 2 + (self._gy - y) ** 2) + 2.425 * abs(theta - self._gtheta)
+        distance_xy = self._goal_area.distance_to_point(node[:2])
+        distance_theta = max(0., abs(theta - self._gtheta) - self._allowed_goal_theta_difference)
+        return distance_xy + 2.7 * distance_theta
 
     def neighbor_function(self, node: NodeType) -> Iterable[Tuple[float, NodeType]]:
         mtx = create_2d_transform_mtx(*node)

@@ -34,6 +34,10 @@ class Obstacle(ABC):
         """
         pass
 
+    @abstractmethod
+    def distance_to_point(self, point: Tuple[float, float]) -> float:
+        pass
+
 
 class BoxObstacle(Obstacle):
     def __init__(self, xy_width: Tuple[float, float], height: float, xy_center: Tuple[float, float]):
@@ -79,6 +83,16 @@ class BoxObstacle(Obstacle):
                          [0, 1, -(y2 + m_y)],  # top
                          [0, -1, y1 - m_y]])  # bottom
 
+    def distance_to_point(self, point: Tuple[float, float]) -> float:
+        # TODO: this assumes that the rectangle is not rotated
+        x1, y1 = self.xy1
+        x2, y2 = self.xy2
+        x, y = point
+
+        dx = max(x1 - x, 0, x - x2)
+        dy = max(y1 - y, 0, y - y2)
+        return np.sqrt(dx * dx + dy * dy)
+
 
 class CircleObstacle(Obstacle):
 
@@ -120,6 +134,12 @@ class CircleObstacle(Obstacle):
                          [1, -1, -c_x + c_y - r * np.sqrt(2) - m_x - m_y],  # bottom right
                          [-1, -1, c_x + c_y - r * np.sqrt(2) - m_x - m_y],  # bottom left
                          [1, 1, -c_x - c_y - r * np.sqrt(2) - m_x - m_y]])  # top right
+
+    def distance_to_point(self, point: Tuple[float, float]) -> float:
+        p_x, p_y = point
+        r_x, r_y = self.xy_center
+
+        return max(0, np.sqrt((r_x - p_x) ** 2 + (r_y - p_y) ** 2) - self.radius)
 
 
 def check_collision(obstacle_halfplanes: np.ndarray, points: np.ndarray) -> bool:

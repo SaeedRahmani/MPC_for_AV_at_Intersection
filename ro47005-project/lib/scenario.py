@@ -10,3 +10,4 @@ class Scenario:
     obstacles: List[Obstacle]
     goal_area: Obstacle
     goal_point: Tuple[float, float, float]
+    allowed_goal_theta_difference: float

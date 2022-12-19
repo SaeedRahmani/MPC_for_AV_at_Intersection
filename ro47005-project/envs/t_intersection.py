@@ -17,6 +17,7 @@ def t_intersection() -> Scenario:
     goal = (-(distance_center + length * 0.8), (width_traffic_island + width_road) / 2, -np.pi)
     goal_area = BoxObstacle(xy_width=(width_road * 2, width_road), height=height,
                             xy_center=(goal[0], goal[1]))
+    allowed_goal_theta_difference = np.pi / 8
 
     obstacles = [
         # T-intersection
@@ -63,5 +64,6 @@ def t_intersection() -> Scenario:
         start=start,
         goal_point=goal,
         goal_area=goal_area,
+        allowed_goal_theta_difference=allowed_goal_theta_difference,
         obstacles=obstacles,
     )
