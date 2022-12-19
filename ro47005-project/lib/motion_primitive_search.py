@@ -20,7 +20,6 @@ class MotionPrimitiveSearch:
         self._start = scenario.start
         self._goal_area = scenario.goal_area
         self._allowed_goal_theta_difference = scenario.allowed_goal_theta_difference
-        self._goal_area_hp = self._goal_area.to_convex(margin=(0., 0.))  # goal area already defines its own margin!
         self._obstacles_hp: List[np.ndarray] = [o.to_convex(margin=margin) for o in scenario.obstacles]
         self._gx, self._gy, self._gtheta = scenario.goal_point
 
