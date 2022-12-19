@@ -15,48 +15,48 @@ def t_intersection() -> Scenario:
 
     start = (1.25, -6, 0.5 * np.pi)
     goal = (-(distance_center + length * 0.8), (width_traffic_island + width_road) / 2, -np.pi)
-    goal_area = BoxObstacle(dim=(width_road * 2, width_road, 0),
-                            xy=(goal[0], goal[1]))
+    goal_area = BoxObstacle(xy_width=(width_road * 2, width_road), height=height,
+                            xy_center=(goal[0], goal[1]))
 
     obstacles = [
         # T-intersection
         # Leg of T
-        BoxObstacle(dim=(width_traffic_island, length, height),
-                    xy=(0, -(length / 2 + distance_center))),
-        BoxObstacle(dim=(width_pavement, length, height),
-                    xy=(
+        BoxObstacle(xy_width=(width_traffic_island, length), height=height,
+                    xy_center=(0, -(length / 2 + distance_center))),
+        BoxObstacle(xy_width=(width_pavement, length), height=height,
+                    xy_center=(
                     (width_traffic_island / 2 + width_road + width_pavement / 2), -(length / 2 + distance_center))),
-        BoxObstacle(dim=(width_pavement, length, height),
-                    xy=(
+        BoxObstacle(xy_width=(width_pavement, length), height=height,
+                    xy_center=(
                     -(width_traffic_island / 2 + width_road + width_pavement / 2), -(length / 2 + distance_center))),
         CircleObstacle(radius=(width_traffic_island / 2), height=height,
-                       xy=(0, -distance_center)),
+                       xy_center=(0, -distance_center)),
 
         # left part of T
-        BoxObstacle(dim=(length, width_traffic_island, height),
-                    xy=(-(length / 2 + distance_center), 0.)),
-        BoxObstacle(dim=(length, width_pavement, height),
-                    xy=(
+        BoxObstacle(xy_width=(length, width_traffic_island), height=height,
+                    xy_center=(-(length / 2 + distance_center), 0.)),
+        BoxObstacle(xy_width=(length, width_pavement), height=height,
+                    xy_center=(
                     -(length / 2 + distance_center), -(width_traffic_island / 2 + width_road + width_pavement / 2))),
         CircleObstacle(radius=(distance_center - width_traffic_island / 2 - width_road), height=height,
-                       xy=(-distance_center, -distance_center)),
+                       xy_center=(-distance_center, -distance_center)),
         CircleObstacle(radius=(width_traffic_island / 2), height=height,
-                       xy=(-distance_center, 0)),
+                       xy_center=(-distance_center, 0)),
 
         # right part of T
-        BoxObstacle(dim=(length, width_traffic_island, height),
-                    xy=((length / 2 + distance_center), 0)),
-        BoxObstacle(dim=(length, width_pavement, height),
-                    xy=(
+        BoxObstacle(xy_width=(length, width_traffic_island), height=height,
+                    xy_center=((length / 2 + distance_center), 0)),
+        BoxObstacle(xy_width=(length, width_pavement), height=height,
+                    xy_center=(
                     (length / 2 + distance_center), -(width_traffic_island / 2 + width_road + width_pavement / 2))),
         CircleObstacle(radius=(distance_center - width_traffic_island / 2 - width_road), height=height,
-                       xy=(distance_center, -distance_center)),
+                       xy_center=(distance_center, -distance_center)),
         CircleObstacle(radius=(width_traffic_island / 2), height=height,
-                       xy=(distance_center, 0)),
+                       xy_center=(distance_center, 0)),
 
         # upper part of T
-        BoxObstacle(dim=((2 * length + 2 * distance_center), width_pavement, height),
-                    xy=(0, (width_traffic_island / 2 + width_road + width_pavement / 2))),
+        BoxObstacle(xy_width=((2 * length + 2 * distance_center), width_pavement), height=height,
+                    xy_center=(0, (width_traffic_island / 2 + width_road + width_pavement / 2))),
     ]
 
     return Scenario(

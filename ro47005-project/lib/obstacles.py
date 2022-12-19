@@ -36,70 +36,82 @@ class Obstacle(ABC):
 
 
 class BoxObstacle(Obstacle):
-    def __init__(self, dim: Tuple[float, float, float], xy: Tuple[float, float]):
-        self._type = "GEOM_BOX"
-        self._dim = list(dim)
-        self._pos = [*xy, 0]
+    def __init__(self, xy_width: Tuple[float, float], height: float, xy_center: Tuple[float, float]):
+        self.xy_width = xy_width
+        self.height = height
+        self.xy_center = xy_center
+
+        c_x, c_y = xy_center
+        w_x, h_x = xy_width
+        self.xy1 = c_x - w_x / 2, c_y - h_x / 2
+        self.xy2 = c_x + w_x / 2, c_y + h_x / 2
+
+        def _setattr(self, key, value):
+            raise Exception("BoxObstacle objects are read-only")
+
+        self.__setattr__ = _setattr
 
     def add_to_bullet_env(self, env):
-        env.add_shapes(shape_type=self._type, dim=self._dim, poses_2d=[self._pos])
+        env.add_shapes(shape_type="GEOM_BOX", dim=[*self.xy_width, self.height], poses_2d=[[*self.xy_center, 0]])
 
     def draw(self, ax, color=None):
+        # TODO: this assumes that the rectangle is not rotated
         from matplotlib.patches import Rectangle
 
-        x, y = self._pos[0], self._pos[1]
-        width, height, orientation = self._dim[0], self._dim[1], self._dim[2]
-        x, y = x - width / 2, y - height / 2
-        # assert orientation == 0.
-        ax.add_patch(Rectangle((x, y), width, height, edgecolor=color, facecolor='none'))
+        w_x, w_h = self.xy_width
+        ax.add_patch(Rectangle(self.xy1, w_x, w_h, edgecolor=color, facecolor='none'))
 
     def to_convex(self, margin: Optional[Tuple[float, float]] = None) -> np.ndarray:
+        # TODO: this assumes that the rectangle is not rotated
         if margin is None:
             margin = (0, 0)
 
         # Check if the rotation of the obstacle is zero
-        assert self._pos[2] == 0
-        c_x, c_y = self._pos[:2]
+        # assert self._pos[2] == 0
 
         # Implement a margin
         m_x, m_y = margin
 
-        w_x, w_y = self._dim[:2]
-        return np.array([[1, 0, -(c_x + w_x / 2 + m_x)],  # right
-                         [-1, 0, c_x - w_x / 2 - m_x],  # left
-                         [0, 1, -(c_y + w_y / 2 + m_y)],  # top
-                         [0, -1, c_y - w_y / 2 - m_y]])  # bottom
+        x1, y1 = self.xy1
+        x2, y2 = self.xy2
+        return np.array([[1, 0, -(x2 + m_x)],  # right
+                         [-1, 0, x1 - m_x],  # left
+                         [0, 1, -(y2 + m_y)],  # top
+                         [0, -1, y1 - m_y]])  # bottom
 
 
 class CircleObstacle(Obstacle):
 
-    def __init__(self, radius: float, height: float, xy: Tuple[float, float]):
-        self._type = "GEOM_CYLINDER"
-        self._dim = [radius, height]
-        self._pos = [*xy, 0]
+    def __init__(self, radius: float, height: float, xy_center: Tuple[float, float]):
+        self.radius = radius
+        self.height = height
+        self.xy_center = xy_center
+
+        def _setattr(self, key, value):
+            raise Exception("CircleObstacle objects are read-only")
+
+        self.__setattr__ = _setattr
 
     def add_to_bullet_env(self, env):
-        env.add_shapes(shape_type=self._type, dim=self._dim, poses_2d=[self._pos])
+        env.add_shapes(shape_type="GEOM_CYLINDER", dim=[self.radius, self.height], poses_2d=[[*self.xy_center, 0]])
 
     def draw(self, ax, color=None):
         from matplotlib.patches import Circle
-        radius = self._dim[0]
-        x, y = self._pos[0], self._pos[1]
-        ax.add_patch(Circle((x, y), radius, edgecolor=color, facecolor='none'))
+        ax.add_patch(Circle(self.xy_center, self.radius, edgecolor=color, facecolor='none'))
 
     def to_convex(self, margin: Optional[Tuple[float, float]] = None) -> np.ndarray:
         if margin is None:
             margin = (0, 0)
 
         # Check if the rotation of the obstacle is zero
-        assert self._pos[2] == 0
-        c_x, c_y = self._pos[:2]
+        # assert self._pos[2] == 0
 
         # Implement a margin
         m_x, m_y = margin
 
-        r = self._dim[0]
-        off = r * np.tan(np.pi / 8)
+        c_x, c_y = self.xy_center
+        r = self.radius
+        # off = r * np.tan(np.pi / 8)
         return np.array([[1, 0, -(c_x + r + m_x)],  # right
                          [-1, 0, c_x - r - m_x],  # left
                          [0, 1, -(c_y + r + m_y)],  # top
