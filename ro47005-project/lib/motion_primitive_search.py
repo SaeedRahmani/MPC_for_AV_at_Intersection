@@ -6,7 +6,8 @@ from lib.a_star import AStar
 from lib.linalg import create_2d_transform_mtx, transform_2d_pts
 from lib.math import normalize_angle
 from lib.motion_primitive import MotionPrimitive
-from lib.obstacles import Scenario, obstacle_to_convex, check_collision
+from lib.obstacles import check_collision
+from lib.scenario import Scenario
 
 NodeType = Tuple[float, float, float]
 
@@ -17,8 +18,8 @@ class MotionPrimitiveSearch:
         self._mps = mps
         self._points_map: Dict[Tuple[NodeType, NodeType], np.ndarray] = {}
 
-        self._goal_area_hp = obstacle_to_convex(self._scenario.goal_area, margin=margin)
-        self._obstacles_hp: List[np.ndarray] = [obstacle_to_convex(o, margin=margin) for o in self._scenario.obstacles]
+        self._goal_area_hp = self._scenario.goal_area.to_convex(margin=margin)
+        self._obstacles_hp: List[np.ndarray] = [o.to_convex(margin=margin) for o in self._scenario.obstacles]
         self._gx, self._gy, self._gtheta = self._scenario.goal_point
 
         self._a_star: AStar[NodeType] = AStar(neighbor_function=self.neighbor_function)

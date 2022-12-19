@@ -1,6 +1,7 @@
 import numpy as np
 
-from lib.obstacles import Obstacle, Scenario
+from lib.obstacles import BoxObstacle, CircleObstacle
+from lib.scenario import Scenario
 
 
 def t_intersection() -> Scenario:
@@ -14,49 +15,48 @@ def t_intersection() -> Scenario:
 
     start = (1.25, -6, 0.5 * np.pi)
     goal = (-(distance_center + length * 0.8), (width_traffic_island + width_road) / 2, -np.pi)
-    goal_area = Obstacle(type="GEOM_BOX", dim=[width_road * 2, width_road, 0],
-                    pos=[goal[0], goal[1], 0])
+    goal_area = BoxObstacle(dim=(width_road * 2, width_road, 0),
+                            xy=(goal[0], goal[1]))
 
     obstacles = [
         # T-intersection
         # Leg of T
-        Obstacle(type="GEOM_BOX", dim=[width_traffic_island, length, height],
-                 pos=[0, -(length / 2 + distance_center), 0]),
-        Obstacle(type="GEOM_BOX", dim=[width_pavement, length, height],
-                 pos=[(width_traffic_island / 2 + width_road + width_pavement / 2), -(length / 2 + distance_center),
-                      0]),
-        Obstacle(type="GEOM_BOX", dim=[width_pavement, length, height],
-                 pos=[-(width_traffic_island / 2 + width_road + width_pavement / 2), -(length / 2 + distance_center),
-                      0]),
-        Obstacle(type="GEOM_CYLINDER", dim=[(width_traffic_island / 2), height],
-                 pos=[0, -distance_center, 0]),
+        BoxObstacle(dim=(width_traffic_island, length, height),
+                    xy=(0, -(length / 2 + distance_center))),
+        BoxObstacle(dim=(width_pavement, length, height),
+                    xy=(
+                    (width_traffic_island / 2 + width_road + width_pavement / 2), -(length / 2 + distance_center))),
+        BoxObstacle(dim=(width_pavement, length, height),
+                    xy=(
+                    -(width_traffic_island / 2 + width_road + width_pavement / 2), -(length / 2 + distance_center))),
+        CircleObstacle(radius=(width_traffic_island / 2), height=height,
+                       xy=(0, -distance_center)),
 
         # left part of T
-        Obstacle(type="GEOM_BOX", dim=[length, width_traffic_island, height],
-                 pos=[-(length / 2 + distance_center), 0, 0.]),
-        Obstacle(type="GEOM_BOX", dim=[length, width_pavement, height],
-                 pos=[-(length / 2 + distance_center), -(width_traffic_island / 2 + width_road + width_pavement / 2),
-                      0.]),
-        Obstacle(type="GEOM_CYLINDER", dim=[(distance_center - width_traffic_island / 2 - width_road), height],
-                 pos=[-distance_center, -distance_center, 0]),
-        Obstacle(type="GEOM_CYLINDER", dim=[(width_traffic_island / 2), height],
-                 pos=[-distance_center, 0, 0]),
+        BoxObstacle(dim=(length, width_traffic_island, height),
+                    xy=(-(length / 2 + distance_center), 0.)),
+        BoxObstacle(dim=(length, width_pavement, height),
+                    xy=(
+                    -(length / 2 + distance_center), -(width_traffic_island / 2 + width_road + width_pavement / 2))),
+        CircleObstacle(radius=(distance_center - width_traffic_island / 2 - width_road), height=height,
+                       xy=(-distance_center, -distance_center)),
+        CircleObstacle(radius=(width_traffic_island / 2), height=height,
+                       xy=(-distance_center, 0)),
 
         # right part of T
-        Obstacle(type="GEOM_BOX", dim=[length, width_traffic_island, height],
-                 pos=[(length / 2 + distance_center), 0, 0.]),
-        Obstacle(type="GEOM_BOX", dim=[length, width_pavement, height],
-                 pos=[(length / 2 + distance_center), -(width_traffic_island / 2 + width_road + width_pavement / 2),
-                      0.]),
-        Obstacle(type="GEOM_CYLINDER", dim=[(distance_center - width_traffic_island / 2 - width_road), height],
-                 pos=[distance_center, -distance_center, 0]),
-        Obstacle(type="GEOM_CYLINDER", dim=[(width_traffic_island / 2), height],
-                 pos=[distance_center, 0, 0]),
+        BoxObstacle(dim=(length, width_traffic_island, height),
+                    xy=((length / 2 + distance_center), 0)),
+        BoxObstacle(dim=(length, width_pavement, height),
+                    xy=(
+                    (length / 2 + distance_center), -(width_traffic_island / 2 + width_road + width_pavement / 2))),
+        CircleObstacle(radius=(distance_center - width_traffic_island / 2 - width_road), height=height,
+                       xy=(distance_center, -distance_center)),
+        CircleObstacle(radius=(width_traffic_island / 2), height=height,
+                       xy=(distance_center, 0)),
 
         # upper part of T
-        Obstacle(type="GEOM_BOX", dim=[(2 * length + 2 * distance_center), width_pavement, height],
-                 pos=[0, (width_traffic_island / 2 + width_road + width_pavement / 2),
-                      0.]),
+        BoxObstacle(dim=((2 * length + 2 * distance_center), width_pavement, height),
+                    xy=(0, (width_traffic_island / 2 + width_road + width_pavement / 2))),
     ]
 
     return Scenario(

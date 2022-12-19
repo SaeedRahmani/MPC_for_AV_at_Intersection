@@ -1,8 +1,8 @@
 import gym
-from urdfenvs.robots.prius import Prius
 import numpy as np
+from urdfenvs.robots.prius import Prius
+
 from envs.t_intersection import t_intersection
-from lib.obstacles import add_obstacles_to_env
 
 
 def run_prius(n_steps=200, render=False, goal=True, obstacles=True):
@@ -27,7 +27,8 @@ def run_prius(n_steps=200, render=False, goal=True, obstacles=True):
     ob = env.reset(pos=pos0)
     print(f"Initial observation : {ob}")
 
-    add_obstacles_to_env(scenario.obstacles, env)
+    for o in scenario.obstacles:
+        o.add_to_bullet_env(env)
 
     history = []
     points = []

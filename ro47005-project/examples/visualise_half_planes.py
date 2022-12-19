@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 
 from envs.t_intersection import t_intersection
-from lib.obstacles import obstacle_to_convex
 
 
 def plot_obstacle_region(obstacle, margin=None):
@@ -11,14 +10,14 @@ def plot_obstacle_region(obstacle, margin=None):
         color = '#000000'
     else:
         color = '#bfbfbf'
-    c_x, c_y = obstacle.pos[:2]
-    w_x, w_y = obstacle.dim[:2]
+    c_x, c_y = obstacle._pos[:2]
+    w_x, w_y = obstacle._dim[:2]
     extra = 1
     step = 0.05
     x = np.linspace(c_x - w_x - extra, c_x + w_x + extra, int((w_x + 2 * extra)/step))
     y = np.linspace(c_y - w_y - extra, c_y + w_y + extra, int((w_y + 2 * extra)/step))
 
-    half_spaces = obstacle_to_convex(obstacle,  margin)
+    half_spaces = obstacle.to_convex(margin)
 
     # if (x[-1] - x[0]) > (y[-1] - y[0]):
     #     plt.xlim(x[0], x[-1])

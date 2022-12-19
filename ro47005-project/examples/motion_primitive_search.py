@@ -6,7 +6,7 @@ from lib.helpers import measure_time
 from lib.motion_primitive import load_motion_primitives
 from lib.linalg import create_2d_transform_mtx, transform_2d_pts
 from lib.motion_primitive_search import MotionPrimitiveSearch
-from lib.obstacles import draw_obstacle, draw_point_arrow
+from lib.plotting import draw_point_arrow
 
 
 @measure_time
@@ -20,10 +20,10 @@ def run():
     ax.scatter([scenario.start[0]], [scenario.start[1]], color='b')
 
     for obstacle in scenario.obstacles:
-        draw_obstacle(obstacle, ax, color='b')
+        obstacle.draw(ax, color='b')
 
     # draw goal area
-    draw_obstacle(scenario.goal_area, ax, color='r')
+    scenario.goal_area.draw(ax, color='r')
     # draw goal area with direction
     draw_point_arrow(scenario.goal_point, ax, color='r')
 
