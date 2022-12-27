@@ -12,8 +12,12 @@ class MotionPrimitive:
     forward_speed: float
     steering_angle: float
     n_seconds: float
+
     total_length: float = 0.
+    """The length of the motion primitive as a whole (i.e. sum of all distances between consecutive points)"""
+
     points: np.ndarray = np.array([])
+    """The motion primitive (i.e. array of points) itself"""
 
 
 def load_motion_primitives() -> Dict[str, MotionPrimitive]:

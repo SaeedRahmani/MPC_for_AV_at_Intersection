@@ -24,7 +24,7 @@ class Obstacle(ABC):
         pass
 
     @abstractmethod
-    def to_convex(self, margin: Optional[Tuple[float, float]] = None) -> np.ndarray:
+    def to_convex(self, margin: float = 0.) -> np.ndarray:
         """
             This function represents each obstacle by a set of half planes.
             The half planes are given as: ax + by + c.
@@ -65,23 +65,18 @@ class BoxObstacle(Obstacle):
         w_x, w_h = self.xy_width
         ax.add_patch(Rectangle(self.xy1, w_x, w_h, edgecolor=color, facecolor='none'))
 
-    def to_convex(self, margin: Optional[Tuple[float, float]] = None) -> np.ndarray:
+    def to_convex(self, margin: float = 0.) -> np.ndarray:
         # TODO: this assumes that the rectangle is not rotated
-        if margin is None:
-            margin = (0, 0)
 
         # Check if the rotation of the obstacle is zero
         # assert self._pos[2] == 0
 
-        # Implement a margin
-        m_x, m_y = margin
-
         x1, y1 = self.xy1
         x2, y2 = self.xy2
-        return np.array([[1, 0, -(x2 + m_x)],  # right
-                         [-1, 0, x1 - m_x],  # left
-                         [0, 1, -(y2 + m_y)],  # top
-                         [0, -1, y1 - m_y]])  # bottom
+        return np.array([[1, 0, -(x2 + margin)],  # right
+                         [-1, 0, x1 - margin],  # left
+                         [0, 1, -(y2 + margin)],  # top
+                         [0, -1, y1 - margin]])  # bottom
 
     def distance_to_point(self, point: Tuple[float, float]) -> float:
         # TODO: this assumes that the rectangle is not rotated
@@ -113,27 +108,21 @@ class CircleObstacle(Obstacle):
         from matplotlib.patches import Circle
         ax.add_patch(Circle(self.xy_center, self.radius, edgecolor=color, facecolor='none'))
 
-    def to_convex(self, margin: Optional[Tuple[float, float]] = None) -> np.ndarray:
-        if margin is None:
-            margin = (0, 0)
-
+    def to_convex(self, margin: float = 0.) -> np.ndarray:
         # Check if the rotation of the obstacle is zero
         # assert self._pos[2] == 0
-
-        # Implement a margin
-        m_x, m_y = margin
 
         c_x, c_y = self.xy_center
         r = self.radius
         # off = r * np.tan(np.pi / 8)
-        return np.array([[1, 0, -(c_x + r + m_x)],  # right
-                         [-1, 0, c_x - r - m_x],  # left
-                         [0, 1, -(c_y + r + m_y)],  # top
-                         [0, -1, c_y - r - m_y],  # bottom
-                         [-1, 1, c_x - c_y - r * np.sqrt(2) - m_x - m_y],  # top left
-                         [1, -1, -c_x + c_y - r * np.sqrt(2) - m_x - m_y],  # bottom right
-                         [-1, -1, c_x + c_y - r * np.sqrt(2) - m_x - m_y],  # bottom left
-                         [1, 1, -c_x - c_y - r * np.sqrt(2) - m_x - m_y]])  # top right
+        return np.array([[1, 0, -(c_x + r + margin)],  # right
+                         [-1, 0, c_x - r - margin],  # left
+                         [0, 1, -(c_y + r + margin)],  # top
+                         [0, -1, c_y - r - margin],  # bottom
+                         [-1, 1, c_x - c_y - r * np.sqrt(2) - 2 * margin],  # top left
+                         [1, -1, -c_x + c_y - r * np.sqrt(2) - 2 * margin],  # bottom right
+                         [-1, -1, c_x + c_y - r * np.sqrt(2) - 2 * margin],  # bottom left
+                         [1, 1, -c_x - c_y - r * np.sqrt(2) - 2 * margin]])  # top right
 
     def distance_to_point(self, point: Tuple[float, float]) -> float:
         p_x, p_y = point
