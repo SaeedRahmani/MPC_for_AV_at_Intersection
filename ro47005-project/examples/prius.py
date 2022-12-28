@@ -4,9 +4,12 @@ from urdfenvs.robots.prius import Prius
 
 from envs.t_intersection import t_intersection
 from lib.linalg import create_2d_transform_mtx, transform_2d_pts
+from lib.moving_obstacles import MovingObstacleTIntersection
+import pybullet as p
+import random
 
 
-def run_prius(n_steps=200, render=False, goal=True, obstacles=True):
+def run_prius(n_steps=1000, render=False, goal=True, obstacles=True):
     prius = Prius(mode="vel")  # vel is only possibility
 
     # Build the T-intersection
@@ -19,9 +22,10 @@ def run_prius(n_steps=200, render=False, goal=True, obstacles=True):
     robots = [
         prius,
     ]
+    dt = 0.01
     env = gym.make(
         "urdf-env-v0",
-        dt=0.01, robots=robots, render=render
+        dt=dt, robots=robots, render=render
     )
     # action = 2x1 with [forward_speed, steering_angle_dot]
     # forward_speed is used to set the angular speed of the wheel
@@ -34,9 +38,59 @@ def run_prius(n_steps=200, render=False, goal=True, obstacles=True):
     for o in scenario.obstacles:
         o.add_to_bullet_env(env)
 
+    # Moving obstacle
+    # from MotionPlanningEnv.dynamicSphereObstacle import DynamicSphereObstacle
+    #
+    # dynamicObst2Dict = {
+    #     "type": "analyticSphere",
+    #     "geometry": {"trajectory": ['-10 + 5*t', '-1.25', '0.5'], "radius": 0.5},
+    # }
+    # dynamicSphereObst2 = DynamicSphereObstacle(name="simpleSphere", content_dict=dynamicObst2Dict)
+    # env.add_obstacle(dynamicSphereObst2)
+
+    # orientation = p.getQuaternionFromEuler([0, 0, 0])
+    # obs_id = p.loadURDF(fileName="/home/christiaan/gym_env_urdf/gym_envs_urdf/urdfenvs/robots/prius/prius.urdf",
+    #                     basePosition=[-10, -1.25, 0.],
+    #                     baseOrientation=orientation,
+    #                     globalScaling=0.3,
+    #                     )
+    # print(f"Pybullet engine{obs_id}")
     history = []
     points = []
+    pos_increment = 0
+
+    # Moving obstacle
+    moving_obs = []
+    for i in range(6):
+        if random.randint(1, 2) == 1:
+            moving_obs.append(MovingObstacleTIntersection(trajectory_type="straight",
+                                                          dt=dt,
+                                                          direction=1,
+                                                          speed=5,
+                                                          offset=i,
+                                                          ))
+        else:
+            moving_obs.append(MovingObstacleTIntersection(trajectory_type="turn",
+                                                          dt=dt,
+                                                          direction=1,
+                                                          speed=5,
+                                                          offset=i,
+                                                          ))
+        moving_obs.append(MovingObstacleTIntersection(trajectory_type="straight",
+                                                      dt=dt,
+                                                      direction=-1,
+                                                      speed=5,
+                                                      offset=i,
+                                                      ))
+    # moving_obs.append(MovingObstacleTIntersection(trajectory_type="turn",
+    #                                               dt=dt,
+    #                                               direction=1,
+    #                                               speed=4,
+    #                                               ))
+
     while True:
+        pos_increment += 0.01 * 5
+        # p.resetBasePositionAndOrientation(obs_id, [-10 + pos_increment, -1.25, 0], orientation)
         ob, _, _, _ = env.step(action)
         # if ob['robot_0']['joint_state']['steering'] > 0.2:
         # Stop steering
@@ -45,6 +99,10 @@ def run_prius(n_steps=200, render=False, goal=True, obstacles=True):
         # action[0] = 1.
         history.append(ob)
         points.append(ob['robot_0']['joint_state']['position'])
+
+        # Step moving obstacles
+        for o in moving_obs:
+            o.step()
     env.close()
     return history, points
 
