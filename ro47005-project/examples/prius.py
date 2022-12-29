@@ -61,32 +61,39 @@ def run_prius(n_steps=1000, render=False, goal=True, obstacles=True):
 
     # Moving obstacle
     moving_obs = []
-    for i in range(6):
-        if random.randint(1, 2) == 1:
-            moving_obs.append(MovingObstacleTIntersection(trajectory_type="straight",
+    trajectory_type_options = ['straight', 'turn']
+    # The trajectory type is chosen randomly
+    # The initialisation of the vehicles is also chosen randomly, when random_start = True
+    random_start = False
+    for i in range(3):
+        if random.choice([True, False]) and random_start:
+            moving_obs.append(MovingObstacleTIntersection(trajectory_type=random.choice(trajectory_type_options),
                                                           dt=dt,
                                                           direction=1,
-                                                          speed=5,
-                                                          offset=i,
+                                                          speed=4,
+                                                          offset=i * 2,
                                                           ))
-        else:
-            moving_obs.append(MovingObstacleTIntersection(trajectory_type="turn",
+        elif random_start is not True:
+            moving_obs.append(MovingObstacleTIntersection(trajectory_type=random.choice(trajectory_type_options),
                                                           dt=dt,
                                                           direction=1,
-                                                          speed=5,
-                                                          offset=i,
+                                                          speed=4,
+                                                          offset=i * 2,
                                                           ))
-        moving_obs.append(MovingObstacleTIntersection(trajectory_type="straight",
-                                                      dt=dt,
-                                                      direction=-1,
-                                                      speed=5,
-                                                      offset=i,
-                                                      ))
-    # moving_obs.append(MovingObstacleTIntersection(trajectory_type="turn",
-    #                                               dt=dt,
-    #                                               direction=1,
-    #                                               speed=4,
-    #                                               ))
+        if random.choice([True, False]) and random_start:
+            moving_obs.append(MovingObstacleTIntersection(trajectory_type=random.choice(trajectory_type_options),
+                                                          dt=dt,
+                                                          direction=-1,
+                                                          speed=4,
+                                                          offset=i * 2 + 0.25,
+                                                          ))
+        elif random_start is not True:
+            moving_obs.append(MovingObstacleTIntersection(trajectory_type=random.choice(trajectory_type_options),
+                                                          dt=dt,
+                                                          direction=-1,
+                                                          speed=4,
+                                                          offset=i * 2 + 0.25,
+                                                          ))
 
     while True:
         pos_increment += 0.01 * 5

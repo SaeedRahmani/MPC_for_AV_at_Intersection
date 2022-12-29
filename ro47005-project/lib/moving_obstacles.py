@@ -1,7 +1,8 @@
 import numpy as np
 import pybullet as p
-import urdfenvs
-
+import os
+import lib
+from urdfenvs.robots import prius
 
 class MovingObstacleTIntersection:
     def __init__(self, trajectory_type, dt, direction=None, speed=None, offset=None):
@@ -17,8 +18,9 @@ class MovingObstacleTIntersection:
         self.traj_position = None
         self.traj_orientation = None
         self.done = False
-        self.urdf = "/home/christiaan/gym_env_urdf/gym_envs_urdf/urdfenvs/robots/prius/prius.urdf"
-
+        # self.urdf = "/home/christiaan/gym_env_urdf/gym_envs_urdf/urdfenvs/robots/prius/prius.urdf"
+        self.urdf = os.path.join(os.path.dirname(prius.__file__), 'prius.urdf')
+        # self.urdf = '/home/christiaan/Robotics/2022-2023/Q2/RO47005_Planning_and_Decision_Making/ro47005-project/ro47005-project/lib/prius.urdf'
         # Create trajectories
         self.trajectory(trajectory_type, self.direction, self.speed)
 
@@ -73,8 +75,33 @@ class MovingObstacleTIntersection:
             self.steps = steps1 + steps2 + steps3
             self.traj_position = np.vstack((positions1, positions2, positions3))
             self.traj_orientation = np.vstack((orientations1, orientations2, orientations3))
+        elif direction == -1:
+            # part 1
+            distance1 = 7
+            steps1 = int(distance1 / (speed * self.dt))
+            positions1 = np.vstack(
+                (direction * np.linspace(0, distance1, steps1), np.zeros(steps1),
+                 np.zeros(steps1))).T + self.start_position
+            orientations1 = np.repeat(np.expand_dims(self.start_orientation, axis=0), steps1, axis=0)
+            # part 2 (corner)
+            corner_radius = 4.25
+            distance2 = corner_radius * np.pi / 2
+            steps2 = int(distance2 / (speed * self.dt))
+            angles = np.linspace(0, np.pi / 2, steps2)
+            positions2 = np.vstack((-corner_radius * np.sin(angles), corner_radius * (np.cos(angles) - 1), np.zeros(steps2))).T + positions1[-1]
+            orientations2 = np.array([p.getQuaternionFromEuler([0, 0, a - np.pi]) for a in angles])
+            # part 3
+            distance3 = 7
+            steps3 = int(distance3 / (speed * self.dt))
+            positions3 = np.vstack((np.zeros(steps3), -np.linspace(0, distance3, steps3), np.zeros(steps3))).T + \
+                         positions2[-1]
+            orientations3 = np.repeat(np.expand_dims(orientations2[-1], axis=0), steps3, axis=0)
+
+            self.steps = steps1 + steps2 + steps3
+            self.traj_position = np.vstack((positions1, positions2, positions3))
+            self.traj_orientation = np.vstack((orientations1, orientations2, orientations3))
         else:
-            raise NotImplementedError
+            raise NotImplementedError("Direction should either be 1 or -1 when trajectory_type=\'turn\'")
 
     def step(self):
         """ Changes the position of the moving obstacle. Needs to be called in every timestep. """
