@@ -1,11 +1,12 @@
 import math
-from typing import Tuple, Dict
+from typing import Tuple, Dict, Union
 
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.collections import EllipseCollection
 from matplotlib.patches import Rectangle
 
+from lib.a_star import AStar
 from lib.car_dimensions import CarDimensions
 from lib.linalg import create_2d_transform_mtx, transform_2d_pts
 from lib.motion_primitive import MotionPrimitive
@@ -96,3 +97,21 @@ def draw_car(start: Tuple[float, float, float], car_dimensions: CarDimensions, a
     if draw_collision_circles:
         draw_circles(circle_centers, radius=car_dimensions.radius, ax=ax, color=color)
         ax.scatter(circle_centers[:, 0], circle_centers[:, 1], color=color)
+
+
+def draw_astar_search_points(search: Union[MotionPrimitiveSearch, AStar], ax, visualize_heuristic: bool, visualize_cost_to_come: bool):
+    debug_points = np.array([p.node for p in search.debug_data])
+
+    if visualize_heuristic or visualize_cost_to_come:
+        c = np.zeros((len(search.debug_data)))
+
+        if visualize_heuristic:
+            c += np.array([p.h for p in search.debug_data])
+
+        if visualize_cost_to_come:
+            c += np.array([p.g for p in search.debug_data])
+
+    else:
+        c = None
+
+    ax.scatter(debug_points[:, 0], debug_points[:, 1], c=c, cmap='viridis_r')
