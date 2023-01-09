@@ -71,11 +71,11 @@ class MotionPrimitiveSearch:
 
         return out
 
-    def run(self, debug=False) -> Tuple[float, np.ndarray]:
+    def run(self, debug=False) -> Tuple[float, List[NodeType], np.ndarray]:
         cost, path = self._a_star.run(self._start, is_goal_function=self.is_goal,
                                       heuristic_function=self.distance_to_goal, debug=debug)
         trajectory = self.path_to_full_trajectory(path)
-        return cost, trajectory
+        return cost, path, trajectory
 
     @property
     def debug_data(self):

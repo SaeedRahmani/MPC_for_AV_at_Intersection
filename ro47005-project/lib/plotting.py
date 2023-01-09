@@ -1,12 +1,66 @@
 import math
-from typing import Tuple
+from typing import Tuple, Dict
 
 import numpy as np
+from matplotlib import pyplot as plt
 from matplotlib.collections import EllipseCollection
-from matplotlib.patches import Rectangle, Circle
+from matplotlib.patches import Rectangle
 
 from lib.car_dimensions import CarDimensions
 from lib.linalg import create_2d_transform_mtx, transform_2d_pts
+from lib.motion_primitive import MotionPrimitive
+from lib.motion_primitive_search import MotionPrimitiveSearch
+from lib.scenario import Scenario
+
+
+def draw_scenario(scenario: Scenario, mps: Dict[str, MotionPrimitive], car_dimensions: CarDimensions,
+                  search: MotionPrimitiveSearch, ax,
+                  draw_obstacles=True, draw_goal=True, draw_car=True, draw_mps=True, draw_collision_checking=True,
+                  draw_car2=True, draw_mps2=True, mp_name='right1'):
+    if draw_obstacles:
+        for obstacle in scenario.obstacles:
+            obstacle.draw(ax, color='b')
+
+    if draw_goal:
+        scenario.goal_area.draw(ax, color='r')
+        draw_point_arrow(scenario.goal_point, ax, color='r')
+
+    # For Start Point:
+
+    draw_car_func = globals()['draw_car']
+
+    if draw_car:
+        draw_car_func(start=scenario.start, car_dimensions=car_dimensions, ax=ax, color='g',
+                      draw_collision_circles=not draw_collision_checking)
+
+    # Draw Motion Primitives
+    if draw_mps:
+        for mp_name in mps.keys():
+            mp_points = search.motion_primitive_at(mp_name, configuration=scenario.start)
+            ax.plot(mp_points[:, 0], mp_points[:, 1], color='g')
+            draw_point_arrow(mp_points[-1], ax=ax, color='g')
+
+    # For One Random Neighbor Of The Start Point:
+    if draw_car2 or draw_mps2:
+        neighbor = tuple(search.motion_primitive_at(mp_name, configuration=scenario.start)[-1].tolist())
+
+        # Draw Car:
+        if draw_car2:
+            draw_car_func(start=neighbor, car_dimensions=car_dimensions, ax=ax, color='b', draw_collision_circles=False)
+
+        # Draw Motion Primitives
+        if draw_mps2:
+            for mp_name in mps.keys():
+                mp_points = search.motion_primitive_at(mp_name, configuration=neighbor)
+                ax.plot(mp_points[:, 0], mp_points[:, 1], color='b')
+                draw_point_arrow(mp_points[-1], ax=ax, color='b')
+
+    # Draw Collision Checking Points Of Random Motion Primitive As Circles With Radius
+    if draw_collision_checking:
+        cc_points = search.collision_checking_points_at(mp_name, configuration=scenario.start)
+        colormap = plt.get_cmap('Set2')
+        for i, cc_points_this in enumerate(np.array_split(cc_points, len(car_dimensions.circle_centers))):
+            draw_circles(cc_points_this, radius=car_dimensions.radius, ax=ax, color=colormap(i))
 
 
 def draw_point_arrow(point: Tuple[float, float, float], ax, color=None):
@@ -18,12 +72,14 @@ def draw_point_arrow(point: Tuple[float, float, float], ax, color=None):
 
 def draw_circles(points: np.ndarray, radius: float, ax, color=None):
     ax.add_collection(
-        EllipseCollection(widths=radius * 2, heights=radius * 2, angles=0, units='xy', edgecolors=color, facecolors='none', offsets=points[:, :2],
+        EllipseCollection(widths=radius * 2, heights=radius * 2, angles=0, units='xy', edgecolors=color,
+                          facecolors='none', offsets=points[:, :2],
                           offset_transform=ax.transData))
-    ax.scatter(points[:, 0], points[:, 1], color=color, marker='+')
+    ax.scatter(points[:, 0], points[:, 1], color=color)
 
 
-def draw_car(start: Tuple[float, float, float], car_dimensions: CarDimensions, ax, color='b'):
+def draw_car(start: Tuple[float, float, float], car_dimensions: CarDimensions, ax, color='b',
+             draw_collision_circles=False):
     width, length = car_dimensions.bounding_box_size
 
     c_x, c_y, theta = start
@@ -35,4 +91,8 @@ def draw_car(start: Tuple[float, float, float], car_dimensions: CarDimensions, a
     circle_center_mtx = create_2d_transform_mtx(*start)
     circle_centers = transform_2d_pts(start[2], circle_center_mtx, car_dimensions.circle_centers)
 
-    ax.scatter(circle_centers[:, 0], circle_centers[:, 1], color=color)
+    ax.scatter([start[0]], [start[1]], color=color)
+
+    if draw_collision_circles:
+        draw_circles(circle_centers, radius=car_dimensions.radius, ax=ax, color=color)
+        ax.scatter(circle_centers[:, 0], circle_centers[:, 1], color=color)
