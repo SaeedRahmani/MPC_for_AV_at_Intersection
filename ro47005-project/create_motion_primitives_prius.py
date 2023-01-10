@@ -9,6 +9,14 @@ from urdfenvs.robots.prius import Prius
 
 from lib.motion_primitive import MotionPrimitive
 
+CONFIGURATIONS: List[MotionPrimitive] = [
+    MotionPrimitive(n_seconds=0.3, forward_speed=8.3, steering_angle=0., name='straight'),
+    MotionPrimitive(n_seconds=0.3, forward_speed=8.3, steering_angle=0.1, name='left1'),
+    MotionPrimitive(n_seconds=0.3, forward_speed=8.3, steering_angle=0.2, name='left2'),
+    MotionPrimitive(n_seconds=0.3, forward_speed=8.3, steering_angle=-0.1, name='right1'),
+    MotionPrimitive(n_seconds=0.3, forward_speed=8.3, steering_angle=-0.2, name='right2'),
+]
+
 
 def run_prius(forward_speed: float, steering_angle: float, n_seconds=1., render=False):
     DT = 0.005
@@ -87,13 +95,6 @@ def run_prius(forward_speed: float, steering_angle: float, n_seconds=1., render=
 # 'velocity' = 3x1 with [xdot, ydot, orientationdot]
 # 'steering' = 1x1 with [steering_angle]
 if __name__ == "__main__":
-    CONFIGURATIONS: List[MotionPrimitive] = [
-        MotionPrimitive(n_seconds=0.3, forward_speed=8.3, steering_angle=0., name='straight'),
-        MotionPrimitive(n_seconds=0.3, forward_speed=8.3, steering_angle=0.1, name='left1'),
-        MotionPrimitive(n_seconds=0.3, forward_speed=8.3, steering_angle=0.2, name='left2'),
-        MotionPrimitive(n_seconds=0.3, forward_speed=8.3, steering_angle=-0.1, name='right1'),
-        MotionPrimitive(n_seconds=0.3, forward_speed=8.3, steering_angle=-0.2, name='right2'),
-    ]
 
     for mp in tqdm(CONFIGURATIONS):
         points = run_prius(

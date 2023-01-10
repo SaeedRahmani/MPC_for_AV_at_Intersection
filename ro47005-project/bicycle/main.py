@@ -14,8 +14,9 @@ class Bicycle():
         self.delta = 0
         self.beta = 0
 
-        self.L = 2
-        self.lr = 1.2
+        # TO DO: Tune this parameters
+        self.L = 1.45 + 0.627868
+        self.lr = 1.45
         self.w_max = 1.22
 
         self.sample_time = 0.01
@@ -40,7 +41,7 @@ class Bicycle(Bicycle):
             w = max(w, -self.w_max)
 
         # sampling time
-        t_sample = 10e-3
+        t_sample = 5e-3
 
         # implementing the differential equations
         xc_dot = v * np.cos(self.theta + self.beta)
