@@ -15,8 +15,9 @@ class Bicycle():
         self.beta = 0
 
         # TO DO: Tune this parameters
-        self.L = 1.45 + 0.627868
-        self.lr = 1.45
+        self.scale_factor = 0.3
+        self.L = (1.45 + 1.41) * self.scale_factor
+        self.lr = 1.45 * self.scale_factor
         self.w_max = 1.22
 
         self.sample_time = 0.01
