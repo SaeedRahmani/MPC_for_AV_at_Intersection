@@ -10,11 +10,11 @@ from urdfenvs.robots.prius import Prius
 from lib.motion_primitive import MotionPrimitive
 
 CONFIGURATIONS: List[MotionPrimitive] = [
-    MotionPrimitive(n_seconds=0.3, forward_speed=8.3, steering_angle=0., name='straight'),
-    MotionPrimitive(n_seconds=0.3, forward_speed=8.3, steering_angle=0.1, name='left1'),
-    MotionPrimitive(n_seconds=0.3, forward_speed=8.3, steering_angle=0.2, name='left2'),
-    MotionPrimitive(n_seconds=0.3, forward_speed=8.3, steering_angle=-0.1, name='right1'),
-    MotionPrimitive(n_seconds=0.3, forward_speed=8.3, steering_angle=-0.2, name='right2'),
+    MotionPrimitive(n_seconds=0.2, forward_speed=8.3, steering_angle=0., name='straight'),
+    MotionPrimitive(n_seconds=0.2, forward_speed=8.3, steering_angle=0.1, name='left1'),
+    MotionPrimitive(n_seconds=0.2, forward_speed=8.3, steering_angle=0.2, name='left2'),
+    MotionPrimitive(n_seconds=0.2, forward_speed=8.3, steering_angle=-0.1, name='right1'),
+    MotionPrimitive(n_seconds=0.2, forward_speed=8.3, steering_angle=-0.2, name='right2'),
 ]
 
 
@@ -106,7 +106,7 @@ if __name__ == "__main__":
 
         points = np.array(points)
 
-        file_name = f'./data/motion_primitives/{mp.name}.pkl'
+        file_name = f'./data/motion_primitives_prius/{mp.name}.pkl'
 
         # compute total length
         mp.total_length = np.linalg.norm(points[:-1, :2] - points[1:, :2], axis=1).sum()
