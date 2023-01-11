@@ -176,27 +176,12 @@ def get_nparray_from_matrix(x):
     return np.array(x).flatten()
 
 
-def calc_nearest_index(state, cx, cy, cyaw, pind):
+def calc_nearest_index(state, cx, cy, pind):
+    dx = cx[pind:] - state.x
+    dy = cy[pind:] - state.y
 
-    dx = [state.x - icx for icx in cx[pind:(pind + N_IND_SEARCH)]]
-    dy = [state.y - icy for icy in cy[pind:(pind + N_IND_SEARCH)]]
-
-    d = [idx ** 2 + idy ** 2 for (idx, idy) in zip(dx, dy)]
-
-    mind = min(d)
-
-    ind = d.index(mind) + pind
-
-    mind = math.sqrt(mind)
-
-    dxl = cx[ind] - state.x
-    dyl = cy[ind] - state.y
-
-    angle = pi_2_pi(cyaw[ind] - math.atan2(dyl, dxl))
-    if angle < 0:
-        mind *= -1
-
-    return ind, mind
+    d = dx ** 2 + dy ** 2
+    return np.argmin(d) + pind
 
 
 def predict_motion(x0, oa, od, xref):
@@ -226,7 +211,7 @@ def iterative_linear_mpc_control(xref, x0, dref, oa, od, reached_end):
 
     for i in range(MAX_ITER):
         xbar = predict_motion(x0, oa, od, xref)
-        poa, pod = oa[:], od[:]
+        poa, pod = oa, od
         oa, od, ox, oy, oyaw, ov = linear_mpc_control(xref, xbar, x0, dref, reached_end)
         du = sum(abs(oa - poa)) + sum(abs(od - pod))  # calc u change value
         if du <= DU_TH:
@@ -265,19 +250,17 @@ def linear_mpc_control(xref, xbar, x0, dref, reached_end):
 
         if t < (T - 1):
             cost += cvxpy.quad_form(u[:, t + 1] - u[:, t], Rd)
-            constraints += [cvxpy.abs(u[1, t + 1] - u[1, t]) <=
-                            MAX_DSTEER * DT]
+            constraints += [cvxpy.abs(u[1, t + 1] - u[1, t]) <= MAX_DSTEER * DT]
 
     cost += cvxpy.quad_form(xref[:, T] - x[:, T], Qf)
 
     constraints += [x[:, 0] == x0]
     constraints += [x[2, :] <= MAX_SPEED]
     constraints += [x[2, :] >= MIN_SPEED]
-    constraints += [u[0, :] <= MAX_ACCEL]
+    constraints += [cvxpy.abs(u[0, :]) <= MAX_ACCEL]
     constraints += [cvxpy.abs(u[1, :]) <= MAX_STEER]
 
     if reached_end:
-        constraints += [u[0, -1] == 0]
         constraints += [x[2, -1] == 0]
 
     prob = cvxpy.Problem(cvxpy.Minimize(cost), constraints)
@@ -292,25 +275,25 @@ def linear_mpc_control(xref, xbar, x0, dref, reached_end):
         odelta = get_nparray_from_matrix(u.value[1, :])
 
     else:
-        print("Error: Cannot solve mpc..")
-        oa, odelta, ox, oy, oyaw, ov = None, None, None, None, None, None
+        raise Exception("Error: Cannot solve mpc...")
+        # oa, odelta, ox, oy, oyaw, ov = None, None, None, None, None, None
 
     return oa, odelta, ox, oy, oyaw, ov
 
 
-def calc_ref_trajectory(state, cx, cy, cyaw, ck, sp, dl, pind):
+def calc_ref_trajectory(state, cx, cy, cyaw, dl, pind, ov):
     xref = np.zeros((NX, T + 1))
     dref = np.zeros((1, T + 1))
     ncourse = len(cx)
 
-    ind, _ = calc_nearest_index(state, cx, cy, cyaw, pind)
+    ind = calc_nearest_index(state, cx, cy, pind)
 
     if pind >= ind:
         ind = pind
 
     xref[0, 0] = cx[ind]
     xref[1, 0] = cy[ind]
-    xref[2, 0] = sp[ind]
+    # xref[2, 0] = sp[ind]
     xref[3, 0] = cyaw[ind]
     dref[0, 0] = 0.0  # steer operational point should be 0
 
@@ -325,13 +308,13 @@ def calc_ref_trajectory(state, cx, cy, cyaw, ck, sp, dl, pind):
         if (ind + dind) < ncourse - 1:
             xref[0, i] = cx[ind + dind]
             xref[1, i] = cy[ind + dind]
-            xref[2, i] = sp[ind + dind]
+            # xref[2, i] = sp[ind + dind]
             xref[3, i] = cyaw[ind + dind]
             dref[0, i] = 0.0
         else:
             xref[0, i] = cx[ncourse - 1]
             xref[1, i] = cy[ncourse - 1]
-            xref[2, i] = sp[ncourse - 1]
+            # xref[2, i] = sp[ncourse - 1]
             xref[3, i] = cyaw[ncourse - 1]
             dref[0, i] = 0.0
             reached_end = True
@@ -359,14 +342,13 @@ def check_goal(state, goal, tind, nind):
     return False
 
 
-def do_simulation(cx, cy, cyaw, ck, sp, dl, initial_state):
+def do_simulation(cx, cy, cyaw, ck, dl, initial_state):
     """
     Simulation
     cx: course x position list
     cy: course y position list
     cy: course yaw position list
     ck: course curvature list
-    sp: speed profile
     dl: course tick [m]
     """
 
@@ -388,7 +370,7 @@ def do_simulation(cx, cy, cyaw, ck, sp, dl, initial_state):
     t = [0.0]
     d = [0.0]
     a = [0.0]
-    target_ind, _ = calc_nearest_index(state, cx, cy, cyaw, 0)
+    target_ind = calc_nearest_index(state, cx, cy, 0)
 
     odelta, oa = None, None
 
@@ -400,9 +382,10 @@ def do_simulation(cx, cy, cyaw, ck, sp, dl, initial_state):
         nonlocal should_terminate
         should_terminate = True
 
+    ov = None
+
     while not should_terminate and MAX_TIME >= time:
-        xref, target_ind, dref, reached_end = calc_ref_trajectory(
-            state, cx, cy, cyaw, ck, sp, dl, target_ind)
+        xref, target_ind, dref, reached_end = calc_ref_trajectory(state, cx, cy, cyaw, dl, target_ind, ov)
 
         x0 = [state.x, state.y, state.v, state.yaw]  # current state
 
@@ -434,11 +417,13 @@ def do_simulation(cx, cy, cyaw, ck, sp, dl, initial_state):
             plt.cla()
             # for stopping simulation with the esc key.
             if ox is not None:
-                plt.plot(ox, oy, "xr", label="MPC")
+                plt.plot(ox, oy, "+r", label="MPC")
             plt.plot(cx, cy, "-r", label="course")
             plt.plot(x, y, "ob", label="trajectory")
-            plt.plot(xref[0, :], xref[1, :], "xk", label="xref")
+            plt.plot(xref[0, :], xref[1, :], "+k", label="xref")
             plt.plot(cx[target_ind], cy[target_ind], "xg", label="target")
+            for i in range(T):
+                plt.plot([xref[0, i], ox[i]], [xref[1, i], oy[i]], c='k')
             plot_car(state.x, state.y, state.yaw, steer=di)
             plt.axis("equal")
             plt.grid(True)
@@ -447,35 +432,6 @@ def do_simulation(cx, cy, cyaw, ck, sp, dl, initial_state):
             plt.pause(0.0001)
 
     return t, x, y, yaw, v, d, a
-
-
-def calc_speed_profile(cx, cy, cyaw, target_speed):
-
-    speed_profile = [target_speed] * len(cx)
-    direction = 1.0  # forward
-
-    # Set stop point
-    for i in range(len(cx) - 1):
-        dx = cx[i + 1] - cx[i]
-        dy = cy[i + 1] - cy[i]
-
-        move_direction = math.atan2(dy, dx)
-
-        if dx != 0.0 and dy != 0.0:
-            dangle = abs(pi_2_pi(move_direction - cyaw[i]))
-            if dangle >= math.pi / 4.0:
-                direction = -1.0
-            else:
-                direction = 1.0
-
-        if direction != 1.0:
-            speed_profile[i] = - target_speed
-        else:
-            speed_profile[i] = target_speed
-
-    speed_profile[-1] = 0.0
-
-    return speed_profile
 
 
 def smooth_yaw(yaw):
@@ -508,13 +464,12 @@ def main(cx, cy, cyaw, ck = 0.):
     print(__file__ + " start!!")
 
     dl = 0.0451 / 0.3  # course tick
-    sp = calc_speed_profile(cx, cy, cyaw, TARGET_SPEED)
     # sp = 8.33 * (10/3)
 
     initial_state = State(x=cx[0], y=cy[0], yaw=cyaw[0], v=0.0)
 
     t, x, y, yaw, v, d, a = do_simulation(
-        cx, cy, cyaw, ck, sp, dl, initial_state)
+        cx, cy, cyaw, ck, dl, initial_state)
 
     if show_animation:  # pragma: no cover
         plt.close("all")
@@ -541,12 +496,10 @@ def main2():
     dl = 0.0451 / 0.3  # course tick
     cx, cy, cyaw, ck = get_straight_course3(dl)
 
-    sp = calc_speed_profile(cx, cy, cyaw, TARGET_SPEED)
-
     initial_state = State(x=cx[0], y=cy[0], yaw=0.0, v=0.0)
 
     t, x, y, yaw, v, d, a = do_simulation(
-        cx, cy, cyaw, ck, sp, dl, initial_state)
+        cx, cy, cyaw, ck, dl, initial_state)
 
     if show_animation:  # pragma: no cover
         plt.close("all")
