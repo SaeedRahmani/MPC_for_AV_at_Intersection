@@ -21,7 +21,8 @@ class MotionPrimitive:
 
 
 def load_motion_primitives() -> Dict[str, MotionPrimitive]:
-    DIR = Path('../data/motion_primitives_prius')
+    # DIR = Path('../data/motion_primitives_prius')
+    DIR = Path('../data/motion_primitives_bicycle_model')
 
     mps = {}
 

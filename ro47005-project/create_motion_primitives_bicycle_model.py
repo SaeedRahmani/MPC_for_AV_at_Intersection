@@ -13,11 +13,12 @@ def run_bicycle_model(forward_speed: float, steering_angle: float, n_seconds=1.)
 
     model = Bicycle()
     model.delta = steering_angle
+    model.theta = 0
     time = np.linspace(0, n_seconds, int(n_seconds / DT) + 1)
 
     points = []
     for i in time:
-        points.append(np.array([model.yc, model.xc]))
+        points.append(np.array([model.xc, model.yc, model.theta]))
         model.step(forward_speed, 0)
 
     points = np.array(points)
@@ -30,7 +31,7 @@ if __name__ == "__main__":
         points = run_bicycle_model(
             n_seconds=mp.n_seconds,
             forward_speed=mp.forward_speed,
-            steering_angle=-mp.steering_angle,
+            steering_angle=mp.steering_angle,
         )
 
         file_name = f'./data/motion_primitives_bicycle_model/{mp.name}.pkl'
