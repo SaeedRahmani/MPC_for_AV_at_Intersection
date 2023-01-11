@@ -1,15 +1,12 @@
-from matplotlib import pyplot as plt
-
 from envs.t_intersection import t_intersection
 from lib.car_dimensions import PriusDimensions, CarDimensions
 from lib.model_predictive_speed_and_steer_control import main
 from lib.motion_primitive import load_motion_primitives
 from lib.motion_primitive_search import MotionPrimitiveSearch
-from lib.plotting import draw_scenario, draw_astar_search_points
 
 if __name__ == '__main__':
     # fig, ax = plt.subplots()
-    for version in ['prius', 'bicycle_model']:
+    for version in ['bicycle_model']:
         mps = load_motion_primitives(version=version)
         scenario = t_intersection()
         car_dimensions: CarDimensions = PriusDimensions(skip_back_circle_collision_checking=False)

@@ -9,19 +9,19 @@ import numpy as np
 
 NX = 4  # x = x, y, v, yaw
 NU = 2  # a = [accel, steer]
-T = 5  # horizon length
+T = 30  # horizon length
 
 # mpc parameters
 R = np.diag([0.01, 0.01])  # input cost matrix
 Rd = np.diag([0.01, 1.0])  # input difference cost matrix
-Q = np.diag([1.0, 1.0, 0.5, 0.5])  # state cost matrix
+Q = np.diag([1.0, 1.0, 0., 0.5])  # state cost matrix
 Qf = Q  # state final matrix
 GOAL_DIS = 1.5  # goal distance
 STOP_SPEED = 0.5 / 3.6  # stop speed
 MAX_TIME = 30.0  # max simulation time
 
 # iterative paramter
-MAX_ITER = 3  # Max iteration
+MAX_ITER = 1  # Max iteration
 DU_TH = 0.1  # iteration finish param
 
 TARGET_SPEED = 30.0 / 3.6  # [m/s] target speed
@@ -41,7 +41,7 @@ WB = 2.5  # [m]
 MAX_STEER = np.deg2rad(45.0)  # maximum steering angle [rad]
 MAX_DSTEER = np.deg2rad(30.0)  # maximum steering speed [rad/s]
 MAX_SPEED = 55.0 / 3.6  # maximum speed [m/s]
-MIN_SPEED = -20.0 / 3.6  # minimum speed [m/s]
+MIN_SPEED = 0.  # minimum speed [m/s]
 MAX_ACCEL = 1.0  # maximum accel [m/ss]
 
 show_animation = True
@@ -215,7 +215,7 @@ def predict_motion(x0, oa, od, xref):
     return xbar
 
 
-def iterative_linear_mpc_control(xref, x0, dref, oa, od):
+def iterative_linear_mpc_control(xref, x0, dref, oa, od, reached_end):
     """
     MPC contorl with updating operational point iteraitvely
     """
@@ -227,7 +227,7 @@ def iterative_linear_mpc_control(xref, x0, dref, oa, od):
     for i in range(MAX_ITER):
         xbar = predict_motion(x0, oa, od, xref)
         poa, pod = oa[:], od[:]
-        oa, od, ox, oy, oyaw, ov = linear_mpc_control(xref, xbar, x0, dref)
+        oa, od, ox, oy, oyaw, ov = linear_mpc_control(xref, xbar, x0, dref, reached_end)
         du = sum(abs(oa - poa)) + sum(abs(od - pod))  # calc u change value
         if du <= DU_TH:
             break
@@ -237,13 +237,14 @@ def iterative_linear_mpc_control(xref, x0, dref, oa, od):
     return oa, od, ox, oy, oyaw, ov
 
 
-def linear_mpc_control(xref, xbar, x0, dref):
+def linear_mpc_control(xref, xbar, x0, dref, reached_end):
     """
     linear mpc control
     xref: reference point
     xbar: operational point
     x0: initial state
     dref: reference steer angle
+    :param reached_end:
     """
 
     x = cvxpy.Variable((NX, T + 1))
@@ -272,8 +273,12 @@ def linear_mpc_control(xref, xbar, x0, dref):
     constraints += [x[:, 0] == x0]
     constraints += [x[2, :] <= MAX_SPEED]
     constraints += [x[2, :] >= MIN_SPEED]
-    constraints += [cvxpy.abs(u[0, :]) <= MAX_ACCEL]
+    constraints += [u[0, :] <= MAX_ACCEL]
     constraints += [cvxpy.abs(u[1, :]) <= MAX_STEER]
+
+    if reached_end:
+        constraints += [u[0, -1] == 0]
+        constraints += [x[2, -1] == 0]
 
     prob = cvxpy.Problem(cvxpy.Minimize(cost), constraints)
     prob.solve(solver=cvxpy.ECOS, verbose=False)
@@ -311,11 +316,13 @@ def calc_ref_trajectory(state, cx, cy, cyaw, ck, sp, dl, pind):
 
     travel = 0.0
 
+    reached_end = False
+
     for i in range(T + 1):
-        travel += abs(state.v) * DT
+        travel += abs(max(state.v, 5 / 3.6)) * DT
         dind = int(round(travel / dl))
 
-        if (ind + dind) < ncourse:
+        if (ind + dind) < ncourse - 1:
             xref[0, i] = cx[ind + dind]
             xref[1, i] = cy[ind + dind]
             xref[2, i] = sp[ind + dind]
@@ -327,8 +334,9 @@ def calc_ref_trajectory(state, cx, cy, cyaw, ck, sp, dl, pind):
             xref[2, i] = sp[ncourse - 1]
             xref[3, i] = cyaw[ncourse - 1]
             dref[0, i] = 0.0
+            reached_end = True
 
-    return xref, ind, dref
+    return xref, ind, dref, reached_end
 
 
 def check_goal(state, goal, tind, nind):
@@ -386,14 +394,20 @@ def do_simulation(cx, cy, cyaw, ck, sp, dl, initial_state):
 
     cyaw = smooth_yaw(cyaw)
 
-    while MAX_TIME >= time:
-        xref, target_ind, dref = calc_ref_trajectory(
+    should_terminate = False
+
+    def terminate_early():
+        nonlocal should_terminate
+        should_terminate = True
+
+    while not should_terminate and MAX_TIME >= time:
+        xref, target_ind, dref, reached_end = calc_ref_trajectory(
             state, cx, cy, cyaw, ck, sp, dl, target_ind)
 
         x0 = [state.x, state.y, state.v, state.yaw]  # current state
 
         oa, odelta, ox, oy, oyaw, ov = iterative_linear_mpc_control(
-            xref, x0, dref, oa, odelta)
+            xref, x0, dref, oa, odelta, reached_end)
 
         if odelta is not None:
             di, ai = odelta[0], oa[0]
@@ -413,12 +427,12 @@ def do_simulation(cx, cy, cyaw, ck, sp, dl, initial_state):
             print("Goal")
             break
 
+        plt.gcf().canvas.mpl_connect('key_release_event',
+                                     lambda event: [terminate_early() if event.key == 'escape' else None])
+        plt.gcf().canvas.mpl_connect('close_event', lambda event: terminate_early())
         if show_animation:  # pragma: no cover
             plt.cla()
             # for stopping simulation with the esc key.
-            plt.gcf().canvas.mpl_connect('key_release_event',
-                                         lambda event: [exit(0) if event.key == 'escape' else None])
-            plt.gcf().canvas.mpl_connect('close_event', lambda event: exit(0))
             if ox is not None:
                 plt.plot(ox, oy, "xr", label="MPC")
             plt.plot(cx, cy, "-r", label="course")
