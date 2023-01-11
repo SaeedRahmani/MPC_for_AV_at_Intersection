@@ -148,7 +148,7 @@ class MotionPrimitiveSearch:
             mp_name = self._points_to_mp_names[p1, p2]
 
             # transform trajectory (relative to p1) to world space
-            points_this = self.motion_primitive_at(mp_name=mp_name, configuration=p1)
+            points_this = self.motion_primitive_at(mp_name=mp_name, configuration=p1)[:-1]
             points.append(points_this)
 
         # get the whole trajectory
