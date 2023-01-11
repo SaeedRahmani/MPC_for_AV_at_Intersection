@@ -12,14 +12,13 @@ def run_bicycle_model(forward_speed: float, steering_angle: float, n_seconds=1.)
     DT = 0.005
 
     model = Bicycle()
-    model.delta = steering_angle
-    model.theta = 0
+    # model.theta = 0
     time = np.linspace(0, n_seconds, int(n_seconds / DT) + 1)
 
     points = []
     for i in time:
         points.append(np.array([model.xc, model.yc, model.theta]))
-        model.step(forward_speed, 0)
+        model.step(forward_speed, steering_angle)
 
     points = np.array(points)
 

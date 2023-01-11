@@ -20,9 +20,13 @@ class MotionPrimitive:
     """The motion primitive (i.e. array of points) itself"""
 
 
-def load_motion_primitives() -> Dict[str, MotionPrimitive]:
-    # DIR = Path('../data/motion_primitives_prius')
-    DIR = Path('../data/motion_primitives_bicycle_model')
+def load_motion_primitives(version="prius") -> Dict[str, MotionPrimitive]:
+    if version == "prius":
+        DIR = Path('../data/motion_primitives_prius')
+    elif version == "bicycle_model":
+        DIR = Path('../data/motion_primitives_bicycle_model')
+    else:
+        raise"Motion primitives version not recognized!"
 
     mps = {}
 
