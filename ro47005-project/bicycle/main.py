@@ -12,7 +12,6 @@ class Bicycle():
         self.yc = 0
         self.theta = 0
         self.delta = 0
-
         self.L = 2
 
     def reset(self):
