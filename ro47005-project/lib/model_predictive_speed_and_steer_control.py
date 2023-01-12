@@ -14,18 +14,15 @@ T = 14  # horizon length
 # mpc parameters
 R = np.diag([0.01, 0.01])  # input cost matrix
 Rd = np.diag([0.01, 1.0])  # input difference cost matrix
-Q = np.diag([1.0, 1.0, 0., 0.5])  # state cost matrix
-Qf = Q  # state final matrix
+Q_v_yaw = np.diag([0., 0.5])  # state cost matrix [v, yaw]
+Qf = np.diag([1.0, 1.0, 0., 0.5]) * 10.  # state final matrix [x, y, v, yaw]
 GOAL_DIS = 1.5  # goal distance
 STOP_SPEED = 0.5 / 3.6  # stop speed
 MAX_TIME = 13.0  # max simulation time
 
 # iterative paramter
-MAX_ITER = 2  # Max iteration
+MAX_ITER = 1  # Max iteration
 DU_TH = 0.1  # iteration finish param
-
-TARGET_SPEED = 20.0 / 3.6  # [m/s] target speed
-N_IND_SEARCH = 2 * T  # Search index number
 
 DT = 0.2  # [s] time tick
 
@@ -229,7 +226,16 @@ def iterative_linear_mpc_control(x0, oa, od, state, cx, cy, cyaw, dl, target_ind
     # else:
     #     print("Iterative is max iter")
 
-    return oa, od, ox, oy, oyaw, ov, xref
+    return oa, od, ox, oy, oyaw, ov, xref, target_ind
+
+
+def get_xy_cost_mtx_for_orientation(angle: float):
+    c = np.cos(angle)
+    s = np.sin(angle)
+    return np.array([
+        [c ** 2, c * s],
+        [c * s, s ** 2]
+    ])
 
 
 def linear_mpc_control(xref, xbar, x0, dref, reaches_end):
@@ -248,21 +254,32 @@ def linear_mpc_control(xref, xbar, x0, dref, reaches_end):
     cost = 0.0
     constraints = []
 
-    for t in range(T):
-        cost += cvxpy.quad_form(u[:, t], R)
+    for t in range(T + 1):
+        if t > 0:
+            if not reaches_end[t]:
+                # penalize difference from reference perpendicular to yaw strongly
+                ref_yaw_perp = xref[3, t] + 0.5 * np.pi
+                cost += cvxpy.quad_form(xref[:2, t] - x[:2, t], get_xy_cost_mtx_for_orientation(ref_yaw_perp) * 10.)
 
-        if t != 0:
-            cost += cvxpy.quad_form(xref[:, t] - x[:, t], Q)
+                # penalize difference from reference parallel to yaw weakly
+                ref_yaw = xref[3, t]
+                cost += cvxpy.quad_form(xref[:2, t] - x[:2, t], get_xy_cost_mtx_for_orientation(ref_yaw) * 1.0)
 
-        A, B, C = get_linear_model_matrix(
-            xbar[2, t], xbar[3, t], dref[0, t])
-        constraints += [x[:, t + 1] == A @ x[:, t] + B @ u[:, t] + C]
+                # penalize velocity and yaw itself
+                cost += cvxpy.quad_form(xref[2:, t] - x[2:, t], Q_v_yaw)
+            else:
+                cost += cvxpy.quad_form(xref[:, t] - x[:, t], Qf)
+
+        if t < T:
+            cost += cvxpy.quad_form(u[:, t], R)
+
+            A, B, C = get_linear_model_matrix(
+                xbar[2, t], xbar[3, t], dref[0, t])
+            constraints += [x[:, t + 1] == A @ x[:, t] + B @ u[:, t] + C]
 
         if t < (T - 1):
             cost += cvxpy.quad_form(u[:, t + 1] - u[:, t], Rd)
             constraints += [cvxpy.abs(u[1, t + 1] - u[1, t]) <= MAX_DSTEER * DT]
-
-    cost += cvxpy.quad_form(xref[:, T] - x[:, T], Qf)
 
     constraints += [x[:, 0] == x0]
     constraints += [x[2, :] <= MAX_SPEED]
@@ -271,9 +288,6 @@ def linear_mpc_control(xref, xbar, x0, dref, reaches_end):
     constraints += [u[0, :] >= MIN_ACCEL]
     constraints += [cvxpy.abs(u[1, :]) <= MAX_STEER]
 
-    # if reaches_end:
-    #     constraints += [x[2, -1] == 0]
-    #
     prob = cvxpy.Problem(cvxpy.Minimize(cost), constraints)
     prob.solve(solver=cvxpy.ECOS, verbose=False)
 
@@ -313,7 +327,7 @@ def calc_ref_trajectory(state, cx, cy, cyaw, dl, start_idx, ov):
     # we skip the velocity - we don't need it (Q must have a 0 for it)
     xref[3, :T + 1] = cyaw[idx]
 
-    reaches_end = idx[-1] == ncourse - 1
+    reaches_end = idx == ncourse - 1
 
     return xref, start_idx, dref, reaches_end
 
@@ -381,7 +395,8 @@ def do_simulation(cx, cy, cyaw, ck, dl, initial_state):
     while not should_terminate and MAX_TIME >= time:
         x0 = [state.x, state.y, state.v, state.yaw]  # current state
 
-        oa, odelta, ox, oy, oyaw, ov, xref = iterative_linear_mpc_control(x0, oa, odelta, state, cx, cy, cyaw, dl, target_ind)
+        oa, odelta, ox, oy, oyaw, ov, xref, target_ind = iterative_linear_mpc_control(x0, oa, odelta, state, cx, cy,
+                                                                                      cyaw, dl, target_ind)
 
         if odelta is not None:
             di, ai = odelta[0], oa[0]
@@ -451,11 +466,9 @@ def call_path():
 
     return cx, cy, cyaw, ck
 
-def main(cx, cy, cyaw, ck = 0.):
-    print(__file__ + " start!!")
 
-    dl = 0.0451 / 0.3  # course tick
-    # sp = 8.33 * (10/3)
+def main(cx, cy, cyaw, ck=0., dl=0.0451 / 0.3):
+    print(__file__ + " start!!")
 
     initial_state = State(x=cx[0], y=cy[0], yaw=cyaw[0], v=0.0)
 
