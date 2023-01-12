@@ -107,7 +107,9 @@ if __name__ == "__main__":
     # Code to save the animation
     # FFwriter = animation.FFMpegWriter(fps=100)
     # ani.save('moving_obstacles_trajectory.mp4', writer=FFwriter)
-
+    start = mlines.Line2D([], [], color=colors[0], marker='o', ls='', label='Start point')
+    end = mlines.Line2D([], [], color=colors[-1], marker='o', ls='', label='End point')
+    plt.legend(handles=[start, end])
     plt.show()
 
     ################# Create animation: Not possible with changing colors
