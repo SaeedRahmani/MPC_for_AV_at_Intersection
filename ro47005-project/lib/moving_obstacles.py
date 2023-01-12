@@ -1,3 +1,4 @@
+import matplotlib.colors
 import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
 import matplotlib.animation as animation
@@ -35,11 +36,11 @@ class MovingObstacleTIntersection():
 
         return steering_angle
 
-    def step(self) -> Tuple[float, float, float]:
+    def step(self) -> Tuple[float, float, float, float, float]:
         steering_angle = 0 if self.turning is not True else self.steering_angle()
         self.model.step(self.forward_velocity, steering_angle)
 
-        return self.model.xc, self.model.yc, self.model.theta
+        return self.model.xc, self.model.yc, self.forward_velocity, self.model.theta, steering_angle
 
 
 if __name__ == "__main__":
@@ -48,35 +49,60 @@ if __name__ == "__main__":
                  MovingObstacleTIntersection(-1, False, 5),
                  MovingObstacleTIntersection(-1, True, 5)]
 
-    length = 600
+    length = 500  # steps in the simulation
     colors = np.array([np.zeros(length), np.linspace(0, 1, length), np.ones(length)]).T.astype(float)
+    positions = np.zeros((len(obstacles), length, 5))
 
-    positions = np.zeros((len(obstacles), length, 3))
-
+    # Run the simulation
     for t in range(length):  # 5 seconds, because dt of bicycle model is 10e-3
         for i_obs, obstacle in enumerate(obstacles):
             positions[i_obs, t] = obstacle.step()
 
     print(positions.shape)
 
-    # Create animation
+    ###################### Create scatter animation with changing colors
     fig, ax = plt.subplots()
 
     # Create the initial plot
     x0 = positions[:, 0, 0]
     y0 = positions[:, 0, 1]
-    mat, = ax.plot(x0, y0, 'o')
+    scat = ax.scatter(x0, y0)
+
+    # different color arrays
+    colors_array = []
+    combinations = [(0, 0), (0, 1), (1, 1)]
+    for i in range(6):
+        colors_array.append(
+            np.array([np.linspace(*combinations[i % 3], length), np.linspace(*combinations[(i + 1) % 3], length),
+                      np.linspace(*combinations[(i + 2) % 3], length)]).T.astype(float))
+
+    # Setting to True gives every obstacle a different color ranges, but it becomes really messy
+    # and somehow there are only 3 unique combinations
+    different_colors = False
+
 
     def animate(i):
         """ Function that is called for every animation frame """
-        x = positions[:, i, 0]
-        y = positions[:, i, 1]
-        mat.set_data(x, y)
-        return mat,
+        # Set x and y data...
+        interval = 5
+        if different_colors:
+            x = positions[:, :i + 1:interval, 0].flatten('C')
+            y = positions[:, :i + 1:interval, 1].flatten('C')
+        else:
+            x = positions[:, :i + 1:interval, 0].flatten('F')
+            y = positions[:, :i + 1:interval, 1].flatten('F')
+
+        scat.set_offsets(np.array([x, y]).T)
+        if different_colors:
+            scat.set_facecolors(np.vstack((colors_array[0][:i + 1:interval], colors_array[1][:i + 1:interval],
+                                           colors_array[2][:i + 1:interval], colors_array[5][:i + 1:interval])))
+        else:
+            scat.set_facecolors(np.repeat(colors[:i + 1:interval], positions.shape[0], axis=0))
+
 
     # Set the axis values
     ax.axis([-20, 20, -25, 5])
-    ani = animation.FuncAnimation(fig, animate, frames=600, interval=10e-3, repeat=True)
+    ani = animation.FuncAnimation(fig, animate, frames=600, interval=10e-3)
 
     # Code to save the animation
     # FFwriter = animation.FFMpegWriter(fps=100)
@@ -84,7 +110,34 @@ if __name__ == "__main__":
 
     plt.show()
 
-    # Create plot
+    ################# Create animation: Not possible with changing colors
+    # fig, ax = plt.subplots()
+    #
+    # # Create the initial plot
+    # x0 = positions[:, 0, 0]
+    # y0 = positions[:, 0, 1]
+    # mat, = ax.plot(x0, y0, 'o')
+    #
+    # def animate(i):
+    #     """ Function that is called for every animation frame """
+    #     interval = 5
+    #     x = positions[:, :i+1:interval, 0]
+    #     y = positions[:, :i+1:interval, 1]
+    #     mat.set_data(x, y)
+    #     mat.set_color((0, 0, 1))
+    #     return mat,
+    #
+    # # Set the axis values
+    # ax.axis([-20, 20, -25, 5])
+    # ani = animation.FuncAnimation(fig, animate, frames=600, interval=10e-3, repeat=True)
+
+    # Code to save the animation
+    # FFwriter = animation.FFMpegWriter(fps=100)
+    # ani.save('moving_obstacles_trajectory.mp4', writer=FFwriter)
+
+    # plt.show()
+
+    #################3 Create plot
     plt.figure()
     for position_obstacle in positions:
         plt.scatter(position_obstacle[:, 0], position_obstacle[:, 1], c=colors)
