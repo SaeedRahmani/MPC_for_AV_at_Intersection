@@ -17,7 +17,7 @@ def rad_to_deg(rad: float) -> float:
 
 
 def create_animation(ax, positions_car=None, positions_obstacles=None, draw_car=True, draw_car_center=True,
-                     draw_obstacles=True, draw_obstacles_center=True) -> Callable[[int], None]:
+                     draw_obstacles=True, draw_obstacles_center=True) -> Callable[[int], Tuple]:
     """
     Function that returns the animation function that is needed for matplotlib.animation.FuncAnimation.
     :param ax: The matplotlib object which contains the plot
@@ -86,27 +86,35 @@ def patch_value(center: np.ndarray, theta: float) -> Tuple[np.ndarray, float]:
 
 
 def animate_general(positions_car, positions_obstacles, car_point, car_patch, obs_points,
-                    obs_patches: List or None) -> Callable[[int], None]:
-    def animate(i):
+                    obs_patches: List or None) -> Callable[[int], Tuple]:
+    def animate(i) -> Tuple:
+        return_values = []
         if car_patch is not None or car_point is not None:
             car_i = positions_car[i][:2]
 
         if car_point is not None:
             car_point.set_data(*car_i)
             car_point.set_color((0, 0, 0))
+            return_values.append(car_point)
 
         if car_patch is not None:
             theta_car_i = positions_car[i, 2]
             car_patch.xy, car_patch.angle = patch_value(car_i, theta_car_i)
+            return_values.append(car_patch)
 
         if obs_points is not None:
             obs_points.set_offsets(positions_obstacles[:, i, :2])
             obs_points.set_facecolors((0, 0, 0))
+            return_values.append(obs_points)
 
         if obs_patches is not None:
             for idx, obs_patch in enumerate(obs_patches):
                 theta_obs_i = positions_obstacles[idx, i, 3]
                 obs_i = positions_obstacles[idx, i, :2]
                 obs_patch.xy, obs_patch.angle = patch_value(obs_i, theta_obs_i)
+                return_values.append(obs_patch)
+
+        # Return the objects to be able to set blit=True
+        return tuple(return_values)
 
     return animate

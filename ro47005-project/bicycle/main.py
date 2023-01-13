@@ -31,7 +31,7 @@ class Bicycle(Bicycle):
         # ==================================
 
         # sampling time
-        t_sample = 5e-3
+        t_sample = 10e-3
 
         # implementing the differential equations
         xc_dot = v * np.cos(self.theta)

@@ -6,14 +6,28 @@ import numpy as np
 from typing import Tuple
 
 from bicycle.main import Bicycle
+import warnings
 
 
-class MovingObstacleTIntersection():
-    def __init__(self, direction: int, turning: bool, speed: float):
+class MovingObstacleTIntersection:
+    def __init__(self, direction: int, turning: bool, speed: float, offset=None, dt=10e-3):
+        """
+        Function that creates moving obstacles
+        :param direction: positive for moving to the right, negative for moving to the left
+        :param turning: True for turning, False for going straight
+        :param speed: sets the forward speed and is not bounded
+        :param offset: sets the time in seconds it should start moving after the start of the simulation. None or 0 for no offset
+        :param dt: the dt used in the simulator. !WARNING! is 10e-3 in the Bicycle model
+        """
         self.direction = 1 if direction >= 0 else -1
         self.turning = turning
         self.forward_velocity = speed
         self.model = Bicycle()
+        self.offset = None if offset is None else offset if offset > 0 else None  # None except if offset > 0
+        self.dt = dt
+        if abs(dt - 10e-3) > 1e-6:
+            warnings.warn("The dt is most likely not compatible with the bicycle model!")
+        self.counter = 0
         if self.direction == 1:
             self.model.xc = -10
             self.model.yc = -1.25
@@ -38,9 +52,14 @@ class MovingObstacleTIntersection():
 
     def step(self) -> Tuple[float, float, float, float, float]:
         steering_angle = 0 if self.turning is not True else self.steering_angle()
-        self.model.step(self.forward_velocity, steering_angle)
+        if self.offset is None or self.counter > (self.offset / self.dt):
+            forward_velocity = self.forward_velocity
+        else:
+            forward_velocity = 0
+        self.model.step(forward_velocity, steering_angle)
 
-        return self.model.xc, self.model.yc, self.forward_velocity, self.model.theta, steering_angle
+        self.counter += 1
+        return self.model.xc, self.model.yc, forward_velocity, self.model.theta, steering_angle
 
 
 if __name__ == "__main__":
