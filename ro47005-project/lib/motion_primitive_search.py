@@ -5,7 +5,7 @@ import numpy as np
 from lib.a_star import AStar
 from lib.car_dimensions import CarDimensions
 from lib.linalg import create_2d_transform_mtx, transform_2d_pts, filter_trajectory_min_distance_points
-from lib.math import normalize_angle
+from lib.maths import normalize_angle
 from lib.motion_primitive import MotionPrimitive
 from lib.obstacles import check_collision
 from lib.scenario import Scenario
