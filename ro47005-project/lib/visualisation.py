@@ -2,8 +2,8 @@ import numpy as np
 from typing import Callable, List, Tuple
 import matplotlib.pyplot as plt
 
-width_car = 1  # m
-length_car = 2  # m
+width_car = 1.76 * 0.3  # m
+length_car = 4.54 * 0.3  # m
 
 
 def R_box(theta: float) -> np.ndarray:
