@@ -1,122 +1,157 @@
+import matplotlib.colors
+import matplotlib.pyplot as plt
+import matplotlib.lines as mlines
+import matplotlib.animation as animation
 import numpy as np
-import pybullet as p
-import os
-import lib
-from urdfenvs.robots import prius
+from typing import Tuple
 
-class MovingObstacleTIntersection:
-    def __init__(self, trajectory_type, dt, direction=None, speed=None, offset=None):
-        self.start_position = [-direction * 10, -direction * 1.25, 0]
-        self.start_orientation = p.getQuaternionFromEuler([0, 0, np.pi / 2 - direction * np.pi / 2])
-        self.dt = dt
-        self.direction = 1 if None else direction  # 1 for facing right, -1 for facing left
-        assert np.abs(self.direction) == 1, "direction should either be 1 or -1"
-        self.speed = 13.9 if None else speed  # 50 km/h
-        self.counter = 0 if offset is None else - int(offset / dt)
-        self.id = None
-        self.steps = None
-        self.traj_position = None
-        self.traj_orientation = None
-        self.done = False
-        # self.urdf = "/home/christiaan/gym_env_urdf/gym_envs_urdf/urdfenvs/robots/prius/prius.urdf"
-        self.urdf = os.path.join(os.path.dirname(prius.__file__), 'prius.urdf')
-        # self.urdf = '/home/christiaan/Robotics/2022-2023/Q2/RO47005_Planning_and_Decision_Making/ro47005-project/ro47005-project/lib/prius.urdf'
-        # Create trajectories
-        self.trajectory(trajectory_type, self.direction, self.speed)
+from bicycle.main import Bicycle
 
-    def add_env(self):
-        self.id = p.loadURDF(fileName=self.urdf,
-                             basePosition=self.start_position,
-                             baseOrientation=self.start_orientation,
-                             globalScaling=0.3,
-                             )
 
-    def trajectory(self, trajectory_type, direction, speed):
-        if trajectory_type == "straight":
-            self.trajectory_straight(direction, speed)
-        elif trajectory_type == "turn":
-            self.trajectory_turn(direction, speed)
+class MovingObstacleTIntersection():
+    def __init__(self, direction: int, turning: bool, speed: float):
+        self.direction = 1 if direction >= 0 else -1
+        self.turning = turning
+        self.forward_velocity = speed
+        self.model = Bicycle()
+        if self.direction == 1:
+            self.model.xc = -10
+            self.model.yc = -1.75
+            self.model.theta = 0 if self.direction == 1 else np.pi
+            self.x_turn = -5 if self.direction == 1 else 5
         else:
-            raise ValueError("No valid trajectory type chosen!")
+            self.model.xc = 10
+            self.model.yc = 1.75
+            self.model.theta = np.pi
+            self.x_turn = 5
 
-    def trajectory_straight(self, direction, speed):
-        """" Returns an array with all the points on the trajectory. """
-        distance = 20
-        self.steps = int(distance / (speed * self.dt))
-        self.traj_position = np.vstack(
-            (direction * np.linspace(0, distance, self.steps), np.zeros(self.steps),
-             np.zeros(self.steps))).T + self.start_position
-        self.traj_orientation = np.repeat(np.expand_dims(self.start_orientation, axis=0), self.steps, axis=0)
-
-    def trajectory_turn(self, direction, speed):
-        """ Returns an array with all the points on the trajectory. """
-        if direction == 1:
-            # part 1
-            distance1 = 7
-            steps1 = int(distance1 / (speed * self.dt))
-            positions1 = np.vstack(
-                (direction * np.linspace(0, distance1, steps1), np.zeros(steps1),
-                 np.zeros(steps1))).T + self.start_position
-            orientations1 = np.repeat(np.expand_dims(self.start_orientation, axis=0), steps1, axis=0)
-            # part 2 (corner)
-            corner_radius = 1.75
-            distance2 = corner_radius * np.pi / 2
-            steps2 = int(distance2 / (speed * self.dt))
-            angles = np.linspace(0, np.pi / 2, steps2)
-            positions2 = np.vstack((corner_radius * np.sin(angles), corner_radius * (np.cos(angles) - 1), np.zeros(steps2))).T + positions1[-1]
-            orientations2 = np.array([p.getQuaternionFromEuler([0, 0, -a]) for a in angles])
-            # part 3
-            distance3 = 7
-            steps3 = int(distance3 / (speed * self.dt))
-            positions3 = np.vstack((np.zeros(steps3), -np.linspace(0, distance3, steps3), np.zeros(steps3))).T + \
-                         positions2[-1]
-            orientations3 = np.repeat(np.expand_dims(orientations2[-1], axis=0), steps3, axis=0)
-
-            self.steps = steps1 + steps2 + steps3
-            self.traj_position = np.vstack((positions1, positions2, positions3))
-            self.traj_orientation = np.vstack((orientations1, orientations2, orientations3))
-        elif direction == -1:
-            # part 1
-            distance1 = 7
-            steps1 = int(distance1 / (speed * self.dt))
-            positions1 = np.vstack(
-                (direction * np.linspace(0, distance1, steps1), np.zeros(steps1),
-                 np.zeros(steps1))).T + self.start_position
-            orientations1 = np.repeat(np.expand_dims(self.start_orientation, axis=0), steps1, axis=0)
-            # part 2 (corner)
-            corner_radius = 4.25
-            distance2 = corner_radius * np.pi / 2
-            steps2 = int(distance2 / (speed * self.dt))
-            angles = np.linspace(0, np.pi / 2, steps2)
-            positions2 = np.vstack((-corner_radius * np.sin(angles), corner_radius * (np.cos(angles) - 1), np.zeros(steps2))).T + positions1[-1]
-            orientations2 = np.array([p.getQuaternionFromEuler([0, 0, a - np.pi]) for a in angles])
-            # part 3
-            distance3 = 7
-            steps3 = int(distance3 / (speed * self.dt))
-            positions3 = np.vstack((np.zeros(steps3), -np.linspace(0, distance3, steps3), np.zeros(steps3))).T + \
-                         positions2[-1]
-            orientations3 = np.repeat(np.expand_dims(orientations2[-1], axis=0), steps3, axis=0)
-
-            self.steps = steps1 + steps2 + steps3
-            self.traj_position = np.vstack((positions1, positions2, positions3))
-            self.traj_orientation = np.vstack((orientations1, orientations2, orientations3))
+    def steering_angle(self) -> float:
+        steering_angle = 0.  # rad
+        if self.direction == 1:
+            if self.model.xc >= self.x_turn and self.model.theta > (-np.pi / 2):
+                steering_angle = -0.3  # steering angle right (short turn)
         else:
-            raise NotImplementedError("Direction should either be 1 or -1 when trajectory_type=\'turn\'")
+            if self.model.xc <= self.x_turn and self.model.theta < (3 * np.pi / 2):
+                steering_angle = 0.3  # steering angle left (long turn)
 
-    def step(self):
-        """ Changes the position of the moving obstacle. Needs to be called in every timestep. """
-        if self.counter >= len(self.traj_position):
-            if self.done is not True:
-                p.removeBody(self.id)
-                self.done = True
-        elif self.counter < 0:
-            self.counter += 1
-        elif self.counter == 0:
-            self.add_env()
-            self.counter += 1
+        return steering_angle
+
+    def step(self) -> Tuple[float, float, float, float, float]:
+        steering_angle = 0 if self.turning is not True else self.steering_angle()
+        self.model.step(self.forward_velocity, steering_angle)
+
+        return self.model.xc, self.model.yc, self.forward_velocity, self.model.theta, steering_angle
+
+
+if __name__ == "__main__":
+    obstacles = [MovingObstacleTIntersection(1, True, 5),
+                 MovingObstacleTIntersection(1, False, 5),
+                 MovingObstacleTIntersection(-1, False, 5),
+                 MovingObstacleTIntersection(-1, True, 5)]
+
+    length = 500  # steps in the simulation
+    colors = np.array([np.zeros(length), np.linspace(0, 1, length), np.ones(length)]).T.astype(float)
+    positions = np.zeros((len(obstacles), length, 5))
+
+    # Run the simulation
+    for t in range(length):  # 5 seconds, because dt of bicycle model is 10e-3
+        for i_obs, obstacle in enumerate(obstacles):
+            positions[i_obs, t] = obstacle.step()
+
+    print(positions.shape)
+
+    ###################### Create scatter animation with changing colors
+    fig, ax = plt.subplots()
+
+    # Create the initial plot
+    x0 = positions[:, 0, 0]
+    y0 = positions[:, 0, 1]
+    scat = ax.scatter(x0, y0)
+
+    # different color arrays
+    colors_array = []
+    combinations = [(0, 0), (0, 1), (1, 1)]
+    for i in range(6):
+        colors_array.append(
+            np.array([np.linspace(*combinations[i % 3], length), np.linspace(*combinations[(i + 1) % 3], length),
+                      np.linspace(*combinations[(i + 2) % 3], length)]).T.astype(float))
+
+    # Setting to True gives every obstacle a different color ranges, but it becomes really messy
+    # and somehow there are only 3 unique combinations
+    different_colors = False
+
+
+    def animate(i):
+        """ Function that is called for every animation frame """
+        # Set x and y data...
+        interval = 5
+        if different_colors:
+            x = positions[:, :i + 1:interval, 0].flatten('C')
+            y = positions[:, :i + 1:interval, 1].flatten('C')
         else:
-            p.resetBasePositionAndOrientation(bodyUniqueId=self.id,
-                                              posObj=self.traj_position[self.counter],
-                                              ornObj=self.traj_orientation[self.counter],
-                                              )
-            self.counter += 1
+            x = positions[:, :i + 1:interval, 0].flatten('F')
+            y = positions[:, :i + 1:interval, 1].flatten('F')
+
+        scat.set_offsets(np.array([x, y]).T)
+        if different_colors:
+            scat.set_facecolors(np.vstack((colors_array[0][:i + 1:interval], colors_array[1][:i + 1:interval],
+                                           colors_array[2][:i + 1:interval], colors_array[5][:i + 1:interval])))
+        else:
+            scat.set_facecolors(np.repeat(colors[:i + 1:interval], positions.shape[0], axis=0))
+
+
+    # Set the axis values
+    ax.axis([-20, 20, -25, 5])
+    ani = animation.FuncAnimation(fig, animate, frames=600, interval=10e-3)
+
+    start = mlines.Line2D([], [], color=colors[0], marker='o', ls='', label='Start point')
+    end = mlines.Line2D([], [], color=colors[-1], marker='o', ls='', label='End point')
+    plt.legend(handles=[start, end])
+
+    # Code to save the animation
+    # FFwriter = animation.FFMpegWriter(fps=100)
+    # ani.save('moving_obstacles_trajectory.mp4', writer=FFwriter)
+
+    plt.show()
+
+    ################# Create animation: Not possible with changing colors
+    # fig, ax = plt.subplots()
+    #
+    # # Create the initial plot
+    # x0 = positions[:, 0, 0]
+    # y0 = positions[:, 0, 1]
+    # mat, = ax.plot(x0, y0, 'o')
+    #
+    # def animate(i):
+    #     """ Function that is called for every animation frame """
+    #     interval = 5
+    #     x = positions[:, :i+1:interval, 0]
+    #     y = positions[:, :i+1:interval, 1]
+    #     mat.set_data(x, y)
+    #     mat.set_color((0, 0, 1))
+    #     return mat,
+    #
+    # # Set the axis values
+    # ax.axis([-20, 20, -25, 5])
+    # ani = animation.FuncAnimation(fig, animate, frames=600, interval=10e-3, repeat=True)
+
+    # Code to save the animation
+    # FFwriter = animation.FFMpegWriter(fps=100)
+    # ani.save('moving_obstacles_trajectory.mp4', writer=FFwriter)
+
+    # plt.show()
+
+    #################3 Create plot
+    plt.figure()
+    for position_obstacle in positions:
+        plt.scatter(position_obstacle[:, 0], position_obstacle[:, 1], c=colors)
+    start = mlines.Line2D([], [], color=colors[0], marker='o', ls='', label='Start point')
+    end = mlines.Line2D([], [], color=colors[-1], marker='o', ls='', label='End point')
+    plt.legend(handles=[start, end])
+
+    plt.axis('equal')
+
+    # Code to save the plot
+    # plt.savefig('moving_obstacles_trajectory.png')
+
+    plt.show()
