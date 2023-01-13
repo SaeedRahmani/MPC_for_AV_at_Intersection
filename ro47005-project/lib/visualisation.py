@@ -37,7 +37,7 @@ def create_animation(ax, positions_car=None, positions_obstacles=None, draw_car=
     car_point = None
     if draw_car_center:
         # init the car center point
-        car_point, = ax.plot(*car_0, marker=(3, 0, 0), markersize=15q)
+        car_point, = ax.plot(*car_0, marker=(3, 0, 0), markersize=15)
         car_point.set_zorder(10)
 
     car_patch = None
