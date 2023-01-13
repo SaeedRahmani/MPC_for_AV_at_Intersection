@@ -29,24 +29,24 @@ class MovingObstacleTIntersection:
             warnings.warn("The dt is most likely not compatible with the bicycle model!")
         self.counter = 0
         if self.direction == 1:
-            self.model.xc = -10
-            self.model.yc = -1.25
+            self.model.xc = -30
+            self.model.yc = -3
             self.model.theta = 0
-            self.x_turn = -3
+            self.x_turn = -10
         else:
-            self.model.xc = 10
-            self.model.yc = 1.25
+            self.model.xc = 30
+            self.model.yc = 3
             self.model.theta = np.pi
-            self.x_turn = 3
+            self.x_turn = 12
 
     def steering_angle(self) -> float:
         steering_angle = 0.  # rad
         if self.direction == 1:
             if self.model.xc >= self.x_turn and self.model.theta > (-np.pi / 2):
-                steering_angle = -0.45  # steering angle right (short turn)
+                steering_angle = -0.38  # steering angle right (short turn)
         else:
             if self.model.xc <= self.x_turn and self.model.theta < (3 * np.pi / 2):
-                steering_angle = 0.2  # steering angle left (long turn)
+                steering_angle = 0.19  # steering angle left (long turn)
 
         return steering_angle
 

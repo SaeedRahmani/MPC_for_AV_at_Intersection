@@ -15,7 +15,7 @@ class Bicycle():
         self.beta = 0
 
         # TO DO: Tune this parameters
-        self.scale_factor = 0.3
+        self.scale_factor = 1
         self.L = (1.45 + 1.41) * self.scale_factor
 
     def reset(self):

@@ -1,9 +1,11 @@
 import numpy as np
 from typing import Callable, List, Tuple
 import matplotlib.pyplot as plt
+from matplotlib.markers import MarkerStyle
 
-width_car = 1.76 * 0.3  # m
-length_car = 4.54 * 0.3  # m
+from lib.car_dimensions import PriusDimensions
+
+width_car, length_car = PriusDimensions().bounding_box_size
 
 
 def R_box(theta: float) -> np.ndarray:
@@ -35,7 +37,7 @@ def create_animation(ax, positions_car=None, positions_obstacles=None, draw_car=
     car_point = None
     if draw_car_center:
         # init the car center point
-        car_point, = ax.plot(*car_0, 'o')
+        car_point, = ax.plot(*car_0, marker=(3, 0, 0), markersize=15q)
         car_point.set_zorder(10)
 
     car_patch = None
@@ -58,7 +60,7 @@ def create_animation(ax, positions_car=None, positions_obstacles=None, draw_car=
         # init the obstacle center points
         x_obs_o = positions_obstacles[:, 0, 0]
         y_obs_o = positions_obstacles[:, 0, 1]
-        obs_points = ax.scatter(x_obs_o, y_obs_o)
+        obs_points = ax.scatter(x_obs_o, y_obs_o, s=[200], marker=(3, 0, 90))
         obs_points.set_zorder(8)
 
     obs_patches = None
@@ -91,20 +93,31 @@ def animate_general(positions_car, positions_obstacles, car_point, car_patch, ob
         return_values = []
         if car_patch is not None or car_point is not None:
             car_i = positions_car[i][:2]
+            theta_car_i = positions_car[i, 2]
 
         if car_point is not None:
             car_point.set_data(*car_i)
             car_point.set_color((0, 0, 0))
+            car_point.set_marker((3, 0, rad_to_deg(theta_car_i)-90))
             return_values.append(car_point)
 
         if car_patch is not None:
-            theta_car_i = positions_car[i, 2]
             car_patch.xy, car_patch.angle = patch_value(car_i, theta_car_i)
             return_values.append(car_patch)
 
         if obs_points is not None:
             obs_points.set_offsets(positions_obstacles[:, i, :2])
             obs_points.set_facecolors((0, 0, 0))
+
+            # Change the triangle orientation
+            marker_paths = []
+            for idx in range(len(positions_obstacles)):
+                theta = rad_to_deg(positions_obstacles[idx, i, 3]) - 90
+                marker_path = MarkerStyle((3, 0, theta)).get_path().transformed(
+                    MarkerStyle((3, 0, theta)).get_transform())
+                marker_paths.append(marker_path)
+            obs_points.set_paths(marker_paths)
+
             return_values.append(obs_points)
 
         if obs_patches is not None:

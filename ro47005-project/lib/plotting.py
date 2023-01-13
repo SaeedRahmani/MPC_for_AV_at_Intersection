@@ -20,10 +20,10 @@ def draw_scenario(scenario: Scenario, mps: Dict[str, MotionPrimitive], car_dimen
                   draw_car2=True, draw_mps2=True, mp_name='right1'):
     if draw_obstacles:
         for obstacle in scenario.obstacles:
-            obstacle.draw(ax, color='b')
+            obstacle.draw(ax, color=(0.5, 0.5, 0.5))
 
     if draw_goal:
-        scenario.goal_area.draw(ax, color='r')
+        scenario.goal_area.draw(ax, color=(1, 0.8, 0.8))
         draw_point_arrow(scenario.goal_point, ax, color='r')
 
     # For Start Point:
