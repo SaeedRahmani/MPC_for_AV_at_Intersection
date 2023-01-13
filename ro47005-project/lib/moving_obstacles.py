@@ -16,23 +16,23 @@ class MovingObstacleTIntersection():
         self.model = Bicycle()
         if self.direction == 1:
             self.model.xc = -10
-            self.model.yc = -1.75
-            self.model.theta = 0 if self.direction == 1 else np.pi
-            self.x_turn = -5 if self.direction == 1 else 5
+            self.model.yc = -1.25
+            self.model.theta = 0
+            self.x_turn = -3
         else:
             self.model.xc = 10
-            self.model.yc = 1.75
+            self.model.yc = 1.25
             self.model.theta = np.pi
-            self.x_turn = 5
+            self.x_turn = 3
 
     def steering_angle(self) -> float:
         steering_angle = 0.  # rad
         if self.direction == 1:
             if self.model.xc >= self.x_turn and self.model.theta > (-np.pi / 2):
-                steering_angle = -0.3  # steering angle right (short turn)
+                steering_angle = -0.45  # steering angle right (short turn)
         else:
             if self.model.xc <= self.x_turn and self.model.theta < (3 * np.pi / 2):
-                steering_angle = 0.3  # steering angle left (long turn)
+                steering_angle = 0.2  # steering angle left (long turn)
 
         return steering_angle
 
@@ -49,7 +49,7 @@ if __name__ == "__main__":
                  MovingObstacleTIntersection(-1, False, 5),
                  MovingObstacleTIntersection(-1, True, 5)]
 
-    length = 500  # steps in the simulation
+    length = 600  # steps in the simulation
     colors = np.array([np.zeros(length), np.linspace(0, 1, length), np.ones(length)]).T.astype(float)
     positions = np.zeros((len(obstacles), length, 5))
 
@@ -67,6 +67,7 @@ if __name__ == "__main__":
     x0 = positions[:, 0, 0]
     y0 = positions[:, 0, 1]
     scat = ax.scatter(x0, y0)
+    mat, = ax.plot(x0, y0, 'o')
 
     # different color arrays
     colors_array = []
@@ -91,6 +92,10 @@ if __name__ == "__main__":
         else:
             x = positions[:, :i + 1:interval, 0].flatten('F')
             y = positions[:, :i + 1:interval, 1].flatten('F')
+            # x_car = ((i+1)%5) + 1
+            # y_car = 0
+            # mat.set_data(x_car, y_car)
+            # mat.set_color((1, 0, 0))
 
         scat.set_offsets(np.array([x, y]).T)
         if different_colors:
