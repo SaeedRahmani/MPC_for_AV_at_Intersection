@@ -19,7 +19,7 @@ def t_intersection(no_obstacles=False) -> Scenario:
     distance_center = corner_radius + width_road + width_traffic_island
     flip_start_position = False
     flip_goal_position = False
-    turn_left = False
+    turn_left = True
     allowed_goal_theta_difference = np.pi / 16
 
     if flip_goal_position and not flip_start_position:
