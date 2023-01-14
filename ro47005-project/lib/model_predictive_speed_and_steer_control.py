@@ -270,6 +270,7 @@ def linear_mpc_control(xref, xbar, x0, dref, reaches_end):
             else:
                 cost += cvxpy.quad_form(xref[:, t] - x[:, t], Qf)
 
+
         if t < T:
             cost += cvxpy.quad_form(u[:, t], R)
 
@@ -493,6 +494,8 @@ def main(cx, cy, cyaw, ck=0., dl=0.0451 / 0.3):
         plt.ylabel("Speed [kmh]")
 
         plt.show()
+
+    return x, y, yaw, v
 
 def main2():
     print(__file__ + " start!!")

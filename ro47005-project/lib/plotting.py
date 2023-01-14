@@ -71,12 +71,12 @@ def draw_point_arrow(point: Tuple[float, float, float], ax, color=None):
     ax.quiver(x, y, u, v, color=color)
 
 
-def draw_circles(points: np.ndarray, radius: float, ax, color=None):
+def draw_circles(points: np.ndarray, radius: float, ax, color=None, marker=None):
     ax.add_collection(
         EllipseCollection(widths=radius * 2, heights=radius * 2, angles=0, units='xy', edgecolors=color,
                           facecolors='none', offsets=points[:, :2],
                           offset_transform=ax.transData))
-    ax.scatter(points[:, 0], points[:, 1], color=color)
+    ax.scatter(points[:, 0], points[:, 1], color=color, marker=marker)
 
 
 def draw_car(start: Tuple[float, float, float], car_dimensions: CarDimensions, ax, color='b',

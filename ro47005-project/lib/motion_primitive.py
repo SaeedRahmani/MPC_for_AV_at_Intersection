@@ -22,7 +22,7 @@ class MotionPrimitive:
 
 def load_motion_primitives(version="prius") -> Dict[str, MotionPrimitive]:
     if version == "prius":
-        DIR = Path('../data/motion_primitives_prius')
+        DIR = Path('data/motion_primitives_prius')
     elif version == "bicycle_model":
         DIR = Path('../data/motion_primitives_bicycle_model')
     elif version == "bicycle_model_real_size":
@@ -32,7 +32,12 @@ def load_motion_primitives(version="prius") -> Dict[str, MotionPrimitive]:
 
     mps = {}
 
-    for filename in DIR.glob("*.pkl"):
+    files = list(DIR.glob("*.pkl"))
+
+    if len(files) == 0:
+        raise Exception("No motion primitives found.")
+
+    for filename in files:
         with open(filename, 'rb') as file:
             mp: MotionPrimitive = pickle.load(file)
             mps[mp.name] = mp

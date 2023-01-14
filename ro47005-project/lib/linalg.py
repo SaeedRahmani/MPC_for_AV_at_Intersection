@@ -54,35 +54,4 @@ def transform_2d_pts(theta: float, transform_mtx: np.ndarray, points: np.ndarray
         raise RuntimeError()
 
 
-def filter_trajectory_min_distance_points(points: np.ndarray, min_adjacent_distance: float,
-                                          keep_last_point: bool = True) -> np.ndarray:
-    """
-    For a trajectory represented as a set of points, filter the points such that in the filtered representation,
-    all adjacent points have at least `min_adjacent_distance` between them. Always keeps the first point.
-    :param points: (N, 2) or (N, 3) matrix of points
-    :param min_adjacent_distance: The minimum distance from the previous point to keep it.
-    :param keep_last_point: If true, always keeps the last point. (default: True)
-    :return: Filtered points matrix
-    """
-
-    assert 2 <= points.shape[1] <= 3
-
-    # compute distances between adjacent points
-    step_dists = np.linalg.norm(points[1:, :2] - points[:-1, :2], axis=1)
-    # add missing first zero back
-    step_dists = np.append(0., step_dists)
-
-    step_dists = np.floor(step_dists.cumsum() / min_adjacent_distance).astype(int)
-    mask = (step_dists[1:] - step_dists[:-1]) >= 1.  # where there is the step in value, we say True
-
-    # add missing first boolean back (and make it always True)
-    mask = np.append(True, mask)
-
-    if keep_last_point:
-        # make last boolean always True
-        mask[-1] = True
-
-    return points[mask].copy()
-
-
 
