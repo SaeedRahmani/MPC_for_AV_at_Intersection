@@ -1,8 +1,9 @@
-from typing import List, Union, Tuple
+from typing import List
 
 import numpy as np
 
 from lib.car_dimensions import CarDimensions
+from lib.simulation import State
 
 
 def shift_car_trajectory_by_objspace_offset(trajectory: np.ndarray,
@@ -81,3 +82,14 @@ def resample_curve(points: np.ndarray, dl: float,
         mask[-1] = True
 
     return points[mask].copy()
+
+
+def calc_nearest_index(state: State, cx: np.ndarray, cy: np.ndarray, start_index: int = 0) -> int:
+    dx = cx[start_index:] - state.x
+    dy = cy[start_index:] - state.y
+
+    d = dx ** 2 + dy ** 2
+    if len(d) > 0:
+        return np.argmin(d) + start_index
+    else:
+        return start_index

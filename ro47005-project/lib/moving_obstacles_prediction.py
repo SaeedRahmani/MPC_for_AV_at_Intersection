@@ -1,8 +1,10 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import math
+
+
 class MovingObstaclesPrediction:
-    def __init__(self, x, y, v, yaw, a, steering_angle):
+    def __init__(self, x, y, v, yaw, a, steering_angle, sample_time: float):
         self.x = x
         self.y = y
         self.v = v
@@ -11,6 +13,7 @@ class MovingObstaclesPrediction:
         self.steering_angle = steering_angle
         self.scale_factor = 0.3
         self.L = (1.45 + 1.41) * self.scale_factor
+        self.sample_time = sample_time
 
     def step(self, sample_time):
         ''' Function to predict 1 sample time step ahead'''
@@ -26,19 +29,17 @@ class MovingObstaclesPrediction:
         '''
         Function to predict state prediction for a specified time horizon
         '''
-        sample_time = 5e-3
-
-        t_data = np.arange(0, time_horizon, sample_time)  # array size (0, (time_end - 0) / sample_time)
+        t_data = np.arange(0, time_horizon, self.sample_time)  # array size (0, (time_end - 0) / sample_time)
         x_data = np.zeros_like(t_data)
         y_data = np.zeros_like(t_data)
         yaw_data = np.zeros_like(t_data)
 
         for time_index in range(0, len(t_data)):
-            x, y, v, yaw = self.step(sample_time)
+            x, y, v, yaw = self.step(self.sample_time)
             x_data[time_index] = x
             y_data[time_index] = y
             yaw_data[time_index] = yaw
-            t_data[time_index] = time_index * sample_time
+            t_data[time_index] = time_index * self.sample_time
 
         return x_data, y_data, yaw_data, t_data
 

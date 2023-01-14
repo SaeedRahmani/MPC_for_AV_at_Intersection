@@ -22,7 +22,7 @@ class MovingObstacleTIntersection:
         self.direction = 1 if direction >= 0 else -1
         self.turning = turning
         self.forward_velocity = speed
-        self.model = Bicycle()
+        self.model = Bicycle(sample_time=dt)
         self.offset = None if offset is None else offset if offset > 0 else None  # None except if offset > 0
         self.dt = dt
         if abs(dt - 10e-3) > 1e-6:
@@ -50,7 +50,7 @@ class MovingObstacleTIntersection:
 
         return steering_angle
 
-    def step(self) -> Tuple[float, float, float, float, float]:
+    def step(self) -> Tuple[float, float, float, float, float, float]:
         steering_angle = 0 if self.turning is not True else self.steering_angle()
         if self.offset is None or self.counter > (self.offset / self.dt):
             forward_velocity = self.forward_velocity
@@ -59,7 +59,11 @@ class MovingObstacleTIntersection:
         self.model.step(forward_velocity, steering_angle)
 
         self.counter += 1
-        return self.model.xc, self.model.yc, forward_velocity, self.model.theta, steering_angle
+        acceleration = 0.0
+        return self.model.xc, self.model.yc, forward_velocity, self.model.theta, acceleration, steering_angle
+
+    def get(self) -> Tuple[float, float, float]:
+        return self.model.xc, self.model.yc, self.model.theta
 
 
 if __name__ == "__main__":

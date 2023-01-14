@@ -10,6 +10,7 @@ import cvxpy
 import numpy as np
 
 from lib.simulation import State, update_state, DT, WB, MAX_SPEED, MIN_SPEED, MAX_STEER
+from lib.trajectories import calc_nearest_index
 
 NX = 4  # x = x, y, v, yaw
 NU = 2  # a = [accel, steer]
@@ -73,20 +74,12 @@ def _get_nparray_from_matrix(x):
     return np.array(x).flatten()
 
 
-def _calc_nearest_index(state, cx, cy, pind):
-    dx = cx[pind:] - state.x
-    dy = cy[pind:] - state.y
-
-    d = dx ** 2 + dy ** 2
-    return np.argmin(d) + pind
-
-
 def _calc_ref_trajectory(state, cx, cy, cyaw, dl, start_idx, ov):
     xref = np.zeros((NX, T + 1))
     dref = np.zeros((1, T + 1))
     ncourse = len(cx)
 
-    start_idx = max(_calc_nearest_index(state, cx, cy, start_idx), start_idx)
+    start_idx = max(calc_nearest_index(state, cx, cy, start_idx), start_idx)
 
     dref[:, :T + 1] = 0.0  # steer operational point should be 0.0 for indices 0 to T
 
@@ -301,6 +294,11 @@ class MPC:
         self.ai: float = 0.0
 
         # cyaw = smooth_yaw(cyaw)
+
+    def set_trajectory_fromarray(self, trajectory: np.ndarray):
+        self.cx = trajectory[:, 0]
+        self.cy = trajectory[:, 1]
+        self.cyaw = trajectory[:, 2]
 
     def step(self, state: State) -> Tuple[float, float]:
         # initial yaw compensation

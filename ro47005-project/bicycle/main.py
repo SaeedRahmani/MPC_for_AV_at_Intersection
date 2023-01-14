@@ -7,12 +7,13 @@ import matplotlib.image as mpimg
 # see page 29/80 to see the bicycle model used
 
 class Bicycle():
-    def __init__(self):
+    def __init__(self, sample_time: float = 10e-3):
         self.xc = 0
         self.yc = 0
         self.theta = 0
         self.delta = 0
         self.beta = 0
+        self.sample_time = sample_time
 
         # TO DO: Tune this parameters
         self.scale_factor = 1
@@ -24,14 +25,10 @@ class Bicycle():
         self.theta = 0 # angle between vehicle frame and x-axis
         self.delta = 0 # angle between vehicle steering wheel and vehicle frame
 
-class Bicycle(Bicycle):
     def step(self, v, delta):
         # ==================================
         #  Implement kinematic model here
         # ==================================
-
-        # sampling time
-        t_sample = 10e-3
 
         # implementing the differential equations
         xc_dot = v * np.cos(self.theta)
@@ -39,9 +36,9 @@ class Bicycle(Bicycle):
         theta_dot = (v / self.L) * np.tan(delta)
 
         # update equations using the sampling time
-        self.xc += xc_dot * t_sample
-        self.yc += yc_dot * t_sample
-        self.theta += theta_dot * t_sample
+        self.xc += xc_dot * self.sample_time
+        self.yc += yc_dot * self.sample_time
+        self.theta += theta_dot * self.sample_time
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
