@@ -41,7 +41,7 @@ class PriusDimensions(CarDimensions):
     @property
     def bounding_box_size(self) -> Tuple[float, float]:
         # this was determined empirically by simulating and placing obstacles around the prius
-        return 0.61, 1.45
+        return 2.05, 4.85
 
     @property
     def radius(self) -> float:

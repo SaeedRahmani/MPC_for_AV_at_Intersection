@@ -25,6 +25,8 @@ def load_motion_primitives(version="prius") -> Dict[str, MotionPrimitive]:
         DIR = Path('../data/motion_primitives_prius')
     elif version == "bicycle_model":
         DIR = Path('../data/motion_primitives_bicycle_model')
+    elif version == "bicycle_model_real_size":
+        DIR = Path('../data/motion_primitives_bicycle_model_real_size')
     else:
         raise"Motion primitives version not recognized!"
 
