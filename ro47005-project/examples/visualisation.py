@@ -14,6 +14,7 @@ from lib.visualisation import create_animation
 if __name__ == "__main__":
     fig, ax = plt.subplots(figsize=(20, 20))
     mps = load_motion_primitives(version='bicycle_model_real_size')
+
     scenario = t_intersection()
     car_dimensions: CarDimensions = PriusDimensions(skip_back_circle_collision_checking=False)
 
@@ -38,7 +39,7 @@ if __name__ == "__main__":
         pass  # Break The Search On Keyboard Interrupt
 
     # Draw All Search Points
-    # draw_astar_search_points(search, ax, visualize_heuristic=True, visualize_cost_to_come=False)
+    draw_astar_search_points(search, ax, visualize_heuristic=True, visualize_cost_to_come=False)
 
     # simulation time:
     t = 15  # s

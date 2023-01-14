@@ -19,6 +19,7 @@ def t_intersection(no_obstacles=False) -> Scenario:
     distance_center = corner_radius + width_road + width_traffic_island
     flip_start_position = False
     flip_goal_position = False
+    turn_left = False
     allowed_goal_theta_difference = np.pi / 16
 
     if flip_goal_position and not flip_start_position:
@@ -30,9 +31,19 @@ def t_intersection(no_obstacles=False) -> Scenario:
               "It is not worth it.",
               file=sys.stderr)
 
-    start = (width_traffic_island/2 + width_road/2, -30, -0.5 * np.pi if flip_start_position else 0.5 * np.pi)
-    goal = (
-        -(distance_center + length * 0.6), (width_traffic_island + width_road) / 2, -(1 - flip_goal_position) * np.pi)
+    start = (width_traffic_island / 2 + width_road / 2, -30, -0.5 * np.pi if flip_start_position else 0.5 * np.pi)
+
+    if turn_left:
+        flip_goal_position = False
+        goal = (
+            -(distance_center + length * 0.6), (width_traffic_island + width_road) / 2,
+            -(1 - flip_goal_position) * np.pi)
+    else:
+        flip_goal_position = True
+        goal = (
+            (distance_center + length * 0.6), -(width_traffic_island + width_road) / 2,
+            -(1 - flip_goal_position) * np.pi)
+
     goal_area = BoxObstacle(xy_width=(width_road * 1.8, width_road), height=height,
                             xy_center=(goal[0], goal[1]))
 
