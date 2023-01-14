@@ -20,10 +20,10 @@ def draw_scenario(scenario: Scenario, mps: Dict[str, MotionPrimitive], car_dimen
                   draw_car2=True, draw_mps2=True, mp_name='right1'):
     if draw_obstacles:
         for obstacle in scenario.obstacles:
-            obstacle.draw(ax, color='b')
+            obstacle.draw(ax, color=(0.5, 0.5, 0.5))
 
     if draw_goal:
-        scenario.goal_area.draw(ax, color='r')
+        scenario.goal_area.draw(ax, color=(1, 0.8, 0.8))
         draw_point_arrow(scenario.goal_point, ax, color='r')
 
     # For Start Point:
@@ -71,12 +71,12 @@ def draw_point_arrow(point: Tuple[float, float, float], ax, color=None):
     ax.quiver(x, y, u, v, color=color)
 
 
-def draw_circles(points: np.ndarray, radius: float, ax, color=None):
+def draw_circles(points: np.ndarray, radius: float, ax, color=None, marker=None):
     ax.add_collection(
         EllipseCollection(widths=radius * 2, heights=radius * 2, angles=0, units='xy', edgecolors=color,
                           facecolors='none', offsets=points[:, :2],
                           offset_transform=ax.transData))
-    ax.scatter(points[:, 0], points[:, 1], color=color)
+    ax.scatter(points[:, 0], points[:, 1], color=color, marker=marker)
 
 
 def draw_car(start: Tuple[float, float, float], car_dimensions: CarDimensions, ax, color='b',

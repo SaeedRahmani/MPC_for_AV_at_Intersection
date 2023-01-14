@@ -4,11 +4,12 @@ import numpy as np
 
 from lib.a_star import AStar
 from lib.car_dimensions import CarDimensions
-from lib.linalg import create_2d_transform_mtx, transform_2d_pts, filter_trajectory_min_distance_points
+from lib.linalg import create_2d_transform_mtx, transform_2d_pts
 from lib.maths import normalize_angle
 from lib.motion_primitive import MotionPrimitive
 from lib.obstacles import check_collision
 from lib.scenario import Scenario
+from lib.trajectories import car_trajectory_to_collision_point_trajectories, resample_curve
 
 NodeType = Tuple[float, float, float]
 
@@ -33,7 +34,6 @@ class MotionPrimitiveSearch:
 
     def _create_collision_points(self) -> Dict[str, np.ndarray]:
         MIN_DISTANCE_BETWEEN_POINTS = self._car_dimensions.radius
-        circle_centers = self._car_dimensions.circle_centers
 
         out: Dict[str, np.ndarray] = {}
 
@@ -42,32 +42,12 @@ class MotionPrimitiveSearch:
             points = mp.points.copy()
 
             # filter the points because we most likely don't need all of them
-            points = filter_trajectory_min_distance_points(points,
-                                                           min_adjacent_distance=MIN_DISTANCE_BETWEEN_POINTS,
-                                                           keep_last_point=True)
+            points = resample_curve(points,
+                                    dl=MIN_DISTANCE_BETWEEN_POINTS,
+                                    keep_last_point=True)
 
-            offset_points_all = []
-
-            # for each circle center:
-            for cc in circle_centers:
-                # get point thetas
-                thetas = points[:, 2]
-
-                # rotate by each individual theta
-                offset_points = np.vstack([
-                    np.cos(thetas) * cc[0] - np.sin(thetas) * cc[1],
-                    np.sin(thetas) * cc[0] + np.cos(thetas) * cc[1]
-                ]).T
-
-                # offset by the original points' positions
-                offset_points += points[:, :2]
-
-                offset_points = np.append(offset_points, np.atleast_2d(thetas).T, axis=1)
-                offset_points_all.append(offset_points)
-
-            # save all collision points together (we don't care which circle center it comes from anymore;
-            # just about the motion primitive)
-            out[mp_name] = np.concatenate(offset_points_all, axis=0)
+            cc_trajectories = car_trajectory_to_collision_point_trajectories(points, self._car_dimensions)
+            out[mp_name] = np.concatenate(cc_trajectories, axis=0)
 
         return out
 
