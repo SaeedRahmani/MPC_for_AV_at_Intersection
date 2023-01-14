@@ -101,7 +101,8 @@ def main():
     car_dimensions: CarDimensions = PriusDimensions(skip_back_circle_collision_checking=False)
 
     moving_obstacles: List[MovingObstacleTIntersection] = [
-        MovingObstacleTIntersection(direction=1, turning=False, speed=10 / 3.6, dt=DT)
+        MovingObstacleTIntersection(direction=1, turning=False, speed=15 / 3.6, dt=DT),
+        MovingObstacleTIntersection(direction=-1, turning=False, speed=15 / 3.6, dt=DT),
     ]
 
     #########
@@ -126,7 +127,7 @@ def main():
     #########
     TIME_HORIZON = 5.
     FRAME_WINDOW = 6
-    EXTRA_CUTOFF_MARGIN = 0 #int((2 * car_dimensions.radius) / dl)  # no. of frames
+    EXTRA_CUTOFF_MARGIN = int(car_dimensions.radius / dl)  # no. of frames
 
     traj_agent_prediction_full = resample_curve(trajectory, dl=DT * 15 / 3.6)
     traj_agent_idx = 0
@@ -144,7 +145,7 @@ def main():
                                                    frame_window=FRAME_WINDOW)
         if collision_xy is not None:
             tmp_trajectory = cutoff_curve_by_position(trajectory, collision_xy[0], collision_xy[1])[
-                             :EXTRA_CUTOFF_MARGIN]
+                             :-EXTRA_CUTOFF_MARGIN]
         else:
             tmp_trajectory = trajectory
         mpc.set_trajectory_fromarray(tmp_trajectory)
@@ -156,7 +157,6 @@ def main():
         trajs_o = _offset_trajectories_by_frames(trajs_moving_obstacles,
                                                  list(range(-FRAME_WINDOW, FRAME_WINDOW + 1, 1)))
         trajs_agent = [traj_agent_prediction]
-        # trajs_agent = _offset_trajectories_by_frames(trajs_agent, set(range(-FRAME_WINDOW, FRAME_WINDOW + 1, 1)))
 
         cc_trajs_agent = [car_trajectory_to_collision_point_trajectories(tr, car_dimensions) for tr in trajs_agent]
         cc_trajs_o = [car_trajectory_to_collision_point_trajectories(tr, car_dimensions) for tr in trajs_o]
@@ -177,9 +177,9 @@ def main():
                 draw_car(mo.get(), car_dimensions, ax=plt.gca())
 
             visualize_mpc(mpc, state, history)
-            # plt.pause(0.001)
+            plt.pause(0.001)
             plt.title(f"Time: {i * DT}; frame: {j}")
-            plt.show()
+            # plt.show()
             break
         i += 1
 
