@@ -1,29 +1,26 @@
-import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
+import numpy as np
+
+from lib.car_dimensions import CarDimensions, BicycleModelDimensions
+
 
 # Reference paper:
 # https://uwspace.uwaterloo.ca/bitstream/handle/10012/16847/Ahmadi_Behnaz.pdf?sequence=1
 # see page 29/80 to see the bicycle model used
 
-class Bicycle():
-    def __init__(self, sample_time: float = 10e-3):
+class Bicycle:
+    def __init__(self, car_dimensions: CarDimensions, sample_time: float = 10e-3):
         self.xc = 0
         self.yc = 0
         self.theta = 0
-        self.delta = 0
-        self.beta = 0
         self.sample_time = sample_time
 
-        # TO DO: Tune this parameters
-        self.scale_factor = 1
-        self.L = (1.45 + 1.41) * self.scale_factor
+        self.L = car_dimensions.distance_back_to_front_wheel
 
     def reset(self):
         self.xc = 0 # vehicle x position
         self.yc = 0 # vehicle y position
         self.theta = 0 # angle between vehicle frame and x-axis
-        self.delta = 0 # angle between vehicle steering wheel and vehicle frame
 
     def step(self, v, delta):
         # ==================================
@@ -42,11 +39,12 @@ class Bicycle():
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
+    car_dimensions: CarDimensions = BicycleModelDimensions()
     sample_time = 0.01
     time_end = 1
-    model = Bicycle()
-    model1 = Bicycle()
-    model2 = Bicycle()
+    model = Bicycle(car_dimensions=car_dimensions)
+    model1 = Bicycle(car_dimensions=car_dimensions)
+    model2 = Bicycle(car_dimensions=car_dimensions)
 
     t_data = np.arange(0, time_end, sample_time)
     x_data = np.zeros_like(t_data)

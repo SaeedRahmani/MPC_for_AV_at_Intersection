@@ -8,11 +8,14 @@ from typing import Tuple
 from bicycle.main import Bicycle
 import warnings
 
+from lib.car_dimensions import CarDimensions, BicycleModelDimensions
+
 
 class MovingObstacleTIntersection:
-    def __init__(self, direction: int, turning: bool, speed: float, offset=None, dt=10e-3):
+    def __init__(self, car_dimensions: CarDimensions, direction: int, turning: bool, speed: float, offset=None, dt=10e-3):
         """
         Function that creates moving obstacles
+        :param car_dimensions:
         :param direction: positive for moving to the right, negative for moving to the left
         :param turning: True for turning, False for going straight
         :param speed: sets the forward speed and is not bounded
@@ -22,11 +25,11 @@ class MovingObstacleTIntersection:
         self.direction = 1 if direction >= 0 else -1
         self.turning = turning
         self.forward_velocity = speed
-        self.model = Bicycle(sample_time=dt)
+        self.model = Bicycle(car_dimensions=car_dimensions, sample_time=dt)
         self.offset = None if offset is None else offset if offset > 0 else None  # None except if offset > 0
         self.dt = dt
-        if abs(dt - 10e-3) > 1e-6:
-            warnings.warn("The dt is most likely not compatible with the bicycle model!")
+        # if abs(dt - 10e-3) > 1e-6:
+        #     warnings.warn("The dt is most likely not compatible with the bicycle model!")
         self.counter = 0
         if self.direction == 1:
             self.model.xc = -30
@@ -67,10 +70,11 @@ class MovingObstacleTIntersection:
 
 
 if __name__ == "__main__":
-    obstacles = [MovingObstacleTIntersection(1, True, 5),
-                 MovingObstacleTIntersection(1, False, 5),
-                 MovingObstacleTIntersection(-1, False, 5),
-                 MovingObstacleTIntersection(-1, True, 5)]
+    car_dimensions: CarDimensions = BicycleModelDimensions()
+    obstacles = [MovingObstacleTIntersection(car_dimensions, 1, True, 5),
+                 MovingObstacleTIntersection(car_dimensions, 1, False, 5),
+                 MovingObstacleTIntersection(car_dimensions, -1, False, 5),
+                 MovingObstacleTIntersection(car_dimensions, -1, True, 5)]
 
     length = 600  # steps in the simulation
     colors = np.array([np.zeros(length), np.linspace(0, 1, length), np.ones(length)]).T.astype(float)

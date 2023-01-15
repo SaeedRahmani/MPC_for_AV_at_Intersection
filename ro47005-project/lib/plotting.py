@@ -79,28 +79,90 @@ def draw_circles(points: np.ndarray, radius: float, ax, color=None, marker=None)
     ax.scatter(points[:, 0], points[:, 1], color=color, marker=marker)
 
 
-def draw_car(start: Tuple[float, float, float], car_dimensions: CarDimensions, ax, color='b',
+def draw_car(start: Tuple[float, float, float], car_dimensions: CarDimensions, ax, steer=0.0, color='b',
              draw_collision_circles=False):
+    # Vehicle parameters
+    WHEEL_LEN = 0.3  # [m]
+    WHEEL_WIDTH = 0.2  # [m]
+    TREAD = 0.7  # [m]
+
+    x, y, yaw = start
+
+    center_offset_y, center_offset_x = car_dimensions.center_point_offset
+
     width, length = car_dimensions.bounding_box_size
 
-    c_x, c_y, theta = start
-    point_rect_bl = c_x - length / 2, c_y - width / 2
-    ax.add_patch(Rectangle(point_rect_bl, length, width, rotation_point='center', edgecolor=color, facecolor='none',
-                           angle=theta * 180. / math.pi))
+    outline = np.array(
+        [[center_offset_y - length / 2, center_offset_y + length / 2, center_offset_y + length / 2,
+          center_offset_y - length / 2, center_offset_y - length / 2],
+         [width / 2 + center_offset_x, width / 2 + center_offset_x, - width / 2 + center_offset_x,
+          -width / 2 + center_offset_x, width / 2 + center_offset_x]])
 
-    # transform all circle centers to world space
-    circle_center_mtx = create_2d_transform_mtx(*start)
-    circle_centers = transform_2d_pts(start[2], circle_center_mtx, car_dimensions.circle_centers)
+    fr_wheel = np.array([[WHEEL_LEN, -WHEEL_LEN, -WHEEL_LEN, WHEEL_LEN, WHEEL_LEN],
+                         [-WHEEL_WIDTH - TREAD, -WHEEL_WIDTH - TREAD, WHEEL_WIDTH - TREAD, WHEEL_WIDTH - TREAD,
+                          -WHEEL_WIDTH - TREAD]])
 
-    ax.scatter([start[0]], [start[1]], color=color)
+    rr_wheel = np.copy(fr_wheel)
+
+    fl_wheel = np.copy(fr_wheel)
+    fl_wheel[1, :] *= -1
+    rl_wheel = np.copy(rr_wheel)
+    rl_wheel[1, :] *= -1
+
+    Rot1 = np.array([[math.cos(yaw), math.sin(yaw)],
+                     [-math.sin(yaw), math.cos(yaw)]])
+    Rot2 = np.array([[math.cos(steer), math.sin(steer)],
+                     [-math.sin(steer), math.cos(steer)]])
+
+    fr_wheel = (fr_wheel.T.dot(Rot2)).T
+    fl_wheel = (fl_wheel.T.dot(Rot2)).T
+    fr_wheel[0, :] += car_dimensions.distance_back_to_front_wheel
+    fl_wheel[0, :] += car_dimensions.distance_back_to_front_wheel
+
+    fr_wheel = (fr_wheel.T.dot(Rot1)).T
+    fl_wheel = (fl_wheel.T.dot(Rot1)).T
+
+    outline = (outline.T.dot(Rot1)).T
+    rr_wheel = (rr_wheel.T.dot(Rot1)).T
+    rl_wheel = (rl_wheel.T.dot(Rot1)).T
+
+    outline[0, :] += x
+    outline[1, :] += y
+    fr_wheel[0, :] += x
+    fr_wheel[1, :] += y
+    rr_wheel[0, :] += x
+    rr_wheel[1, :] += y
+    fl_wheel[0, :] += x
+    fl_wheel[1, :] += y
+    rl_wheel[0, :] += x
+    rl_wheel[1, :] += y
+
+    plt.plot(np.array(outline[0, :]).flatten(),
+             np.array(outline[1, :]).flatten(), color)
+    plt.plot(np.array(fr_wheel[0, :]).flatten(),
+             np.array(fr_wheel[1, :]).flatten(), color)
+    plt.plot(np.array(rr_wheel[0, :]).flatten(),
+             np.array(rr_wheel[1, :]).flatten(), color)
+    plt.plot(np.array(fl_wheel[0, :]).flatten(),
+             np.array(fl_wheel[1, :]).flatten(), color)
+    plt.plot(np.array(rl_wheel[0, :]).flatten(),
+             np.array(rl_wheel[1, :]).flatten(), color)
+    plt.plot(x, y, "*", color=color)
 
     if draw_collision_circles:
+        circle_center_mtx = create_2d_transform_mtx(*start)
+        circle_centers = transform_2d_pts(start[2], circle_center_mtx, car_dimensions.circle_centers)
+
         draw_circles(circle_centers, radius=car_dimensions.radius, ax=ax, color=color)
         ax.scatter(circle_centers[:, 0], circle_centers[:, 1], color=color)
 
 
-def draw_astar_search_points(search: Union[MotionPrimitiveSearch, AStar], ax, visualize_heuristic: bool, visualize_cost_to_come: bool):
+def draw_astar_search_points(search: Union[MotionPrimitiveSearch, AStar], ax, visualize_heuristic: bool,
+                             visualize_cost_to_come: bool):
     debug_points = np.array([p.node for p in search.debug_data])
+
+    if len(search.debug_data) == 0:
+        return
 
     if visualize_heuristic or visualize_cost_to_come:
         c = np.zeros((len(search.debug_data)))

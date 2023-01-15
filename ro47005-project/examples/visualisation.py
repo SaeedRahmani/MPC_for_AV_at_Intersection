@@ -4,7 +4,7 @@ import matplotlib.lines as mlines
 import numpy as np
 
 from envs.t_intersection import t_intersection
-from lib.car_dimensions import PriusDimensions, CarDimensions
+from lib.car_dimensions import BicycleModelDimensions, CarDimensions
 from lib.motion_primitive import load_motion_primitives
 from lib.motion_primitive_search import MotionPrimitiveSearch
 from lib.plotting import draw_scenario, draw_astar_search_points
@@ -13,10 +13,10 @@ from lib.visualisation import create_animation
 
 if __name__ == "__main__":
     fig, ax = plt.subplots(figsize=(20, 20))
-    mps = load_motion_primitives(version='bicycle_model_real_size')
+    mps = load_motion_primitives(version='bicycle_model')
 
     scenario = t_intersection()
-    car_dimensions: CarDimensions = PriusDimensions(skip_back_circle_collision_checking=False)
+    car_dimensions: CarDimensions = BicycleModelDimensions(skip_back_circle_collision_checking=False)
 
     search = MotionPrimitiveSearch(scenario, car_dimensions, mps, margin=car_dimensions.radius)
 
@@ -47,10 +47,10 @@ if __name__ == "__main__":
     length = int(t / dt)
 
     # Create the moving obstacles
-    obstacles = [MovingObstacleTIntersection(1, True, 8.3, ),
-                 MovingObstacleTIntersection(1, True, 8.3, offset=3),
-                 MovingObstacleTIntersection(-1, True, 8.3),
-                 MovingObstacleTIntersection(-1, True, 8.3, offset=5)]
+    obstacles = [MovingObstacleTIntersection(car_dimensions, 1, True, 8.3),
+                 MovingObstacleTIntersection(car_dimensions, 1, True, 8.3, offset=3),
+                 MovingObstacleTIntersection(car_dimensions, -1, True, 8.3),
+                 MovingObstacleTIntersection(car_dimensions, -1, True, 8.3, offset=5)]
     positions_obstacles = np.zeros((len(obstacles), length, 6))  # To log the positions of the moving obstacles
     positions_car = np.zeros((length, 3))  # x, y, theta
 

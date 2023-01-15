@@ -1,17 +1,18 @@
 from matplotlib import pyplot as plt
 
 from envs.t_intersection import t_intersection
-from lib.car_dimensions import PriusDimensions, CarDimensions
+from lib.car_dimensions import BicycleModelDimensions, CarDimensions
+from lib.helpers import measure_time
 from lib.motion_primitive import load_motion_primitives
 from lib.motion_primitive_search import MotionPrimitiveSearch
 from lib.plotting import draw_scenario, draw_astar_search_points
 
 if __name__ == '__main__':
     fig, ax = plt.subplots()
-    for version in ['bicycle_model_real_size']:
+    for version in ['bicycle_model']:
         mps = load_motion_primitives(version=version)
         scenario = t_intersection()
-        car_dimensions: CarDimensions = PriusDimensions(skip_back_circle_collision_checking=False)
+        car_dimensions: CarDimensions = BicycleModelDimensions(skip_back_circle_collision_checking=False)
 
         search = MotionPrimitiveSearch(scenario, car_dimensions, mps, margin=car_dimensions.radius)
 
@@ -21,8 +22,12 @@ if __name__ == '__main__':
 
         # Perform The Search:
 
+        @measure_time
+        def run_search():
+            return search.run(debug=True)
+
         try:
-            cost, path, trajectory = search.run(debug=True)
+            cost, path, trajectory = run_search()
 
             cx = trajectory[:, 0]
             cy = trajectory[:, 1]

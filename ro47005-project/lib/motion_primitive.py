@@ -27,10 +27,8 @@ def load_motion_primitives(version="prius") -> Dict[str, MotionPrimitive]:
         dir = project_root_dir.joinpath('data/motion_primitives_prius')
     elif version == "bicycle_model":
         dir = project_root_dir.joinpath('data/motion_primitives_bicycle_model')
-    elif version == "bicycle_model_real_size":
-        dir = project_root_dir.joinpath('data/motion_primitives_bicycle_model_real_size')
     else:
-        raise"Motion primitives version not recognized!"
+        raise Exception("Motion primitives version not recognized!")
 
     mps = {}
 

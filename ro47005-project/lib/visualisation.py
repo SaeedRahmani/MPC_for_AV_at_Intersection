@@ -3,9 +3,9 @@ from typing import Callable, List, Tuple
 import matplotlib.pyplot as plt
 from matplotlib.markers import MarkerStyle
 
-from lib.car_dimensions import PriusDimensions
+from lib.car_dimensions import BicycleModelDimensions
 
-width_car, length_car = PriusDimensions().bounding_box_size
+width_car, length_car = BicycleModelDimensions().bounding_box_size
 
 
 def R_box(theta: float) -> np.ndarray:

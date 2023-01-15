@@ -8,7 +8,10 @@ import numpy as np
 from tqdm.auto import tqdm
 from urdfenvs.robots.prius import Prius
 
+from lib.car_dimensions import CarDimensions, PriusDimensions
 from lib.motion_primitive import MotionPrimitive
+from lib.linalg import transform_2d_pts, create_2d_transform_mtx
+from lib.trajectories import shift_car_trajectory_by_objspace_offset
 
 N_SECONDS = 0.3  # m
 FORWARD_SPEED = 8.3  # m/s
@@ -115,10 +118,20 @@ if __name__ == "__main__":
         points = np.array(points)
 
         project_root_dir = Path(__file__).parent
-        file_name = project_root_dir.joinpath(f'data/motion_primitives_bicycle_model_real_size/{mp.name}.pkl')
+        file_name = project_root_dir.joinpath(f'data/motion_primitives_prius/{mp.name}.pkl')
 
         # compute total length
         mp.total_length = np.linalg.norm(points[:-1, :2] - points[1:, :2], axis=1).sum()
+        mp.points = points
+
+        # scale up
+        points[:, :2] /= 0.3
+
+        # TODO OFFSET THESE POINTS FROM THE CENTER POINT OF THE CAR TO THE BACK WHEEL, LIKE THIS:
+        car_dimensions: CarDimensions = PriusDimensions(scaling_factor=1.)
+        cent_off_x, cent_off_y = car_dimensions.center_point_offset
+        mtx = create_2d_transform_mtx(x=-cent_off_x, y=-cent_off_y, theta=0)
+        points = shift_car_trajectory_by_objspace_offset(points, -cent_off_x, -cent_off_y)
 
         mp.points = points
 

@@ -4,10 +4,9 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from envs.t_intersection import t_intersection
-from lib.car_dimensions import PriusDimensions, CarDimensions
-from lib.collision_avoidance import _offset_trajectories_by_frames, check_collision_moving_cars, \
-    cutoff_curve_by_position
-from lib.plotting import draw_circles
+from lib.car_dimensions import BicycleModelDimensions, CarDimensions
+from lib.collision_avoidance import _offset_trajectories_by_frames, check_collision_moving_cars
+from lib.plotting import draw_circles, draw_car
 from lib.trajectories import car_trajectory_to_collision_point_trajectories
 
 
@@ -62,7 +61,7 @@ if __name__ == '__main__':
     MAX_LENGTH_TRAJECTORY = 10.  # seconds
     DT = 0.2
 
-    car_dimensions: CarDimensions = PriusDimensions()
+    car_dimensions: CarDimensions = BicycleModelDimensions()
     scenario = t_intersection()
 
     # trajs_o = [tr[::2] for tr in trajs_o]
@@ -94,6 +93,7 @@ if __name__ == '__main__':
             o.draw(plt.gca(), color='b')
         plot_trajectories(cc_trajs_agent, cc_trajs_o, marker='-')
         plot_trajectories(cc_trajs_agent, cc_trajs_o, radius=car_dimensions.radius, i=i)
+        draw_car(traj_agent[i], car_dimensions, ax=plt.gca(), color='k')
         if collision_position is not None:
             plt.scatter([collision_position[0]], [collision_position[1]], color='r')
 

@@ -2,17 +2,18 @@ import matplotlib.pyplot as plt
 import numpy as np
 import math
 
+from lib.car_dimensions import CarDimensions, BicycleModelDimensions
+
 
 class MovingObstaclesPrediction:
-    def __init__(self, x, y, v, yaw, a, steering_angle, sample_time: float):
+    def __init__(self, x, y, v, yaw, a, steering_angle, sample_time: float, car_dimensions: CarDimensions):
         self.x = x
         self.y = y
         self.v = v
         self.yaw = yaw
         self.a = a
         self.steering_angle = steering_angle
-        self.scale_factor = 0.3
-        self.L = (1.45 + 1.41) * self.scale_factor
+        self.L = car_dimensions.distance_back_to_front_wheel
         self.sample_time = sample_time
 
     def step(self, sample_time):
@@ -55,7 +56,9 @@ if __name__ == '__main__':
     steering_angle = 0
     a = 0
 
-    model = MovingObstaclesPrediction(x, y, v, yaw, a, steering_angle)
+    car_dimensions: CarDimensions = BicycleModelDimensions()
+
+    model = MovingObstaclesPrediction(x, y, v, yaw, a, steering_angle, sample_time=0.2, car_dimensions=car_dimensions)
     x_data, y_data, yaw_data, t_data = model.state_prediction(time_horizon=1)
     plt.plot(t_data, x_data)
     plt.show()
