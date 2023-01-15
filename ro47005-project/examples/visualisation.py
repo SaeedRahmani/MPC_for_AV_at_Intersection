@@ -51,7 +51,7 @@ if __name__ == "__main__":
                  MovingObstacleTIntersection(1, True, 8.3, offset=3),
                  MovingObstacleTIntersection(-1, True, 8.3),
                  MovingObstacleTIntersection(-1, True, 8.3, offset=5)]
-    positions_obstacles = np.zeros((len(obstacles), length, 5))  # To log the positions of the moving obstacles
+    positions_obstacles = np.zeros((len(obstacles), length, 6))  # To log the positions of the moving obstacles
     positions_car = np.zeros((length, 3))  # x, y, theta
 
     # ================= The simulation loop =================
