@@ -102,6 +102,7 @@ def main():
     state = State(x=trajectory[0, 0], y=trajectory[0, 1], yaw=trajectory[0, 2], v=0.0)
 
     simulation = HistorySimulation(car_dimensions=car_dimensions, sample_time=DT, initial_state=state)
+    history = simulation.history  # gets updated automatically as simulation runs
 
     #########
     # SIMULATE
@@ -116,10 +117,13 @@ def main():
         if mpc.is_goal(state):
             break
 
+        # cutoff the trajectory by the closest future index
         traj_agent_idx = calc_nearest_index_in_direction(state, trajectory[:, 0], trajectory[:, 1],
-                                            start_index=traj_agent_idx, forward=True)
-
+                                                         start_index=traj_agent_idx, forward=True)
         trajectory_res = trajectory[traj_agent_idx:]
+
+        # resample the trajectory to correspond to a car that starts from its current speed and accelerates
+        # as much as it can -> this is a prediction for our own agent
         if state.v < Simulation.MAX_SPEED:
             resample_dl = np.zeros((trajectory_res.shape[0],)) + MAX_ACCEL
             resample_dl = np.cumsum(resample_dl) + state.v
@@ -128,13 +132,17 @@ def main():
         else:
             trajectory_res = resample_curve(trajectory_res, dl=DT * Simulation.MAX_SPEED)
 
+        # predict the movement of each moving obstacle, and retrieve the predicted trajectories
         trajs_moving_obstacles = [
             np.vstack(MovingObstaclesPrediction(*o.get(), sample_time=DT, car_dimensions=car_dimensions)
                       .state_prediction(TIME_HORIZON)).T
             for o in moving_obstacles]
 
+        # find the collision location
         collision_xy = check_collision_moving_cars(car_dimensions, trajectory_res, trajs_moving_obstacles,
                                                    frame_window=FRAME_WINDOW)
+
+        # cutoff the curve such that it ends right before the collision (and some margin)
         if collision_xy is not None:
             cutoff_idx = get_cutoff_curve_by_position_idx(trajectory, collision_xy[0],
                                                           collision_xy[1]) - EXTRA_CUTOFF_MARGIN
@@ -142,16 +150,22 @@ def main():
             tmp_trajectory = trajectory[:cutoff_idx]
         else:
             tmp_trajectory = trajectory
+
+        # pass the cut trajectory to the MPC
         mpc.set_trajectory_fromarray(tmp_trajectory)
 
+        # compute the MPC
         delta, acceleration = mpc.step(state)
 
+        # show the computation results
         visualize_frame(DT, FRAME_WINDOW, car_dimensions, collision_xy, i, moving_obstacles, mpc, scenario, simulation,
                         state, tmp_trajectory, trajectory_res, trajs_moving_obstacles)
 
+        # move all obstacles forward
         for o in moving_obstacles:
             o.step()
 
+        # step the simulation (i.e. move our agent forward)
         state = simulation.step(a=acceleration, delta=delta)
 
 
