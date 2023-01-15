@@ -22,7 +22,7 @@ class MovingObstacleTIntersection:
         self.direction = 1 if direction >= 0 else -1
         self.turning = turning
         self.forward_velocity = speed
-        self.model = Bicycle()
+        self.model = Bicycle(sample_time=dt)
         self.offset = None if offset is None else offset if offset > 0 else None  # None except if offset > 0
         self.dt = dt
         if abs(dt - 10e-3) > 1e-6:
