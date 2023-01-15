@@ -21,18 +21,20 @@ class MotionPrimitive:
 
 
 def load_motion_primitives(version="prius") -> Dict[str, MotionPrimitive]:
+    project_root_dir = Path(__file__).parent.parent
+
     if version == "prius":
-        DIR = Path('data/motion_primitives_prius')
+        dir = project_root_dir.joinpath('data/motion_primitives_prius')
     elif version == "bicycle_model":
-        DIR = Path('../data/motion_primitives_bicycle_model')
+        dir = project_root_dir.joinpath('data/motion_primitives_bicycle_model')
     elif version == "bicycle_model_real_size":
-        DIR = Path('../data/motion_primitives_bicycle_model_real_size')
+        dir = project_root_dir.joinpath('data/motion_primitives_bicycle_model_real_size')
     else:
         raise"Motion primitives version not recognized!"
 
     mps = {}
 
-    files = list(DIR.glob("*.pkl"))
+    files = list(dir.glob("*.pkl"))
 
     if len(files) == 0:
         raise Exception("No motion primitives found.")

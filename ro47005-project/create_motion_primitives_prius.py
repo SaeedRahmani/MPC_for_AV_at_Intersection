@@ -1,5 +1,6 @@
 import itertools
 import pickle
+from pathlib import Path
 from typing import Optional, List
 
 import gym
@@ -113,7 +114,8 @@ if __name__ == "__main__":
 
         points = np.array(points)
 
-        file_name = f'./data/motion_primitives_prius/{mp.name}.pkl'
+        project_root_dir = Path(__file__).parent
+        file_name = project_root_dir.joinpath(f'data/motion_primitives_bicycle_model_real_size/{mp.name}.pkl')
 
         # compute total length
         mp.total_length = np.linalg.norm(points[:-1, :2] - points[1:, :2], axis=1).sum()
