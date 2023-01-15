@@ -42,9 +42,8 @@ def _get_rowwise_diffs(car_dimensions, traj_agent: np.ndarray, traj_obstacles: L
         [cc_tr[:, :2] for tr in traj_obstacles for cc_tr in
          car_trajectory_to_collision_point_trajectories(tr, car_dimensions)], repeats=n_circle_centers)
     assert rows_per_frame_ag == rows_per_frame_obs
-    diff_pts = cc_pts_obs - cc_pts_ag
-    print("Number of point pairs:", len(diff_pts))
-    return rows_per_frame_ag, diff_pts
+    print("Number of point pairs:", len(cc_pts_ag))
+    return rows_per_frame_ag, cc_pts_ag, cc_pts_obs
 
 
 def _offset_trajectories_by_frames(trajs: List[np.ndarray], offsets: Union[List[int], np.ndarray]) -> List[np.ndarray]:
@@ -72,17 +71,32 @@ def check_collision_moving_cars(car_dimensions: CarDimensions, traj_agent: np.nd
 
     min_distance = 2 * car_dimensions.radius
 
-    rows_per_frame, diff_pts = _get_rowwise_diffs(car_dimensions, traj_agent, traj_obstacles)
+    rows_per_frame, cc_pts_ag, cc_pts_obs = _get_rowwise_diffs(car_dimensions, traj_agent, traj_obstacles)
 
-    diff_pts = np.linalg.norm(diff_pts, axis=1) <= min_distance
+    mask = np.linalg.norm(cc_pts_ag - cc_pts_obs, axis=1) <= min_distance
     # print("Total point pairs to collision-check:", len(diff_pts))
-    first_row_idx = np.argmax(diff_pts)
+    first_row_idx = np.argmax(mask)
 
-    if not diff_pts[first_row_idx]:
+    if not mask[first_row_idx]:
         # no collision
         return None
 
-    first_frame_idx = first_row_idx // rows_per_frame
+    # first_frame_idx = first_row_idx // rows_per_frame
+
+    # find the first position where the collision occurs :
+    # get the circle position from the collision
+    obstacle_position = cc_pts_obs[first_row_idx]
+    agent_ccs = np.concatenate([tr[:, :2] for tr in car_trajectory_to_collision_point_trajectories(traj_agent, car_dimensions)])
+
+    # compute difference of entire agent trajectory with the obstacle position
+    mask = np.linalg.norm(obstacle_position - agent_ccs, axis=1) <= min_distance
+
+    # get the earliest
+    first_frame_idx = np.argmax(mask) % len(traj_agent)
+
+    if first_frame_idx >= len(traj_agent):
+        return None
+
     x, y = traj_agent[first_frame_idx, :2]
     return x, y, first_frame_idx
 

@@ -5,9 +5,8 @@ from matplotlib import pyplot as plt
 
 from envs.t_intersection import t_intersection
 from lib.car_dimensions import BicycleModelDimensions, CarDimensions
-from lib.collision_avoidance import _offset_trajectories_by_frames, check_collision_moving_cars
+from lib.collision_avoidance import check_collision_moving_cars
 from lib.plotting import draw_circles, draw_car
-from lib.trajectories import car_trajectory_to_collision_point_trajectories
 
 
 def plot_trajectory(tr, radius: float, i: Optional[int] = None, marker='+'):
@@ -74,25 +73,16 @@ if __name__ == '__main__':
     # EXECUTE:
     # -----
 
-    collision_position = check_collision_moving_cars(car_dimensions, traj_agent, trajs_o, frame_window=FRAME_WINDOW)
+    collision_position = check_collision_moving_cars(traj_agent, trajs_o, frame_window=FRAME_WINDOW)
 
     # -----
     # PLOT:
     # -----
 
-    trajs_o = _offset_trajectories_by_frames(trajs_o, list(range(-FRAME_WINDOW, FRAME_WINDOW + 1, 1)))
-    trajs_agent = [traj_agent]
-    # trajs_agent = _offset_trajectories_by_frames(trajs_agent, set(range(-FRAME_WINDOW, FRAME_WINDOW + 1, 1)))
-
-    cc_trajs_agent = [car_trajectory_to_collision_point_trajectories(tr, car_dimensions) for tr in trajs_agent]
-    cc_trajs_o = [car_trajectory_to_collision_point_trajectories(tr, car_dimensions) for tr in trajs_o]
-
     for i in range(len(traj_agent)):
         plt.cla()
         for o in scenario.obstacles:
             o.draw(plt.gca(), color='b')
-        plot_trajectories(cc_trajs_agent, cc_trajs_o, marker='-')
-        plot_trajectories(cc_trajs_agent, cc_trajs_o, radius=car_dimensions.radius, i=i)
         draw_car(traj_agent[i], car_dimensions, ax=plt.gca(), color='k')
         if collision_position is not None:
             plt.scatter([collision_position[0]], [collision_position[1]], color='r')

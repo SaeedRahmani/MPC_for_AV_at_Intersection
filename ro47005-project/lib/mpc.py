@@ -169,11 +169,14 @@ def _linear_mpc_control(xref, xbar, x0, dref, reaches_end, dt, car_dimensions: C
                 cost += cvxpy.quad_form(xref[:, t] - x[:, t], Qf)
 
         if t < T:
-            cost += cvxpy.quad_form(u[:, t], R)
-
             A, B, C = _get_linear_model_matrix(
                 xbar[2, t], xbar[3, t], dref[0, t], dt=dt, L=L)
             constraints += [x[:, t + 1] == A @ x[:, t] + B @ u[:, t] + C]
+
+            if reaches_end[t]:
+                cost += cvxpy.quad_form(u[:, t], np.diag([10., 10.]))
+            else:
+                cost += cvxpy.quad_form(u[:, t], R)
 
         if t < (T - 1):
             cost += cvxpy.quad_form(u[:, t + 1] - u[:, t], Rd)
