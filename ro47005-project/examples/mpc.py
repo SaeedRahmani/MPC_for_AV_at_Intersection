@@ -75,8 +75,8 @@ def main():
     DT = 0.2
 
     moving_obstacles: List[MovingObstacleTIntersection] = [
-        MovingObstacleTIntersection(car_dimensions, direction=1, turning=False, speed=20 / 3.6, dt=DT),
-        MovingObstacleTIntersection(car_dimensions, direction=-1, turning=False, speed=11 / 3.6, dt=DT),
+        MovingObstacleTIntersection(car_dimensions, direction=1, turning=False, speed=10 / 3.6, dt=DT),
+        MovingObstacleTIntersection(car_dimensions, direction=-1, turning=False, speed=15 / 3.6, dt=DT),
     ]
 
     #########
@@ -101,8 +101,8 @@ def main():
     #########
     # SIMULATE
     #########
-    TIME_HORIZON = 5.
-    FRAME_WINDOW = 6
+    TIME_HORIZON = 7.
+    FRAME_WINDOW = 20
     EXTRA_CUTOFF_MARGIN = 4 * int(
         math.ceil(car_dimensions.radius / dl))  # no. of frames - corresponds approximately to car length
 
