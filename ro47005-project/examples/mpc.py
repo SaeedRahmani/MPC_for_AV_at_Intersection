@@ -60,7 +60,8 @@ def visualize_frame(dt, frame_window, car_dimensions, collision_xy, i, moving_ob
                 obstacle.draw(plt.gca(), color='b')
 
             for mo in moving_obstacles:
-                draw_car(mo.get(), car_dimensions, ax=plt.gca())
+                x, y, _, theta, _, _ = mo.get()
+                draw_car((x, y, theta), car_dimensions, ax=plt.gca())
 
             visualize_mpc(mpc, state, simulation.history, car_dimensions)
             plt.title("Time: %.2f; frame: %d" % (i * dt, j))
@@ -96,7 +97,8 @@ def main():
     #########
     dl = np.linalg.norm(trajectory[0, :2] - trajectory[1, :2])
 
-    mpc = MPC(cx=trajectory[:, 0], cy=trajectory[:, 1], cyaw=trajectory[:, 2], dl=dl, dt=DT, car_dimensions=car_dimensions)
+    mpc = MPC(cx=trajectory[:, 0], cy=trajectory[:, 1], cyaw=trajectory[:, 2], dl=dl, dt=DT,
+              car_dimensions=car_dimensions)
     state = State(x=trajectory[0, 0], y=trajectory[0, 1], yaw=trajectory[0, 2], v=0.0)
 
     simulation = HistorySimulation(car_dimensions=car_dimensions, sample_time=DT, initial_state=state)
@@ -127,7 +129,7 @@ def main():
             trajectory_res = resample_curve(trajectory_res, dl=DT * Simulation.MAX_SPEED)
 
         trajs_moving_obstacles = [
-            np.vstack(MovingObstaclesPrediction(*o.step(), sample_time=DT, car_dimensions=car_dimensions)
+            np.vstack(MovingObstaclesPrediction(*o.get(), sample_time=DT, car_dimensions=car_dimensions)
                       .state_prediction(TIME_HORIZON)).T
             for o in moving_obstacles]
 
@@ -136,7 +138,7 @@ def main():
         if collision_xy is not None:
             cutoff_idx = get_cutoff_curve_by_position_idx(trajectory, collision_xy[0],
                                                           collision_xy[1]) - EXTRA_CUTOFF_MARGIN
-            cutoff_idx = max(traj_agent_idx + 2, cutoff_idx)
+            cutoff_idx = max(traj_agent_idx + 1, cutoff_idx)
             tmp_trajectory = trajectory[:cutoff_idx]
         else:
             tmp_trajectory = trajectory
@@ -146,6 +148,9 @@ def main():
 
         visualize_frame(DT, FRAME_WINDOW, car_dimensions, collision_xy, i, moving_obstacles, mpc, scenario, simulation,
                         state, tmp_trajectory, trajectory_res, trajs_moving_obstacles)
+
+        for o in moving_obstacles:
+            o.step()
 
         state = simulation.step(a=acceleration, delta=delta)
 

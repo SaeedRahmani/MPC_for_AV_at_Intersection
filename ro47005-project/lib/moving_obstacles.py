@@ -12,7 +12,8 @@ from lib.car_dimensions import CarDimensions, BicycleModelDimensions
 
 
 class MovingObstacleTIntersection:
-    def __init__(self, car_dimensions: CarDimensions, direction: int, turning: bool, speed: float, offset=None, dt=10e-3):
+    def __init__(self, car_dimensions: CarDimensions, direction: int, turning: bool, speed: float, offset=None,
+                 dt=10e-3):
         """
         Function that creates moving obstacles
         :param car_dimensions:
@@ -24,7 +25,7 @@ class MovingObstacleTIntersection:
         """
         self.direction = 1 if direction >= 0 else -1
         self.turning = turning
-        self.forward_velocity = speed
+        self.speed = speed
         self.model = Bicycle(car_dimensions=car_dimensions, sample_time=dt)
         self.offset = None if offset is None else offset if offset > 0 else None  # None except if offset > 0
         self.dt = dt
@@ -42,8 +43,13 @@ class MovingObstacleTIntersection:
             self.model.theta = np.pi
             self.x_turn = 12
 
+    @property
     def steering_angle(self) -> float:
         steering_angle = 0.  # rad
+
+        if self.turning is not True:
+            return steering_angle
+
         if self.direction == 1:
             if self.model.xc >= self.x_turn and self.model.theta > (-np.pi / 2):
                 steering_angle = -0.38  # steering angle right (short turn)
@@ -53,20 +59,22 @@ class MovingObstacleTIntersection:
 
         return steering_angle
 
-    def step(self) -> Tuple[float, float, float, float, float, float]:
-        steering_angle = 0 if self.turning is not True else self.steering_angle()
+    @property
+    def forward_velocity(self):
         if self.offset is None or self.counter > (self.offset / self.dt):
-            forward_velocity = self.forward_velocity
+            forward_velocity = self.speed
         else:
             forward_velocity = 0
-        self.model.step(forward_velocity, steering_angle)
+        return forward_velocity
 
+    def step(self):
+        steering_angle = self.steering_angle
+        self.model.step(self.forward_velocity, steering_angle)
         self.counter += 1
-        acceleration = 0.0
-        return self.model.xc, self.model.yc, forward_velocity, self.model.theta, acceleration, steering_angle
 
-    def get(self) -> Tuple[float, float, float]:
-        return self.model.xc, self.model.yc, self.model.theta
+    def get(self) -> Tuple[float, float, float, float, float, float]:
+        acceleration = 0.0
+        return self.model.xc, self.model.yc, self.forward_velocity, self.model.theta, acceleration, self.steering_angle
 
 
 if __name__ == "__main__":
@@ -83,7 +91,8 @@ if __name__ == "__main__":
     # Run the simulation
     for t in range(length):  # 5 seconds, because dt of bicycle model is 10e-3
         for i_obs, obstacle in enumerate(obstacles):
-            positions[i_obs, t] = obstacle.step()
+            obstacle.step()
+            positions[i_obs, t] = obstacle.get()
 
     print(positions.shape)
 

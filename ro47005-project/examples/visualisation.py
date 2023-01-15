@@ -58,7 +58,8 @@ if __name__ == "__main__":
     for t in range(length):  # 5 seconds, because dt of bicycle model is 10e-3
         # Update the moving obstacles
         for i_obs, obstacle in enumerate(obstacles):
-            positions_obstacles[i_obs, t] = obstacle.step()
+            obstacle.step()
+            positions_obstacles[i_obs, t] = obstacle.get()
 
         # Check for collision
 
