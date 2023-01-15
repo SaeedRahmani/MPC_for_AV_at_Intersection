@@ -107,14 +107,18 @@ def main():
         math.ceil(car_dimensions.radius / dl))  # no. of frames - corresponds approximately to car length
 
     traj_agent_idx = 0
+    tmp_trajectory = None
 
     for i in itertools.count():
         if mpc.is_goal(state):
             break
 
         # cutoff the trajectory by the closest future index
-        traj_agent_idx = calc_nearest_index_in_direction(state, trajectory[:, 0], trajectory[:, 1],
-                                                         start_index=traj_agent_idx, forward=True)
+        # but don't do it if the trajectory is exactly one point already,
+        # so that the car doesn't move slowly forwards
+        if tmp_trajectory is None or np.any(tmp_trajectory[traj_agent_idx, :] != tmp_trajectory[-1, :]):
+            traj_agent_idx = calc_nearest_index_in_direction(state, trajectory[:, 0], trajectory[:, 1],
+                                                             start_index=traj_agent_idx, forward=True)
         trajectory_res = trajectory[traj_agent_idx:]
 
         # compute trajectory to correspond to a car that starts from its current speed and accelerates
