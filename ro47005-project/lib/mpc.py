@@ -11,7 +11,7 @@ import numpy as np
 
 from lib.car_dimensions import CarDimensions
 from lib.simulation import State, Simulation
-from lib.trajectories import calc_nearest_index
+from lib.trajectories import calc_nearest_index, calc_nearest_index_in_direction
 
 NX = 4  # x = x, y, v, yaw
 NU = 2  # a = [accel, steer]
@@ -87,7 +87,7 @@ def _calc_ref_trajectory(state, cx, cy, cyaw, dl, dt, start_idx, ov):
     dref = np.zeros((1, T + 1))
     ncourse = len(cx)
 
-    start_idx = max(calc_nearest_index(state, cx, cy, start_idx), start_idx)
+    start_idx = calc_nearest_index_in_direction(state, cx, cy, start_index=start_idx, forward=True)
 
     dref[:, :T + 1] = 0.0  # steer operational point should be 0.0 for indices 0 to T
 

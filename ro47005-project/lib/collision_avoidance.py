@@ -66,7 +66,7 @@ def _offset_trajectories_by_frames(trajs: List[np.ndarray], offsets: Union[List[
 
 def check_collision_moving_cars(car_dimensions: CarDimensions, traj_agent: np.ndarray,
                                 traj_obstacles: List[np.ndarray], frame_window: int = 0) -> Optional[
-    Tuple[float, float]]:
+    Tuple[float, float, float]]:
     offsets = np.array(range(-frame_window, frame_window + 1, 1))
     traj_obstacles = _offset_trajectories_by_frames(traj_obstacles, offsets=offsets)
 
@@ -84,10 +84,10 @@ def check_collision_moving_cars(car_dimensions: CarDimensions, traj_agent: np.nd
 
     first_frame_idx = first_row_idx // rows_per_frame
     x, y = traj_agent[first_frame_idx, :2]
-    return x, y
+    return x, y, first_frame_idx
 
 
-def cutoff_curve_by_position(points: np.ndarray, x: float, y: float, radius: float = 0.001) -> np.ndarray:
+def get_cutoff_curve_by_position_idx(points: np.ndarray, x: float, y: float, radius: float = 0.001) -> int:
     points_diff = points[:, :2].copy()
     points_diff[:, 0] -= x
     points_diff[:, 1] -= y
@@ -99,4 +99,4 @@ def cutoff_curve_by_position(points: np.ndarray, x: float, y: float, radius: flo
         # no cutoff
         return points
 
-    return points[:first_idx]
+    return first_idx

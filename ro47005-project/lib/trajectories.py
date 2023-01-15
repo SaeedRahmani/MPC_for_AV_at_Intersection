@@ -1,4 +1,6 @@
-from typing import List
+import heapq
+from enum import Enum
+from typing import List, Union
 
 import numpy as np
 
@@ -53,7 +55,7 @@ def car_trajectory_to_collision_point_trajectories(trajectory: np.ndarray, car_d
     return offset_trajectories
 
 
-def resample_curve(points: np.ndarray, dl: float,
+def resample_curve(points: np.ndarray, dl: Union[float, np.ndarray],
                    keep_last_point: bool = True) -> np.ndarray:
     """
     For a trajectory represented as a set of points, filter the points such that in the filtered representation,
@@ -92,4 +94,33 @@ def calc_nearest_index(state: State, cx: np.ndarray, cy: np.ndarray, start_index
     if len(d) > 0:
         return np.argmin(d) + start_index
     else:
+        return start_index
+
+
+def calc_nearest_index_in_direction(state: State, cx: np.ndarray, cy: np.ndarray, start_index: int = 0, forward: bool = True) -> int:
+    dist = np.linalg.norm([cx[start_index:] - state.x, cy[start_index:] - state.y], axis=0)
+
+    if len(dist) >= 3:
+        if len(dist) > 3:
+            ind = np.argpartition(dist, 3)[:3]
+            order = np.argsort(dist[ind])
+            ind = ind[order]
+        else:
+            ind = np.argsort(dist)
+
+        if np.abs(ind[1] - ind[2]) == 2:
+            return ind[0] + start_index
+
+        if np.abs(ind[0] - ind[1]) == 1:
+            if forward:
+                return max(ind[0], ind[1]) + start_index
+            else:
+                return min(ind[0], ind[1]) + start_index
+
+        raise Exception("something wrong")
+
+    if len(dist) == 2:
+        return 1 + start_index if forward else start_index
+
+    if len(dist) <= 1:
         return start_index
