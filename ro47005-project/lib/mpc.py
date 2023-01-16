@@ -92,7 +92,7 @@ def _calc_ref_trajectory(state, cx, cy, cyaw, dl, dt, start_idx, ov):
     dref[:, :T + 1] = 0.0  # steer operational point should be 0.0 for indices 0 to T
 
     if ov is None:
-        ov = np.ones((T + 1,)) * max(state.v, 5 / 3.6)
+        ov = np.ones((T + 1,)) * max(state.v, 10 / 3.6)
 
     travel = np.cumsum(np.abs(ov) * dt)
     idx = np.rint(travel / dl).astype(int)
