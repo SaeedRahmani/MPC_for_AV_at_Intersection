@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Tuple, Optional
+from typing import Tuple
 
 import numpy as np
 
@@ -38,9 +38,15 @@ class Obstacle(ABC):
     def distance_to_point(self, point: Tuple[float, float]) -> float:
         pass
 
+    @property
+    @abstractmethod
+    def hidden(self):
+        pass
+
 
 class BoxObstacle(Obstacle):
-    def __init__(self, xy_width: Tuple[float, float], height: float, xy_center: Tuple[float, float]):
+    def __init__(self, xy_width: Tuple[float, float], height: float, xy_center: Tuple[float, float],
+                 hidden: bool = False):
         self.xy_width = xy_width
         self.height = height
         self.xy_center = xy_center
@@ -49,18 +55,26 @@ class BoxObstacle(Obstacle):
         w_x, h_x = xy_width
         self.xy1 = c_x - w_x / 2, c_y - h_x / 2
         self.xy2 = c_x + w_x / 2, c_y + h_x / 2
+        self._hidden = hidden
 
         def _setattr(self, key, value):
             raise Exception("BoxObstacle objects are read-only")
 
         self.__setattr__ = _setattr
 
+    @property
+    def hidden(self):
+        return self._hidden
+
     def add_to_bullet_env(self, env):
         env.add_shapes(shape_type="GEOM_BOX", dim=[*self.xy_width, self.height], poses_2d=[[*self.xy_center, 0]])
 
-    def draw(self, ax, color=None):
+    def draw(self, ax, color=None, hidden_color='None'):
         # TODO: this assumes that the rectangle is not rotated
         from matplotlib.patches import Rectangle
+
+        if self.hidden:
+            color = hidden_color
 
         w_x, w_h = self.xy_width
         ax.add_patch(Rectangle(self.xy1, w_x, w_h, edgecolor=color, facecolor=color))
@@ -91,21 +105,30 @@ class BoxObstacle(Obstacle):
 
 class CircleObstacle(Obstacle):
 
-    def __init__(self, radius: float, height: float, xy_center: Tuple[float, float]):
+    def __init__(self, radius: float, height: float, xy_center: Tuple[float, float], hidden: bool = False):
         self.radius = radius
         self.height = height
         self.xy_center = xy_center
+        self._hidden = hidden
 
         def _setattr(self, key, value):
             raise Exception("CircleObstacle objects are read-only")
 
         self.__setattr__ = _setattr
 
+    @property
+    def hidden(self):
+        return self._hidden
+
     def add_to_bullet_env(self, env):
         env.add_shapes(shape_type="GEOM_CYLINDER", dim=[self.radius, self.height], poses_2d=[[*self.xy_center, 0]])
 
-    def draw(self, ax, color=None):
+    def draw(self, ax, color=None, hidden_color='None'):
         from matplotlib.patches import Circle
+
+        if self.hidden:
+            color = hidden_color
+
         ax.add_patch(Circle(self.xy_center, self.radius, edgecolor=color, facecolor=color))
 
     def to_convex(self, margin: float = 0.) -> np.ndarray:
