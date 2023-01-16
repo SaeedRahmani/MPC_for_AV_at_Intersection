@@ -16,6 +16,7 @@ from lib.mpc import MPC, MAX_ACCEL
 from lib.plotting import draw_car
 from lib.simulation import State, Simulation, History, HistorySimulation
 from lib.trajectories import resample_curve, calc_nearest_index_in_direction
+import time
 
 
 def visualize_frame(dt, frame_window, car_dimensions, collision_xy, i, moving_obstacles, mpc, scenario, simulation,
@@ -51,11 +52,12 @@ def visualize_frame(dt, frame_window, car_dimensions, collision_xy, i, moving_ob
 
         plt.title("Time: %.2f [s]" % (i * dt))
         plt.axis("equal")
-        plt.grid(True)
+        plt.grid(False)
 
         plt.xlim((-45, 45))
         plt.ylim((-50, 20))
-
+        # if i == 35:
+        #     time.sleep(5000)
         plt.pause(0.001)
         # plt.show()
 
@@ -70,10 +72,95 @@ def main():
 
     DT = 0.2
 
+    # ==================================================================================================================
+    ### Collision: one left, one straight, but bigger offset --> Detects turning to late
+    # moving_obstacles: List[MovingObstacleTIntersection] = [
+    #         MovingObstacleTIntersection(car_dimensions, direction=1, offset=0., turning=False, speed=30 / 3.6, dt=DT),
+    #         MovingObstacleTIntersection(car_dimensions, direction=-1, offset=3., turning=True, speed=25 / 3.6, dt=DT),
+    #     ]
+
+    ### Collision: both same direction going straight, too big offset --> MPC meshed up
+    # moving_obstacles: List[MovingObstacleTIntersection] = [
+    #     MovingObstacleTIntersection(car_dimensions, direction=1, offset=0., turning=False, speed=30 / 3.6, dt=DT),
+    #     MovingObstacleTIntersection(car_dimensions, direction=1, offset=6., turning=False, speed=30 / 3.6, dt=DT),
+    # ]
+
+
+
+    ### Works fine: both same direction and turning
+    # moving_obstacles: List[MovingObstacleTIntersection] = [
+    #     MovingObstacleTIntersection(car_dimensions, direction=-1, offset=0., turning=True, speed=20 / 3.6, dt=DT),
+    #     MovingObstacleTIntersection(car_dimensions, direction=-1, offset=3., turning=True, speed=20 / 3.6, dt=DT),
+    # ]
+
+    ### Works fine: both same direction, latter one turning
+    # moving_obstacles: List[MovingObstacleTIntersection] = [
+    #     MovingObstacleTIntersection(car_dimensions, direction=1, offset=0., turning=False, speed=20 / 3.6, dt=DT),
+    #     MovingObstacleTIntersection(car_dimensions, direction=1, offset=3., turning=True, speed=20 / 3.6, dt=DT),
+    # ]
+
+    ### Collision: both same direction, latter one turning --> in the middle of the intersection
+    # moving_obstacles: List[MovingObstacleTIntersection] = [
+    #     MovingObstacleTIntersection(car_dimensions, direction=-1, offset=0., turning=False, speed=20 / 3.6, dt=DT),
+    #     MovingObstacleTIntersection(car_dimensions, direction=-1, offset=3., turning=True, speed=20 / 3.6, dt=DT),
+    # ]
+
+    ### No collision, but leaves path
+    # moving_obstacles: List[MovingObstacleTIntersection] = [
+    #     MovingObstacleTIntersection(car_dimensions, direction=-1, offset=0., turning=False, speed=30 / 3.6, dt=DT),
+    #     MovingObstacleTIntersection(car_dimensions, direction=-1, offset=5., turning=False, speed=30 / 3.6, dt=DT),
+    # ]
+
+    # 3 ## Works fine: both turning
+    # moving_obstacles: List[MovingObstacleTIntersection] = [
+    #     MovingObstacleTIntersection(car_dimensions, direction=1, offset=0., turning=True, speed=30 / 3.6, dt=DT),
+    #     MovingObstacleTIntersection(car_dimensions, direction=1, offset=3., turning=True, speed=30 / 3.6, dt=DT),
+    # ]
+
+    ### Scenario 1
+    # moving_obstacles: List[MovingObstacleTIntersection] = []
+
+    ### Scenario 2
+    # moving_obstacles: List[MovingObstacleTIntersection] = [
+    #     MovingObstacleTIntersection(car_dimensions, direction=1, offset=1., turning=False, speed=30 / 3.6, dt=DT)]
+
+    ### Scenario 3
+    # moving_obstacles: List[MovingObstacleTIntersection] = [
+    #     MovingObstacleTIntersection(car_dimensions, direction=1, offset=0., turning=False, speed=30 / 3.6, dt=DT),
+    #     MovingObstacleTIntersection(car_dimensions, direction=-1, offset=1., turning=True, speed=25 / 3.6, dt=DT),
+    # ]
+
+    ### Scenario 4:
+    # moving_obstacles: List[MovingObstacleTIntersection] = [
+    #     MovingObstacleTIntersection(car_dimensions, direction=1, offset=0., turning=False, speed=30 / 3.6, dt=DT),
+    #     MovingObstacleTIntersection(car_dimensions, direction=1, offset=3., turning=False, speed=30 / 3.6, dt=DT),
+    # ]
+
+    ### Scenario 5
+    # moving_obstacles: List[MovingObstacleTIntersection] = [
+    #     MovingObstacleTIntersection(car_dimensions, direction=-1, offset=0., turning=True, speed=20 / 3.6, dt=DT),
+    #     MovingObstacleTIntersection(car_dimensions, direction=-1, offset=3., turning=True, speed=20 / 3.6, dt=DT),
+    # ]
+
+    ### Scenario 6
+    # moving_obstacles: List[MovingObstacleTIntersection] = [
+    #     MovingObstacleTIntersection(car_dimensions, direction=1, offset=0., turning=True, speed=30 / 3.6, dt=DT),
+    #     MovingObstacleTIntersection(car_dimensions, direction=1, offset=3., turning=True, speed=30 / 3.6, dt=DT),
+    # ]
+
+    ### Scenario 7
+    # moving_obstacles: List[MovingObstacleTIntersection] = [
+    #     MovingObstacleTIntersection(car_dimensions, direction=-1, offset=0., turning=False, speed=30 / 3.6, dt=DT),
+    #     MovingObstacleTIntersection(car_dimensions, direction=-1, offset=5., turning=False, speed=30 / 3.6, dt=DT),
+    # ]
+
+    ### Scenario 8
     moving_obstacles: List[MovingObstacleTIntersection] = [
         MovingObstacleTIntersection(car_dimensions, direction=1, offset=0., turning=False, speed=30 / 3.6, dt=DT),
-        MovingObstacleTIntersection(car_dimensions, direction=-1, turning=True, speed=25 / 3.6, dt=DT),
+        MovingObstacleTIntersection(car_dimensions, direction=-1, offset=0., turning=False, speed=30 / 3.6, dt=DT),
+        MovingObstacleTIntersection(car_dimensions, direction=-1, offset=5., turning=False, speed=30 / 3.6, dt=DT),
     ]
+    # ==================================================================================================================
 
     #########
     # MOTION PRIMITIVE SEARCH
@@ -169,23 +256,33 @@ def main():
 
 
 def visualize_final(history: History):
+    fontsize = 25
+
     plt.figure()
+    plt.rcParams['font.size'] = fontsize
     plt.plot(history.t, np.array(history.v) * 3.6, "-r", label="speed")
     plt.grid(True)
-    plt.xlabel("Time [s]")
-    plt.ylabel("Speed [km/h]")
+    plt.xlabel("Time [s]", fontsize=fontsize)
+    plt.ylabel("Speed [km/h]", fontsize=fontsize)
+    plt.tight_layout()
     plt.show()
+
     plt.figure()
+    plt.rcParams['font.size'] = fontsize
     plt.plot(history.t, history.a, "-r", label="acceleration")
     plt.grid(True)
-    plt.xlabel("Time [s]")
-    plt.ylabel("Acceleration [$m/s^2$]")
+    plt.xlabel("Time [s]", fontsize=fontsize)
+    plt.ylabel("Acceleration [$m/s^2$]", fontsize=fontsize)
+    plt.tight_layout()
     plt.show()
+
     plt.figure()
+    plt.rcParams['font.size'] = fontsize
     plt.plot(history.t, history.xref_deviation, "-r", label="Deviation from reference trajectory")
     plt.grid(True)
-    plt.xlabel("Time [s]")
-    plt.ylabel("Deviation [m]")
+    plt.xlabel("Time [s]", fontsize=fontsize)
+    plt.ylabel("Deviation [m]", fontsize=fontsize)
+    plt.tight_layout()
     plt.show()
 
 

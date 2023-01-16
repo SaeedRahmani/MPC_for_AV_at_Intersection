@@ -42,7 +42,7 @@ def _get_rowwise_diffs(car_dimensions, traj_agent: np.ndarray, traj_obstacles: L
         [cc_tr[:, :2] for tr in traj_obstacles for cc_tr in
          car_trajectory_to_collision_point_trajectories(tr, car_dimensions)], repeats=n_circle_centers)
     assert rows_per_frame_ag == rows_per_frame_obs
-    print("Number of point pairs:", len(cc_pts_ag))
+    # print("Number of point pairs:", len(cc_pts_ag))
     return rows_per_frame_ag, cc_pts_ag, cc_pts_obs
 
 
