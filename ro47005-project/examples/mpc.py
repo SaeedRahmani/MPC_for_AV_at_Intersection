@@ -84,16 +84,16 @@ def main():
     #########
     search = MotionPrimitiveSearch(scenario, car_dimensions, mps, margin=car_dimensions.radius)
 
-    _, _, trajectory = search.run(debug=False)
+    _, _, trajectory_full = search.run(debug=False)
 
     #########
     # INIT MPC
     #########
-    dl = np.linalg.norm(trajectory[0, :2] - trajectory[1, :2])
+    dl = np.linalg.norm(trajectory_full[0, :2] - trajectory_full[1, :2])
 
-    mpc = MPC(cx=trajectory[:, 0], cy=trajectory[:, 1], cyaw=trajectory[:, 2], dl=dl, dt=DT,
+    mpc = MPC(cx=trajectory_full[:, 0], cy=trajectory_full[:, 1], cyaw=trajectory_full[:, 2], dl=dl, dt=DT,
               car_dimensions=car_dimensions)
-    state = State(x=trajectory[0, 0], y=trajectory[0, 1], yaw=trajectory[0, 2], v=0.0)
+    state = State(x=trajectory_full[0, 0], y=trajectory_full[0, 1], yaw=trajectory_full[0, 2], v=0.0)
 
     simulation = HistorySimulation(car_dimensions=car_dimensions, sample_time=DT, initial_state=state)
     history = simulation.history  # gets updated automatically as simulation runs
@@ -117,9 +117,9 @@ def main():
         # but don't do it if the trajectory is exactly one point already,
         # so that the car doesn't move slowly forwards
         if tmp_trajectory is None or np.any(tmp_trajectory[traj_agent_idx, :] != tmp_trajectory[-1, :]):
-            traj_agent_idx = calc_nearest_index_in_direction(state, trajectory[:, 0], trajectory[:, 1],
+            traj_agent_idx = calc_nearest_index_in_direction(state, trajectory_full[:, 0], trajectory_full[:, 1],
                                                              start_index=traj_agent_idx, forward=True)
-        trajectory_res = trajectory[traj_agent_idx:]
+        trajectory_res = trajectory = trajectory_full[traj_agent_idx:]
 
         # compute trajectory to correspond to a car that starts from its current speed and accelerates
         # as much as it can -> this is a prediction for our own agent
@@ -138,17 +138,18 @@ def main():
             for o in moving_obstacles]
 
         # find the collision location
-        collision_xy = check_collision_moving_cars(car_dimensions, trajectory_res, trajs_moving_obstacles, frame_window=FRAME_WINDOW)
+        collision_xy = check_collision_moving_cars(car_dimensions, trajectory_res, trajectory, trajs_moving_obstacles,
+                                                   frame_window=FRAME_WINDOW)
 
         # cutoff the curve such that it ends right before the collision (and some margin)
         if collision_xy is not None:
-            cutoff_idx = get_cutoff_curve_by_position_idx(trajectory, collision_xy[0],
+            cutoff_idx = get_cutoff_curve_by_position_idx(trajectory_full, collision_xy[0],
                                                           collision_xy[1]) - EXTRA_CUTOFF_MARGIN
             cutoff_idx = max(traj_agent_idx + 1, cutoff_idx)
             # cutoff_idx = max(traj_agent_idx + 1, cutoff_idx)
-            tmp_trajectory = trajectory[:cutoff_idx]
+            tmp_trajectory = trajectory_full[:cutoff_idx]
         else:
-            tmp_trajectory = trajectory
+            tmp_trajectory = trajectory_full
 
         # pass the cut trajectory to the MPC
         mpc.set_trajectory_fromarray(tmp_trajectory)

@@ -63,7 +63,7 @@ def _offset_trajectories_by_frames(trajs: List[np.ndarray], offsets: Union[List[
     return out
 
 
-def check_collision_moving_cars(car_dimensions: CarDimensions, traj_agent: np.ndarray,
+def check_collision_moving_cars(car_dimensions: CarDimensions, traj_agent: np.ndarray, path_agent_detailed: np.ndarray,
                                 traj_obstacles: List[np.ndarray], frame_window: int = 0) -> Optional[
     Tuple[float, float, float]]:
     offsets = np.array(range(-frame_window, frame_window + 1, 1))
@@ -86,18 +86,18 @@ def check_collision_moving_cars(car_dimensions: CarDimensions, traj_agent: np.nd
     # find the first position where the collision occurs :
     # get the circle position from the collision
     obstacle_position = cc_pts_obs[first_row_idx]
-    agent_ccs = np.concatenate([tr[:, :2] for tr in car_trajectory_to_collision_point_trajectories(traj_agent, car_dimensions)])
+    agent_ccs = np.concatenate([tr[:, :2] for tr in car_trajectory_to_collision_point_trajectories(path_agent_detailed, car_dimensions)])
 
     # compute difference of entire agent trajectory with the obstacle position
     mask = np.linalg.norm(obstacle_position - agent_ccs, axis=1) <= min_distance
 
     # get the earliest
-    first_frame_idx = np.argmax(mask) % len(traj_agent)
+    first_frame_idx = np.argmax(mask) % len(path_agent_detailed)
 
-    if first_frame_idx >= len(traj_agent):
+    if first_frame_idx >= len(path_agent_detailed):
         return None
 
-    x, y = traj_agent[first_frame_idx, :2]
+    x, y = path_agent_detailed[first_frame_idx, :2]
     return x, y, first_frame_idx
 
 
