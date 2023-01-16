@@ -66,6 +66,9 @@ def _offset_trajectories_by_frames(trajs: List[np.ndarray], offsets: Union[List[
 def check_collision_moving_cars(car_dimensions: CarDimensions, traj_agent: np.ndarray, path_agent_detailed: np.ndarray,
                                 traj_obstacles: List[np.ndarray], frame_window: int = 0) -> Optional[
     Tuple[float, float, float]]:
+    if len(traj_obstacles) == 0:
+        return None
+
     offsets = np.array(range(-frame_window, frame_window + 1, 1))
     traj_obstacles = _offset_trajectories_by_frames(traj_obstacles, offsets=offsets)
 
