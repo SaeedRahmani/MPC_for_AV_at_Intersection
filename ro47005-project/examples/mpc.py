@@ -67,7 +67,7 @@ def main():
     # INIT ENVIRONMENT
     #########
     mps = load_motion_primitives(version='bicycle_model')
-    scenario = t_intersection()
+    scenario = t_intersection(turn_left=False)
     car_dimensions: CarDimensions = BicycleModelDimensions(skip_back_circle_collision_checking=False)
 
     DT = 0.2
@@ -155,10 +155,16 @@ def main():
     # ]
 
     ### Scenario 8
+    # moving_obstacles: List[MovingObstacleTIntersection] = [
+    #     MovingObstacleTIntersection(car_dimensions, direction=1, offset=0., turning=False, speed=30 / 3.6, dt=DT),
+    #     MovingObstacleTIntersection(car_dimensions, direction=-1, offset=0., turning=False, speed=30 / 3.6, dt=DT),
+    #     MovingObstacleTIntersection(car_dimensions, direction=-1, offset=5., turning=False, speed=30 / 3.6, dt=DT),
+    # ]
+
+    ### Scenario 9
     moving_obstacles: List[MovingObstacleTIntersection] = [
-        MovingObstacleTIntersection(car_dimensions, direction=1, offset=0., turning=False, speed=30 / 3.6, dt=DT),
-        MovingObstacleTIntersection(car_dimensions, direction=-1, offset=0., turning=False, speed=30 / 3.6, dt=DT),
-        MovingObstacleTIntersection(car_dimensions, direction=-1, offset=5., turning=False, speed=30 / 3.6, dt=DT),
+        MovingObstacleTIntersection(car_dimensions, direction=1, offset=2., turning=False, speed=25 / 3.6, dt=DT),
+        MovingObstacleTIntersection(car_dimensions, direction=-1, offset=4., turning=True, speed=25 / 3.6, dt=DT),
     ]
     # ==================================================================================================================
 
