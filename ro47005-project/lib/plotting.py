@@ -20,7 +20,8 @@ def draw_scenario(scenario: Scenario, mps: Dict[str, MotionPrimitive], car_dimen
                   draw_car2=True, draw_mps2=True, mp_name='right1'):
     if draw_obstacles:
         for obstacle in scenario.obstacles:
-            obstacle.draw(ax, color=(0.5, 0.5, 0.5))
+            # obstacle.draw(ax, color=(0.5, 0.5, 0.5))
+            obstacle.draw(ax, color='b', hidden_color=(0.8, 0.8, 0.8))
 
     if draw_goal:
         scenario.goal_area.draw(ax, color=(1, 0.8, 0.8))
@@ -176,4 +177,4 @@ def draw_astar_search_points(search: Union[MotionPrimitiveSearch, AStar], ax, vi
     else:
         c = None
 
-    ax.scatter(debug_points[:, 0], debug_points[:, 1], c=c, cmap='viridis_r')
+    return ax.scatter(debug_points[:, 0], debug_points[:, 1], c=c, cmap='viridis_r')

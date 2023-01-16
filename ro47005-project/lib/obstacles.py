@@ -77,7 +77,7 @@ class BoxObstacle(Obstacle):
             color = hidden_color
 
         w_x, w_h = self.xy_width
-        ax.add_patch(Rectangle(self.xy1, w_x, w_h, edgecolor=color, facecolor=color))
+        ax.add_patch(Rectangle(self.xy1, w_x, w_h, edgecolor=None, facecolor=color))
 
     def to_convex(self, margin: float = 0.) -> np.ndarray:
         # TODO: this assumes that the rectangle is not rotated
@@ -129,7 +129,7 @@ class CircleObstacle(Obstacle):
         if self.hidden:
             color = hidden_color
 
-        ax.add_patch(Circle(self.xy_center, self.radius, edgecolor=color, facecolor=color))
+        ax.add_patch(Circle(self.xy_center, self.radius, edgecolor=None, facecolor=color))
 
     def to_convex(self, margin: float = 0.) -> np.ndarray:
         # Check if the rotation of the obstacle is zero

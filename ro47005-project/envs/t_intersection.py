@@ -6,7 +6,7 @@ from lib.obstacles import BoxObstacle, CircleObstacle
 from lib.scenario import Scenario
 
 
-def t_intersection(no_obstacles=False) -> Scenario:
+def t_intersection(no_obstacles=False, turn_left=True) -> Scenario:
     """ Function the build a T-intersection. Takes the gym environment as input. """
     # The intersection was originally build in urdf_envs which applies a scale factor on the pruis.urdf model
     # so to make the intersection usable for a normally sized prius, we should divide by the scale factor
@@ -19,7 +19,6 @@ def t_intersection(no_obstacles=False) -> Scenario:
     distance_center = corner_radius + width_road + width_traffic_island
     flip_start_position = False
     flip_goal_position = False
-    turn_left = True
     allowed_goal_theta_difference = np.pi / 16
 
     if flip_goal_position and not flip_start_position:
@@ -93,6 +92,17 @@ def t_intersection(no_obstacles=False) -> Scenario:
             # upper part of T
             BoxObstacle(xy_width=((2 * length + 2 * distance_center), width_pavement), height=height,
                         xy_center=(0, (width_traffic_island / 2 + width_road + width_pavement / 2))),
+
+            # Prevent the MP from looking in the wrong lanes / violating traffic rules
+            BoxObstacle(xy_width=(length, width_road), height=height,
+                        xy_center=(-(length / 2 + distance_center), - (width_road + width_traffic_island) / 2),
+                        hidden=True),
+            BoxObstacle(xy_width=(length, width_road), height=height,
+                        xy_center=((length / 2 + distance_center), (width_road + width_traffic_island) / 2),
+                        hidden=True),
+            BoxObstacle(xy_width=(width_road, length), height=height,
+                        xy_center=(-(width_road + width_traffic_island) / 2, -(length / 2 + distance_center)),
+                        hidden=True),
         ]
 
     return Scenario(

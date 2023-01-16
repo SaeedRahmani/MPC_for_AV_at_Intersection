@@ -75,7 +75,7 @@ def main():
     DT = 0.2
 
     moving_obstacles: List[MovingObstacleTIntersection] = [
-        MovingObstacleTIntersection(car_dimensions, direction=1, offset=1., turning=True, speed=10 / 3.6, dt=DT),
+        MovingObstacleTIntersection(car_dimensions, direction=1, offset=0., turning=False, speed=30 / 3.6, dt=DT),
         MovingObstacleTIntersection(car_dimensions, direction=-1, turning=True, speed=25 / 3.6, dt=DT),
     ]
 

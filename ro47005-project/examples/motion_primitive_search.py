@@ -11,7 +11,7 @@ if __name__ == '__main__':
     fig, ax = plt.subplots()
     for version in ['bicycle_model']:
         mps = load_motion_primitives(version=version)
-        scenario = t_intersection()
+        scenario = t_intersection(turn_left=True)
         car_dimensions: CarDimensions = BicycleModelDimensions(skip_back_circle_collision_checking=False)
 
         search = MotionPrimitiveSearch(scenario, car_dimensions, mps, margin=car_dimensions.radius)
@@ -40,7 +40,8 @@ if __name__ == '__main__':
             pass  # Break The Search On Keyboard Interrupt
 
         # Draw All Search Points
-        draw_astar_search_points(search, ax, visualize_heuristic=True, visualize_cost_to_come=False)
+        sc = draw_astar_search_points(search, ax, visualize_heuristic=True, visualize_cost_to_come=False)
+        plt.colorbar(sc)
 
     ax.axis('equal')
     plt.show()
