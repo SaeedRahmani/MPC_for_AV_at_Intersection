@@ -18,23 +18,11 @@ from lib.simulation import State, Simulation, History, HistorySimulation
 from lib.trajectories import resample_curve, calc_nearest_index_in_direction
 
 
-def visualize_mpc(mpc: MPC, state: State, history: History, car_dimensions: CarDimensions):
-    if mpc.ox is not None:
-        plt.plot(mpc.ox, mpc.oy, "+r", label="MPC")
-    # plt.plot(mpc.cx, mpc.cy, "-r", label="course")
-    # plt.plot(history.x, history.y, "ob", label="trajectory")
-    plt.plot(mpc.xref[0, :], mpc.xref[1, :], "+k", label="xref")
-    # plt.plot(mpc.cx[mpc.target_ind], mpc.cy[mpc.target_ind], "xg", label="target")
-    # for i in range(T + 1):
-    #     plt.plot([mpc.xref[0, i], mpc.ox[i]], [mpc.xref[1, i], mpc.oy[i]], c='k')
-    draw_car((state.x, state.y, state.yaw), steer=mpc.di, car_dimensions=car_dimensions, ax=plt.gca(), color='k')
-
-
 def visualize_frame(dt, frame_window, car_dimensions, collision_xy, i, moving_obstacles, mpc, scenario, simulation,
                     state, tmp_trajectory, trajectory_res, trajs_moving_obstacles):
     if i >= 0:
         plt.cla()
-        plt.plot(tmp_trajectory[:, 0], tmp_trajectory[:, 1], color='k')
+        plt.plot(tmp_trajectory[:, 0], tmp_trajectory[:, 1], color='b')
 
         if collision_xy is not None:
             plt.scatter([collision_xy[0]], [collision_xy[1]], color='r')
@@ -52,8 +40,16 @@ def visualize_frame(dt, frame_window, car_dimensions, collision_xy, i, moving_ob
             x, y, _, theta, _, _ = mo.get()
             draw_car((x, y, theta), car_dimensions, ax=plt.gca())
 
-        visualize_mpc(mpc, state, simulation.history, car_dimensions)
-        plt.title("Time: %.2f" % (i * dt))
+        plt.plot(simulation.history.x, simulation.history.y, '-r')
+
+        if mpc.ox is not None:
+            plt.plot(mpc.ox, mpc.oy, "+r", label="MPC")
+
+        plt.plot(mpc.xref[0, :], mpc.xref[1, :], "+k", label="xref")
+
+        draw_car((state.x, state.y, state.yaw), steer=mpc.di, car_dimensions=car_dimensions, ax=plt.gca(), color='k')
+
+        plt.title("Time: %.2f [s]" % (i * dt))
         plt.axis("equal")
         plt.grid(True)
 
@@ -166,7 +162,31 @@ def main():
             o.step()
 
         # step the simulation (i.e. move our agent forward)
-        state = simulation.step(a=acceleration, delta=delta)
+        state = simulation.step(a=acceleration, delta=delta, xref_deviation=mpc.get_current_xref_deviation())
+
+    # visualize final
+    visualize_final(simulation.history)
+
+
+def visualize_final(history: History):
+    plt.figure()
+    plt.plot(history.t, np.array(history.v) * 3.6, "-r", label="speed")
+    plt.grid(True)
+    plt.xlabel("Time [s]")
+    plt.ylabel("Speed [km/h]")
+    plt.show()
+    plt.figure()
+    plt.plot(history.t, history.a, "-r", label="acceleration")
+    plt.grid(True)
+    plt.xlabel("Time [s]")
+    plt.ylabel("Acceleration [$m/s^2$]")
+    plt.show()
+    plt.figure()
+    plt.plot(history.t, history.xref_deviation, "-r", label="Deviation from reference trajectory")
+    plt.grid(True)
+    plt.xlabel("Time [s]")
+    plt.ylabel("Deviation [m]")
+    plt.show()
 
 
 if __name__ == '__main__':

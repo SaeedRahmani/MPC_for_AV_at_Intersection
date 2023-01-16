@@ -1,6 +1,6 @@
 import math
 from dataclasses import dataclass
-from typing import List
+from typing import List, Optional
 
 import numpy as np
 
@@ -53,11 +53,11 @@ class HistorySimulation(Simulation):
     def __init__(self, car_dimensions: CarDimensions, sample_time: float, initial_state: State):
         super().__init__(car_dimensions, sample_time, initial_state)
         self.history = History(sample_time=sample_time)
-        self.history.store_state(initial_state)
+        self.history.store(initial_state, a=0., delta=0., xref_deviation=0.)
 
-    def step(self, a: float, delta: float) -> State:
+    def step(self, a: float, delta: float, xref_deviation: Optional[float] = None) -> State:
         new_state = super().step(a, delta)
-        self.history.store_state(new_state)
+        self.history.store(new_state, a=a, delta=delta, xref_deviation=xref_deviation)
         return new_state
 
 
@@ -69,21 +69,20 @@ class History:
         self.yaw: List[float] = []
         self.v: List[float] = []
         self.t: List[float] = []
-        self.d: List[float] = []
+        self.delta: List[float] = []
         self.a: List[float] = []
+        self.xref_deviation: List[float] = []
         self._sample_time = sample_time
 
-    def store_state(self, state: State):
+    def store(self, state: State, a: float, delta: float, xref_deviation: Optional[float] = None):
         self.x.append(state.x)
         self.y.append(state.y)
         self.yaw.append(state.yaw)
         self.v.append(state.v)
-
-    def store(self, state: State, a: float, d: float):
-        self.store_state(state)
         self.t.append(self.get_current_time() + self._sample_time)
-        self.d.append(d)
+        self.delta.append(delta)
         self.a.append(a)
+        self.xref_deviation.append(xref_deviation if xref_deviation is not None else np.nan)
 
     def get_current_time(self) -> float:
         return self.t[-1] if len(self.t) > 0 else 0.

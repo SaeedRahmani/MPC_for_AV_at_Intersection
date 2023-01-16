@@ -297,6 +297,15 @@ class MPC:
 
         return self.di, self.ai
 
+    def get_current_xref_deviation(self):
+        ref_point = np.array([self.cx[self.target_ind], self.cy[self.target_ind]])
+        true_point = np.array([self.ox[0], self.oy[0]])
+
+        ref_yaw_perp = self.cyaw[self.target_ind] + np.pi / 2
+        diff_vect = ref_point - true_point
+        ref_dir_normal = np.array([np.cos(ref_yaw_perp) * diff_vect[0], np.sin(ref_yaw_perp) * diff_vect[1]])
+        return np.linalg.norm(ref_dir_normal)
+
     def is_goal(self, state: State) -> bool:
         # check goal
         dx = state.x - self.goal[0]
