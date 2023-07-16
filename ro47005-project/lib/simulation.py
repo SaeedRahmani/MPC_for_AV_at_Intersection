@@ -51,9 +51,9 @@ class HistorySimulation(Simulation):
     """Simulation that also automatically keeps track of history"""
 
     def __init__(self, car_dimensions: CarDimensions, sample_time: float, initial_state: State):
-        super().__init__(car_dimensions, sample_time, initial_state)
-        self.history = History(sample_time=sample_time)
-        self.history.store(initial_state, a=0., delta=0., xref_deviation=0.)
+        super().__init__(car_dimensions, sample_time, initial_state) # loads from the Simulation Class
+        self.history = History(sample_time=sample_time) # initializing the History class to make the place holders for needed variables
+        self.history.store(initial_state, a=0., delta=0., xref_deviation=0.) # Storing the variables for the initial state
 
     def step(self, a: float, delta: float, xref_deviation: Optional[float] = None) -> State:
         new_state = super().step(a, delta)

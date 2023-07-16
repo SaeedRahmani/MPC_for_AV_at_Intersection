@@ -67,7 +67,7 @@ def main():
     # INIT ENVIRONMENT
     #########
     mps = load_motion_primitives(version='bicycle_model')
-    scenario = t_intersection(turn_left=False)
+    scenario = t_intersection(turn_left=True)
     car_dimensions: CarDimensions = BicycleModelDimensions(skip_back_circle_collision_checking=False)
 
     DT = 0.2
@@ -171,9 +171,15 @@ def main():
     #########
     # MOTION PRIMITIVE SEARCH
     #########
-    search = MotionPrimitiveSearch(scenario, car_dimensions, mps, margin=car_dimensions.radius)
 
+    start_time = time.time()
+    
+    search = MotionPrimitiveSearch(scenario, car_dimensions, mps, margin=car_dimensions.radius)    
     _, _, trajectory_full = search.run(debug=False)
+    
+    end_time = time.time()
+    search_runtime = end_time - start_time
+    print('search runtime is: {}'.format(search_runtime))
 
     #########
     # INIT MPC
@@ -198,7 +204,10 @@ def main():
     traj_agent_idx = 0
     tmp_trajectory = None
 
+    loop_runtimes = []
+    start_time = time.time()
     for i in itertools.count():
+        loop_start_time = time.time()
         if mpc.is_goal(state):
             break
 
@@ -245,6 +254,11 @@ def main():
 
         # compute the MPC
         delta, acceleration = mpc.step(state)
+        
+        # runtime calculation
+        loop_end_time = time.time()
+        loop_runtime = loop_end_time - loop_start_time
+        loop_runtimes.append(loop_runtime)
 
         # show the computation results
         visualize_frame(DT, FRAME_WINDOW, car_dimensions, collision_xy, i, moving_obstacles, mpc, scenario, simulation,
@@ -257,9 +271,16 @@ def main():
         # step the simulation (i.e. move our agent forward)
         state = simulation.step(a=acceleration, delta=delta, xref_deviation=mpc.get_current_xref_deviation())
 
+    # printing runtimes
+    end_time = time.time()
+    loops_total_runtime = sum(loop_runtimes)
+    total_runtime = end_time - start_time
+    print('total loops run time is: {}'.format(loops_total_runtime))
+    print('total run time is: {}'.format(total_runtime))
+    print('each mpc runtime is: {}'.format(loops_total_runtime / len(loop_runtimes)))
+
     # visualize final
     visualize_final(simulation.history)
-
 
 def visualize_final(history: History):
     fontsize = 25
