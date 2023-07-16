@@ -18,6 +18,7 @@ from lib.simulation import State, Simulation, History, HistorySimulation
 from lib.trajectories import resample_curve, calc_nearest_index_in_direction
 import time
 
+# This is a test comment to test the commits from iPadOS web version of VSCode
 
 def visualize_frame(dt, frame_window, car_dimensions, collision_xy, i, moving_obstacles, mpc, scenario, simulation,
                     state, tmp_trajectory, trajectory_res, trajs_moving_obstacles):
