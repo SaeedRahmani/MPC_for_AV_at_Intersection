@@ -205,6 +205,10 @@ def main():
     tmp_trajectory = None
 
     loop_runtimes = []
+    
+    # creating a list to store the location of obstacles through time for visulization
+    obstacles_positions = [[] for _ in moving_obstacles]
+    
     start_time = time.time()
     for i in itertools.count():
         loop_start_time = time.time()
@@ -265,7 +269,8 @@ def main():
                         state, tmp_trajectory, trajectory_res, trajs_moving_obstacles)
 
         # move all obstacles forward
-        for o in moving_obstacles:
+        for i_obs, o in enumerate(moving_obstacles):
+            obstacles_positions[i_obs].append((i, o.get())) # i is time here
             o.step()
 
         # step the simulation (i.e. move our agent forward)
