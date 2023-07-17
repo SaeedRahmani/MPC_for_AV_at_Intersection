@@ -18,7 +18,6 @@ from lib.simulation import State, Simulation, History, HistorySimulation
 from lib.trajectories import resample_curve, calc_nearest_index_in_direction
 import time
 
-
 def visualize_frame(dt, frame_window, car_dimensions, collision_xy, i, moving_obstacles, mpc, scenario, simulation,
                     state, tmp_trajectory, trajectory_res, trajs_moving_obstacles):
     if i >= 0:
@@ -286,6 +285,79 @@ def main():
 
     # visualize final
     visualize_final(simulation.history)
+    
+    # ploting the trajectories and conflicts
+    plot_trajectories(obstacles_positions, simulation.history)
+
+import matplotlib.ticker as ticker
+
+def plot_trajectories(obstacles_positions, ego_positions: History):
+    # Create a new figure and get the current axes
+    fig = plt.figure()
+    ax = plt.gca()
+
+    # Get colormap
+    cmap = plt.cm.get_cmap('viridis')
+
+    # Time step duration
+    dt = 0.2  # seconds
+
+    # For each obstacle
+    for i_obstacle, obstacle_positions in enumerate(obstacles_positions):
+        # Unpack the positions and times
+        times, positions = zip(*obstacle_positions)
+        positions = np.array(positions)
+        # Convert time to seconds and normalize for color mapping
+        times = np.array(times) * dt  # convert times to a numpy array and to seconds
+        times_norm = times / max(times)
+        # Plot each segment of the trajectory with a color corresponding to its time
+        for i_time in range(1, len(times)):
+            color = cmap(times_norm[i_time])
+            plt.plot(positions[(i_time-1):(i_time+1), 0], positions[(i_time-1):(i_time+1), 1], color=color, linewidth=3)
+            
+    # For the ego vehicle
+    times, ego_x, ego_y = ego_positions.t, ego_positions.x, ego_positions.y
+    ego_positions = np.column_stack((ego_x, ego_y))
+    # Convert time to seconds and normalize for color mapping
+    times = np.array(times) * dt  # convert times to a numpy array and to seconds
+    times_norm = times / max(times)
+    # Plot each segment of the trajectory with a color corresponding to its time
+    for i_time in range(1, len(times)):
+        color = cmap(times_norm[i_time])
+        plt.plot(ego_positions[(i_time-1):(i_time+1), 0], ego_positions[(i_time-1):(i_time+1), 1], color=color, linewidth=3)
+
+
+    # Add a colorbar indicating the time progression in seconds
+    sm = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(vmin=0, vmax=max(times)))
+    cb = fig.colorbar(sm, ax=ax)  # add the colorbar to the current axes
+
+    # Set colorbar ticks to every 2 seconds
+    tick_locator = ticker.MultipleLocator(base=2)
+    cb.locator = tick_locator
+    cb.update_ticks()
+
+    # Set colorbar label font size
+    cb.set_label('Time (seconds)', size=12)
+    
+    # Set colorbar tick label font size
+    cb.ax.tick_params(labelsize=10)
+
+    # Set labels and title with smaller font size
+    plt.xlabel('X', fontsize=10)
+    plt.ylabel('Y', fontsize=10)
+    plt.title('Trajectories of Moving Obstacles', fontsize=12)
+
+    # Set axis limits
+    plt.xlim(-40, 40)
+    plt.ylim(-20, 10)
+
+    # Reduce tick label size
+    plt.xticks(fontsize=8)
+    plt.yticks(fontsize=8)
+
+    # Show the plot
+    plt.show()
+
 
 def visualize_final(history: History):
     fontsize = 25
@@ -317,6 +389,6 @@ def visualize_final(history: History):
     plt.tight_layout()
     plt.show()
 
-
 if __name__ == '__main__':
     main()
+

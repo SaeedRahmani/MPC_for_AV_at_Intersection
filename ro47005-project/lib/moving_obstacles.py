@@ -156,7 +156,7 @@ if __name__ == "__main__":
     # FFwriter = animation.FFMpegWriter(fps=100)
     # ani.save('moving_obstacles_trajectory.mp4', writer=FFwriter)
 
-    # plt.show()
+    #plt.show()
 
     ################# Create animation: Not possible with changing colors
     # fig, ax = plt.subplots()
