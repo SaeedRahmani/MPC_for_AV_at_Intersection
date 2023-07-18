@@ -49,10 +49,14 @@ def intersection(turn_indicator: int, start_pos: int) -> Scenario:
 
     start = start_positions[start_pos]
     goal = goal_positions[start_pos][turn_indicator]
-
-    goal_area = BoxObstacle(xy_width=(width_road * 1.8, width_road), height=height, xy_center=(goal[0], goal[1]))
-
-    # Plotting the intersection
+    
+    # Because the goal area is a rectangle and depends on the end position
+    if ((start_pos == 1 or 3) and (turn_indicator == 1 or 3)) or ((start_pos == 2 or 4) and (turn_indicator == 2)):
+        goal_area = BoxObstacle(xy_width=(width_road * 1.8, width_road), height=height, xy_center=(goal[0], goal[1]))
+    else:
+        goal_area = BoxObstacle(xy_width=(width_road, width_road * 1.8), height=height, xy_center=(goal[0], goal[1]))
+    
+    # Obstacles for defining the intersection
     obstacles = [
         # Full intersection
         
