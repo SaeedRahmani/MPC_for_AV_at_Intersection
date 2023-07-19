@@ -137,20 +137,72 @@ def intersection(turn_indicator: int, start_pos: int) -> Scenario:
                             (length / 2 + distance_center),
                             (width_traffic_island / 2 + width_road + width_pavement / 2)
                             ))
-        # We should also add some hidden obstacles in for prohibitting the traffic rules. But because this is a general scenario,
-        # we should make it conditional to the vehicle's start and goal positions. Therefore, I will add it to Motion Primitives.
-        # Prevent the MP from looking in the wrong lanes / violating traffic rules
-        # BoxObstacle(xy_width=(length, width_road), height=height,
-        #             xy_center=(-(length / 2 + distance_center), - (width_road + width_traffic_island) / 2),
-        #             hidden=True),
-        # BoxObstacle(xy_width=(length, width_road), height=height,
-        #             xy_center=((length / 2 + distance_center), (width_road + width_traffic_island) / 2),
-        #             hidden=True),
-        # BoxObstacle(xy_width=(width_road, length), height=height,
-        #             xy_center=(-(width_road + width_traffic_island) / 2, -(length / 2 + distance_center)),
-
     ]
     
+    # We should also add some hidden obstacles in for prohibitting the traffic rules. But because this is a general scenario,
+    # we should make it conditional to the vehicle's start and goal positions. Therefore, I will add it to Motion Primitives.
+        
+    if start_pos == 1:
+        obstacles.extend([
+            BoxObstacle(xy_width=(length, width_road), height=height,
+                        xy_center=(-(length / 2 + distance_center), - (width_road + width_traffic_island) / 2),
+                        hidden=True),
+            BoxObstacle(xy_width=(length, width_road), height=height,
+                        xy_center=((length / 2 + distance_center), (width_road + width_traffic_island) / 2),
+                        hidden=True),
+            BoxObstacle(xy_width=(width_road, length), height=height,
+                        xy_center=(-(width_road + width_traffic_island) / 2, -(length / 2 + distance_center)),
+                        hidden=True),
+            BoxObstacle(xy_width=(width_road, length), height=height,
+                        xy_center=(-(width_road + width_traffic_island) / 2, (length / 2 + distance_center)),
+                        hidden=True)
+            ])
+    elif start_pos == 2:
+        obstacles.extend([
+            BoxObstacle(xy_width=(length, width_road), height=height,
+                        xy_center=(-(length / 2 + distance_center), (width_road + width_traffic_island) / 2),
+                        hidden=True),
+            BoxObstacle(xy_width=(length, width_road), height=height,
+                        xy_center=((length / 2 + distance_center), (width_road + width_traffic_island) / 2),
+                        hidden=True),
+            BoxObstacle(xy_width=(width_road, length), height=height,
+                        xy_center=((width_road + width_traffic_island) / 2, -(length / 2 + distance_center)),
+                        hidden=True),
+            BoxObstacle(xy_width=(width_road, length), height=height,
+                        xy_center=(-(width_road + width_traffic_island) / 2, (length / 2 + distance_center)),
+                        hidden=True)
+            ])
+    elif start_pos == 3:
+        obstacles.extend([
+            BoxObstacle(xy_width=(length, width_road), height=height,
+                        xy_center=(-(length / 2 + distance_center), - (width_road + width_traffic_island) / 2),
+                        hidden=True),
+            BoxObstacle(xy_width=(length, width_road), height=height,
+                        xy_center=((length / 2 + distance_center), (width_road + width_traffic_island) / 2),
+                        hidden=True),
+            BoxObstacle(xy_width=(width_road, length), height=height,
+                        xy_center=((width_road + width_traffic_island) / 2, -(length / 2 + distance_center)),
+                        hidden=True),
+            BoxObstacle(xy_width=(width_road, length), height=height,
+                        xy_center=((width_road + width_traffic_island) / 2, (length / 2 + distance_center)),
+                        hidden=True)
+            ])
+    else:
+        obstacles.extend([
+            BoxObstacle(xy_width=(length, width_road), height=height,
+                        xy_center=(-(length / 2 + distance_center), - (width_road + width_traffic_island) / 2),
+                        hidden=True),
+            BoxObstacle(xy_width=(length, width_road), height=height,
+                        xy_center=((length / 2 + distance_center), -(width_road + width_traffic_island) / 2),
+                        hidden=True),
+            BoxObstacle(xy_width=(width_road, length), height=height,
+                        xy_center=((width_road + width_traffic_island) / 2, -(length / 2 + distance_center)),
+                        hidden=True),
+            BoxObstacle(xy_width=(width_road, length), height=height,
+                        xy_center=(-(width_road + width_traffic_island) / 2, (length / 2 + distance_center)),
+                        hidden=True)
+            ])
+
     return Scenario(
         start=start,
         goal_point=goal,
@@ -224,5 +276,5 @@ def plot_intersection():
     plt.show()
 
 # If you want to see how it looks like, uncomment the following and execute the py file
-# if __name__ == '__main__':
-#     plot_intersection()
+if __name__ == '__main__':
+    plot_intersection()
