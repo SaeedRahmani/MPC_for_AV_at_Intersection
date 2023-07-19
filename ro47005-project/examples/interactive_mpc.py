@@ -1,6 +1,8 @@
 import itertools
 import math
 from typing import List
+import sys
+sys.path.append('..')
 
 import numpy as np
 from matplotlib import pyplot as plt

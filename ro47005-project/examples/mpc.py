@@ -1,6 +1,8 @@
 import itertools
 import math
 from typing import List
+import sys
+sys.path.append('..')
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -210,6 +212,7 @@ def main():
     
     start_time = time.time()
     for i in itertools.count():
+        
         loop_start_time = time.time()
         if mpc.is_goal(state):
             break
@@ -288,7 +291,7 @@ def main():
     
     # ploting the trajectories and conflicts
     plot_trajectories(obstacles_positions, simulation.history)
-
+    
 import matplotlib.ticker as ticker
 
 def plot_trajectories(obstacles_positions, ego_positions: History):
@@ -358,7 +361,6 @@ def plot_trajectories(obstacles_positions, ego_positions: History):
     # Show the plot
     plt.show()
 
-
 def visualize_final(history: History):
     fontsize = 25
 
@@ -391,4 +393,5 @@ def visualize_final(history: History):
 
 if __name__ == '__main__':
     main()
+
 

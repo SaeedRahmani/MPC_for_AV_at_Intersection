@@ -1,5 +1,7 @@
 from matplotlib import pyplot as plt
 import matplotlib.lines as mlines
+import sys
+sys.path.append('..')
 
 from envs.intersection import intersection
 from lib.car_dimensions import BicycleModelDimensions, CarDimensions
@@ -10,9 +12,14 @@ from lib.plotting import draw_scenario, draw_astar_search_points
 
 if __name__ == '__main__':
     fig, ax = plt.subplots()
+    
+    #Scenario Parameters
+    start_pos=3
+    turn_indicator=1
+    
     for version in ['bicycle_model']:
         mps = load_motion_primitives(version=version)
-        scenario = intersection(turn_indicator=1, start_pos=2)
+        scenario = intersection(turn_indicator=turn_indicator, start_pos=start_pos)
         car_dimensions: CarDimensions = BicycleModelDimensions(skip_back_circle_collision_checking=False)
 
         search = MotionPrimitiveSearch(scenario, car_dimensions, mps, margin=car_dimensions.radius)
