@@ -7,10 +7,10 @@ from lib.obstacles import Obstacle
 @dataclass
 class Scenario:
     start: Tuple[float, float, float]
-    obstacles: List[Obstacle]
-    goal_area: Obstacle
     goal_point: Tuple[float, float, float]
+    goal_area: Obstacle
     allowed_goal_theta_difference: float
+    obstacles: List[Obstacle]
 
 # The Scenario class is defined as a Python data class. Data classes are a way of creating classes which primarily exist to hold values and don't contain much functionality. They're a useful way of grouping related data together without having to write boilerplate code for things like initialization and representation.
 # When you create an instance of a data class, you pass in values for the attributes as arguments to the constructor.

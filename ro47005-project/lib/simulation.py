@@ -22,7 +22,7 @@ class State:
 class Simulation:
     MAX_STEER = np.deg2rad(45.0)  # maximum steering angle [rad]
     MAX_SPEED = 30.0 / 3.6  # maximum speed [m/s]
-    MIN_SPEED = 0.  # minimum speed [m/s]
+    MIN_SPEED = -5.  # minimum speed [m/s]
 
     def __init__(self, car_dimensions: CarDimensions, sample_time: float, initial_state: State):
         self._bicycle = Bicycle(car_dimensions=car_dimensions, sample_time=sample_time)

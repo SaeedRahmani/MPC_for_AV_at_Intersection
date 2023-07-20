@@ -12,7 +12,8 @@ from envs.intersection import intersection
 from lib.car_dimensions import CarDimensions, BicycleModelDimensions
 from lib.collision_avoidance import check_collision_moving_cars, get_cutoff_curve_by_position_idx
 from lib.motion_primitive import load_motion_primitives
-from lib.motion_primitive_search import MotionPrimitiveSearch
+# from lib.motion_primitive_search import MotionPrimitiveSearch
+from lib.motion_primitive_search_modified import MotionPrimitiveSearch
 from lib.moving_obstacles import MovingObstacleTIntersection
 from lib.moving_obstacles_prediction import MovingObstaclesPrediction
 from lib.mpc import MPC, MAX_ACCEL
@@ -30,8 +31,8 @@ def main():
     mps = load_motion_primitives(version='bicycle_model')
     car_dimensions: CarDimensions = BicycleModelDimensions(skip_back_circle_collision_checking=False)
 
-    start_pos = 2
-    turn_indicator = 3
+    start_pos = 4
+    turn_indicator = 2
     scenario = intersection(start_pos=start_pos, turn_indicator=turn_indicator)
     # scenario = t_intersection(turn_left=True)
 
