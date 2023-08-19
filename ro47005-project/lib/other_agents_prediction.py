@@ -1,19 +1,19 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import math
+import sys
+sys.path.append('..')
 
 from lib.car_dimensions import CarDimensions, BicycleModelDimensions
 
-### Pay attention:
-# The order of the state variables here are not consistent with
-# the order of variables in mpc (v before yaw--also there is a here)
-class MovingObstaclesPrediction:
-    def __init__(self, x, y, v, yaw, a, steering_angle, sample_time: float, car_dimensions: CarDimensions):
+### It assume constant speed for now ###
+class OtherAgentsPrediction:
+    def __init__(self, x, y, yaw, v, steering_angle, sample_time: float, car_dimensions: CarDimensions):
         self.x = x
         self.y = y
         self.v = v
+        # self.a = a
         self.yaw = yaw
-        self.a = a
         self.steering_angle = steering_angle
         self.L = car_dimensions.distance_back_to_front_wheel
         self.sample_time = sample_time
@@ -23,10 +23,11 @@ class MovingObstaclesPrediction:
 
         self.x += self.v * math.cos(self.yaw) * sample_time
         self.y += self.v * math.sin(self.yaw) * sample_time
-        self.v += self.a * sample_time
+        self.v += self.v
+        # self.v += self.a * sample_time
         self.yaw += (self.v / self.L) * math.tan(self.steering_angle) * sample_time
 
-        return self.x, self.y, self.v, self.yaw
+        return self.x, self.y, self.yaw, self.v
 
     def state_prediction(self, time_horizon):
         '''
@@ -60,7 +61,7 @@ if __name__ == '__main__':
 
     car_dimensions: CarDimensions = BicycleModelDimensions()
 
-    model = MovingObstaclesPrediction(x, y, v, yaw, a, steering_angle, sample_time=0.2, car_dimensions=car_dimensions)
+    model = OtherAgentsPrediction(x, y, yaw, v, steering_angle, sample_time=0.2, car_dimensions=car_dimensions)
     x_data, y_data, yaw_data, t_data = model.state_prediction(time_horizon=1)
     plt.plot(t_data, x_data)
     plt.show()

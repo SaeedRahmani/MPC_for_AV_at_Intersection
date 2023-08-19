@@ -24,26 +24,27 @@ def intersection(turn_indicator: int, start_pos: int) -> Scenario:
     }
     
     # 1: turn left, 2: go straight, 3: turn right
+    goal_distance = 30
     goal_positions = {
         1: {
-            1: (-30, (width_traffic_island + width_road) / 2, -np.pi),
-            2: ((width_traffic_island + width_road) / 2, 30, 0.5 * np.pi),
-            3: (30, -(width_traffic_island + width_road) / 2, 0)
+            1: (-goal_distance, (width_traffic_island + width_road) / 2, -np.pi),
+            2: ((width_traffic_island + width_road) / 2, goal_distance, 0.5 * np.pi),
+            3: (goal_distance, -(width_traffic_island + width_road) / 2, 0)
         },
         2: {
-            1: ((width_traffic_island + width_road) / 2, 30, 0.5 * np.pi),
-            2: (30, -(width_traffic_island + width_road) / 2, 0),
-            3: (-(width_traffic_island + width_road) / 2, -30, -0.5 * np.pi)
+            1: ((width_traffic_island + width_road) / 2, goal_distance, 0.5 * np.pi),
+            2: (goal_distance, -(width_traffic_island + width_road) / 2, 0),
+            3: (-(width_traffic_island + width_road) / 2, -goal_distance, -0.5 * np.pi)
         },
         3: {
-            1: (30, -(width_traffic_island + width_road) / 2, 0),
-            2: (-(width_traffic_island + width_road) / 2, -30, -0.5 * np.pi),
-            3: (-30, (width_traffic_island + width_road) / 2, -np.pi)
+            1: (goal_distance, -(width_traffic_island + width_road) / 2, 0),
+            2: (-(width_traffic_island + width_road) / 2, -goal_distance, -0.5 * np.pi),
+            3: (-goal_distance, (width_traffic_island + width_road) / 2, -np.pi)
         },
         4: {
-            1: (-(width_traffic_island + width_road) / 2, -30, -0.5 * np.pi),
-            2: (-30, (width_traffic_island + width_road) / 2, -np.pi),
-            3: ((width_traffic_island + width_road) / 2, 30, 0.5 * np.pi)
+            1: (-(width_traffic_island + width_road) / 2, -goal_distance, -0.5 * np.pi),
+            2: (-goal_distance, (width_traffic_island + width_road) / 2, -np.pi),
+            3: ((width_traffic_island + width_road) / 2, goal_distance, 0.5 * np.pi)
         }
     }
 

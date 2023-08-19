@@ -8,8 +8,8 @@ TNode = TypeVar("TNode", bound=Hashable)
 
 @dataclass
 class AStarDebugData(Generic[TNode]):
-    g: float
-    h: float
+    g: float # cost value
+    h: float # heuristic value
     node: TNode
     predecessor: TNode
 

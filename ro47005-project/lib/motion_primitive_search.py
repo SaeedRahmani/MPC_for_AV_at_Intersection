@@ -72,7 +72,7 @@ class MotionPrimitiveSearch:
         x, y, theta = node
         distance_xy = self._goal_area.distance_to_point(node[:2])
         distance_theta = max(0., abs(theta - self._gtheta) - self._allowed_goal_theta_difference)
-        return distance_xy + 2.7 * distance_theta
+        return distance_xy + 2.7 * distance_theta 
 
     def collision_checking_points_at(self, mp_name: str, configuration: Tuple[float, float, float]) -> np.ndarray:
         cc_points = self._mp_collision_points[mp_name]
