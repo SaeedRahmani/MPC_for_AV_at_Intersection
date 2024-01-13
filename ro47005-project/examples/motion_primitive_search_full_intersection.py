@@ -15,8 +15,8 @@ if __name__ == '__main__':
     fig, ax = plt.subplots()
     
     #Scenario Parameters
-    start_pos=1
-    turn_indicator=1
+    start_pos=3
+    turn_indicator=3
     
     for version in ['bicycle_model']:
         mps = load_motion_primitives(version=version)
@@ -26,7 +26,7 @@ if __name__ == '__main__':
         search = MotionPrimitiveSearch(scenario, car_dimensions, mps, margin=car_dimensions.radius)
 
         draw_scenario(scenario, mps, car_dimensions, search, ax,
-                      draw_obstacles=True, draw_goal=True, draw_car=True, draw_mps=False, draw_collision_checking=False,
+                      draw_obstacles=True, draw_goal=True, draw_car=True, draw_mps=True, draw_collision_checking=False,
                       draw_car2=False, draw_mps2=False, mp_name='right1')
 
 

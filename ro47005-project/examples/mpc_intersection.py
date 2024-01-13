@@ -37,7 +37,7 @@ def main():
     # scenario = t_intersection(turn_left=True)
 
     moving_obstacles: List[MovingObstacleTIntersection] = [
-        MovingObstacleTIntersection(car_dimensions, direction=1, offset=2., turning=False, speed=25 / 3.6, dt=DT),
+        MovingObstacleTIntersection(car_dimensions, direction=1, offset=4., turning=False, speed=25 / 3.6, dt=DT),
         MovingObstacleTIntersection(car_dimensions, direction=-1, offset=4., turning=True, speed=25 / 3.6, dt=DT)
     ]
     

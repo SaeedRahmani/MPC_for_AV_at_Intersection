@@ -1,5 +1,7 @@
 from matplotlib import pyplot as plt
 import matplotlib.lines as mlines
+import sys
+sys.path.append('..')
 
 from envs.t_intersection import t_intersection
 from lib.car_dimensions import BicycleModelDimensions, CarDimensions
@@ -12,7 +14,7 @@ if __name__ == '__main__':
     fig, ax = plt.subplots()
     for version in ['bicycle_model']:
         mps = load_motion_primitives(version=version)
-        scenario = t_intersection(turn_left=True)
+        scenario = t_intersection(turn_left=False)
         car_dimensions: CarDimensions = BicycleModelDimensions(skip_back_circle_collision_checking=False)
 
         search = MotionPrimitiveSearch(scenario, car_dimensions, mps, margin=car_dimensions.radius)
