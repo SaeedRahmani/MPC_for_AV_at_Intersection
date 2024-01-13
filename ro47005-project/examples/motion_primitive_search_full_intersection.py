@@ -3,24 +3,30 @@ import matplotlib.lines as mlines
 import sys
 sys.path.append('..')
 
-from envs.t_intersection import t_intersection
+from envs.intersection import intersection
 from lib.car_dimensions import BicycleModelDimensions, CarDimensions
 from lib.helpers import measure_time
 from lib.motion_primitive import load_motion_primitives
-from lib.motion_primitive_search import MotionPrimitiveSearch
+#from lib.motion_primitive_search import MotionPrimitiveSearch
+from lib.motion_primitive_search_modified import MotionPrimitiveSearch
 from lib.plotting import draw_scenario, draw_astar_search_points
 
 if __name__ == '__main__':
     fig, ax = plt.subplots()
+    
+    #Scenario Parameters
+    start_pos=3
+    turn_indicator=3
+    
     for version in ['bicycle_model']:
         mps = load_motion_primitives(version=version)
-        scenario = t_intersection(turn_left=False)
+        scenario = intersection(turn_indicator=turn_indicator, start_pos=start_pos)
         car_dimensions: CarDimensions = BicycleModelDimensions(skip_back_circle_collision_checking=False)
 
         search = MotionPrimitiveSearch(scenario, car_dimensions, mps, margin=car_dimensions.radius)
 
         draw_scenario(scenario, mps, car_dimensions, search, ax,
-                      draw_obstacles=True, draw_goal=True, draw_car=True, draw_mps=False, draw_collision_checking=False,
+                      draw_obstacles=True, draw_goal=True, draw_car=True, draw_mps=True, draw_collision_checking=False,
                       draw_car2=False, draw_mps2=False, mp_name='right1')
 
 

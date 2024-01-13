@@ -7,11 +7,13 @@ sys.path.append('..')
 import numpy as np
 from matplotlib import pyplot as plt
 
-from envs.t_intersection import t_intersection
+# from envs.t_intersection import t_intersection
+from envs.intersection import intersection, plot_intersection
 from lib.car_dimensions import CarDimensions, BicycleModelDimensions
 from lib.collision_avoidance import check_collision_moving_cars, get_cutoff_curve_by_position_idx
 from lib.motion_primitive import load_motion_primitives
-from lib.motion_primitive_search import MotionPrimitiveSearch
+# from lib.motion_primitive_search import MotionPrimitiveSearch
+from lib.motion_primitive_search_modified import MotionPrimitiveSearch
 from lib.moving_obstacles import MovingObstacleTIntersection
 from lib.moving_obstacles_prediction import MovingObstaclesPrediction
 from lib.mpc import MPC, MAX_ACCEL
@@ -20,155 +22,25 @@ from lib.simulation import State, Simulation, History, HistorySimulation
 from lib.trajectories import resample_curve, calc_nearest_index_in_direction
 import time
 
-def visualize_frame(dt, frame_window, car_dimensions, collision_xy, i, moving_obstacles, mpc, scenario, simulation,
-                    state, tmp_trajectory, trajectory_res, trajs_moving_obstacles):
-    if i >= 0:
-        plt.cla()
-        plt.plot(tmp_trajectory[:, 0], tmp_trajectory[:, 1], color='b')
-
-        if collision_xy is not None:
-            plt.scatter([collision_xy[0]], [collision_xy[1]], color='r')
-
-        plt.scatter([state.x], [state.y], color='r')
-        plt.scatter([trajectory_res[0, 0]], [trajectory_res[0, 1]], color='b')
-
-        for tr in [*trajs_moving_obstacles]:
-            plt.plot(tr[:, 0], tr[:, 1], color='b')
-
-        for obstacle in scenario.obstacles:
-            obstacle.draw(plt.gca(), color='b')
-
-        for mo in moving_obstacles:
-            x, y, _, theta, _, _ = mo.get()
-            draw_car((x, y, theta), car_dimensions, ax=plt.gca())
-
-        plt.plot(simulation.history.x, simulation.history.y, '-r')
-
-        if mpc.ox is not None:
-            plt.plot(mpc.ox, mpc.oy, "+r", label="MPC")
-
-        plt.plot(mpc.xref[0, :], mpc.xref[1, :], "+k", label="xref")
-
-        draw_car((state.x, state.y, state.yaw), steer=mpc.di, car_dimensions=car_dimensions, ax=plt.gca(), color='k')
-
-        plt.title("Time: %.2f [s]" % (i * dt))
-        plt.axis("equal")
-        plt.grid(False)
-
-        plt.xlim((-45, 45))
-        plt.ylim((-50, 20))
-        # if i == 35:
-        #     time.sleep(5000)
-        plt.pause(0.001)
-        # plt.show()
-
-
 def main():
     #########
     # INIT ENVIRONMENT
     #########
+    ###################### Scenario Parameters #####################
+    DT = 0.2
     mps = load_motion_primitives(version='bicycle_model')
-    scenario = t_intersection(turn_left=True)
     car_dimensions: CarDimensions = BicycleModelDimensions(skip_back_circle_collision_checking=False)
 
-    DT = 0.2
+    start_pos = 1
+    turn_indicator = 1
+    scenario = intersection(start_pos=start_pos, turn_indicator=turn_indicator)
+    # scenario = t_intersection(turn_left=True)
 
-    # ==================================================================================================================
-    ### Collision: one left, one straight, but bigger offset --> Detects turning to late
-    # moving_obstacles: List[MovingObstacleTIntersection] = [
-    #         MovingObstacleTIntersection(car_dimensions, direction=1, offset=0., turning=False, speed=30 / 3.6, dt=DT),
-    #         MovingObstacleTIntersection(car_dimensions, direction=-1, offset=3., turning=True, speed=25 / 3.6, dt=DT),
-    #     ]
-
-    ### Collision: both same direction going straight, too big offset --> MPC meshed up
-    # moving_obstacles: List[MovingObstacleTIntersection] = [
-    #     MovingObstacleTIntersection(car_dimensions, direction=1, offset=0., turning=False, speed=30 / 3.6, dt=DT),
-    #     MovingObstacleTIntersection(car_dimensions, direction=1, offset=6., turning=False, speed=30 / 3.6, dt=DT),
-    # ]
-
-
-
-    ### Works fine: both same direction and turning
-    # moving_obstacles: List[MovingObstacleTIntersection] = [
-    #     MovingObstacleTIntersection(car_dimensions, direction=-1, offset=0., turning=True, speed=20 / 3.6, dt=DT),
-    #     MovingObstacleTIntersection(car_dimensions, direction=-1, offset=3., turning=True, speed=20 / 3.6, dt=DT),
-    # ]
-
-    ### Works fine: both same direction, latter one turning
-    # moving_obstacles: List[MovingObstacleTIntersection] = [
-    #     MovingObstacleTIntersection(car_dimensions, direction=1, offset=0., turning=False, speed=20 / 3.6, dt=DT),
-    #     MovingObstacleTIntersection(car_dimensions, direction=1, offset=3., turning=True, speed=20 / 3.6, dt=DT),
-    # ]
-
-    ### Collision: both same direction, latter one turning --> in the middle of the intersection
-    # moving_obstacles: List[MovingObstacleTIntersection] = [
-    #     MovingObstacleTIntersection(car_dimensions, direction=-1, offset=0., turning=False, speed=20 / 3.6, dt=DT),
-    #     MovingObstacleTIntersection(car_dimensions, direction=-1, offset=3., turning=True, speed=20 / 3.6, dt=DT),
-    # ]
-
-    ### No collision, but leaves path
-    # moving_obstacles: List[MovingObstacleTIntersection] = [
-    #     MovingObstacleTIntersection(car_dimensions, direction=-1, offset=0., turning=False, speed=30 / 3.6, dt=DT),
-    #     MovingObstacleTIntersection(car_dimensions, direction=-1, offset=5., turning=False, speed=30 / 3.6, dt=DT),
-    # ]
-
-    # 3 ## Works fine: both turning
-    # moving_obstacles: List[MovingObstacleTIntersection] = [
-    #     MovingObstacleTIntersection(car_dimensions, direction=1, offset=0., turning=True, speed=30 / 3.6, dt=DT),
-    #     MovingObstacleTIntersection(car_dimensions, direction=1, offset=3., turning=True, speed=30 / 3.6, dt=DT),
-    # ]
-
-    ### Scenario 1
-    # moving_obstacles: List[MovingObstacleTIntersection] = []
-
-    ### Scenario 2
-    # moving_obstacles: List[MovingObstacleTIntersection] = [
-    #     MovingObstacleTIntersection(car_dimensions, direction=1, offset=1., turning=False, speed=30 / 3.6, dt=DT)]
-
-    ### Scenario 3
-    # moving_obstacles: List[MovingObstacleTIntersection] = [
-    #     MovingObstacleTIntersection(car_dimensions, direction=1, offset=0., turning=False, speed=30 / 3.6, dt=DT),
-    #     MovingObstacleTIntersection(car_dimensions, direction=-1, offset=1., turning=True, speed=25 / 3.6, dt=DT),
-    # ]
-
-    ### Scenario 4:
-    # moving_obstacles: List[MovingObstacleTIntersection] = [
-    #     MovingObstacleTIntersection(car_dimensions, direction=1, offset=0., turning=False, speed=30 / 3.6, dt=DT),
-    #     MovingObstacleTIntersection(car_dimensions, direction=1, offset=3., turning=False, speed=30 / 3.6, dt=DT),
-    # ]
-
-    ### Scenario 5
-    # moving_obstacles: List[MovingObstacleTIntersection] = [
-    #     MovingObstacleTIntersection(car_dimensions, direction=-1, offset=0., turning=True, speed=20 / 3.6, dt=DT),
-    #     MovingObstacleTIntersection(car_dimensions, direction=-1, offset=3., turning=True, speed=20 / 3.6, dt=DT),
-    # ]
-
-    ### Scenario 6
-    # moving_obstacles: List[MovingObstacleTIntersection] = [
-    #     MovingObstacleTIntersection(car_dimensions, direction=1, offset=0., turning=True, speed=30 / 3.6, dt=DT),
-    #     MovingObstacleTIntersection(car_dimensions, direction=1, offset=3., turning=True, speed=30 / 3.6, dt=DT),
-    # ]
-
-    ### Scenario 7
-    # moving_obstacles: List[MovingObstacleTIntersection] = [
-    #     MovingObstacleTIntersection(car_dimensions, direction=-1, offset=0., turning=False, speed=30 / 3.6, dt=DT),
-    #     MovingObstacleTIntersection(car_dimensions, direction=-1, offset=5., turning=False, speed=30 / 3.6, dt=DT),
-    # ]
-
-    ### Scenario 8
-    # moving_obstacles: List[MovingObstacleTIntersection] = [
-    #     MovingObstacleTIntersection(car_dimensions, direction=1, offset=0., turning=False, speed=30 / 3.6, dt=DT),
-    #     MovingObstacleTIntersection(car_dimensions, direction=-1, offset=0., turning=False, speed=30 / 3.6, dt=DT),
-    #     MovingObstacleTIntersection(car_dimensions, direction=-1, offset=5., turning=False, speed=30 / 3.6, dt=DT),
-    # ]
-
-    ### Scenario 9
     moving_obstacles: List[MovingObstacleTIntersection] = [
-        MovingObstacleTIntersection(car_dimensions, direction=1, offset=2., turning=False, speed=25 / 3.6, dt=DT),
+        MovingObstacleTIntersection(car_dimensions, direction=1, offset=4., turning=False, speed=25 / 3.6, dt=DT),
         MovingObstacleTIntersection(car_dimensions, direction=-1, offset=4., turning=True, speed=25 / 3.6, dt=DT)
     ]
-    # ==================================================================================================================
-
+    
     #########
     # MOTION PRIMITIVE SEARCH
     #########
@@ -212,7 +84,6 @@ def main():
     
     start_time = time.time()
     for i in itertools.count():
-        
         loop_start_time = time.time()
         if mpc.is_goal(state):
             break
@@ -291,7 +162,7 @@ def main():
     
     # ploting the trajectories and conflicts
     plot_trajectories(obstacles_positions, simulation.history)
-    
+
 import matplotlib.ticker as ticker
 
 def plot_trajectories(obstacles_positions, ego_positions: History):
@@ -305,7 +176,18 @@ def plot_trajectories(obstacles_positions, ego_positions: History):
     # Time step duration
     dt = 0.2  # seconds
 
-    # For each obstacle
+    # For the ego vehicle
+    times, ego_x, ego_y = ego_positions.t, ego_positions.x, ego_positions.y
+    ego_positions = np.column_stack((ego_x, ego_y))
+    # Convert time to seconds and normalize for color mapping
+    times = np.array(times) * dt  # convert times to a numpy array and to seconds
+    times_norm = times / max(times)
+    # Plot each segment of the trajectory with a color corresponding to its time
+    for i_time in range(1, len(times)):
+        color = cmap(times_norm[i_time])
+        plt.plot(ego_positions[(i_time-1):(i_time+1), 0], ego_positions[(i_time-1):(i_time+1), 1], color=color, linewidth=8)
+
+   # For each obstacle
     for i_obstacle, obstacle_positions in enumerate(obstacles_positions):
         # Unpack the positions and times
         times, positions = zip(*obstacle_positions)
@@ -316,20 +198,8 @@ def plot_trajectories(obstacles_positions, ego_positions: History):
         # Plot each segment of the trajectory with a color corresponding to its time
         for i_time in range(1, len(times)):
             color = cmap(times_norm[i_time])
-            plt.plot(positions[(i_time-1):(i_time+1), 0], positions[(i_time-1):(i_time+1), 1], color=color, linewidth=3)
+            plt.plot(positions[(i_time-1):(i_time+1), 0], positions[(i_time-1):(i_time+1), 1], color=color, linewidth=4)
             
-    # For the ego vehicle
-    times, ego_x, ego_y = ego_positions.t, ego_positions.x, ego_positions.y
-    ego_positions = np.column_stack((ego_x, ego_y))
-    # Convert time to seconds and normalize for color mapping
-    times = np.array(times) * dt  # convert times to a numpy array and to seconds
-    times_norm = times / max(times)
-    # Plot each segment of the trajectory with a color corresponding to its time
-    for i_time in range(1, len(times)):
-        color = cmap(times_norm[i_time])
-        plt.plot(ego_positions[(i_time-1):(i_time+1), 0], ego_positions[(i_time-1):(i_time+1), 1], color=color, linewidth=3)
-
-
     # Add a colorbar indicating the time progression in seconds
     sm = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(vmin=0, vmax=max(times)))
     cb = fig.colorbar(sm, ax=ax)  # add the colorbar to the current axes
@@ -352,7 +222,7 @@ def plot_trajectories(obstacles_positions, ego_positions: History):
 
     # Set axis limits
     plt.xlim(-40, 40)
-    plt.ylim(-20, 10)
+    plt.ylim(-40, 40)
 
     # Reduce tick label size
     plt.xticks(fontsize=8)
@@ -390,8 +260,49 @@ def visualize_final(history: History):
     plt.ylabel("Deviation [m]", fontsize=fontsize)
     plt.tight_layout()
     plt.show()
+    
+def visualize_frame(dt, frame_window, car_dimensions, collision_xy, i, moving_obstacles, mpc, scenario, simulation,
+                    state, tmp_trajectory, trajectory_res, trajs_moving_obstacles):
+    if i >= 0:
+        plt.cla()
+        plt.plot(tmp_trajectory[:, 0], tmp_trajectory[:, 1], color='b')
+
+        if collision_xy is not None:
+            plt.scatter([collision_xy[0]], [collision_xy[1]], color='r')
+
+        plt.scatter([state.x], [state.y], color='r')
+        plt.scatter([trajectory_res[0, 0]], [trajectory_res[0, 1]], color='b')
+
+        for tr in [*trajs_moving_obstacles]:
+            plt.plot(tr[:, 0], tr[:, 1], color='b')
+
+        for obstacle in scenario.obstacles:
+            obstacle.draw(plt.gca(), color='b')
+
+        for mo in moving_obstacles:
+            x, y, _, theta, _, _ = mo.get()
+            draw_car((x, y, theta), car_dimensions, ax=plt.gca())
+
+        plt.plot(simulation.history.x, simulation.history.y, '-r')
+
+        if mpc.ox is not None:
+            plt.plot(mpc.ox, mpc.oy, "+r", label="MPC")
+
+        plt.plot(mpc.xref[0, :], mpc.xref[1, :], "+k", label="xref")
+
+        draw_car((state.x, state.y, state.yaw), steer=mpc.di, car_dimensions=car_dimensions, ax=plt.gca(), color='k')
+
+        plt.title("Time: %.2f [s]" % (i * dt))
+        plt.axis("equal")
+        plt.grid(False)
+
+        plt.xlim((-45, 45))
+        plt.ylim((-45, 45))
+        # if i == 35:
+        #     time.sleep(5000)
+        plt.pause(0.001)
+        # plt.show()
 
 if __name__ == '__main__':
     main()
-
 

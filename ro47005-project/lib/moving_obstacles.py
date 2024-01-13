@@ -33,7 +33,7 @@ class MovingObstacleTIntersection:
         #     warnings.warn("The dt is most likely not compatible with the bicycle model!")
         self.counter = 0
         if self.direction == 1:
-            self.model.xc = -30
+            self.model.xc = -15
             self.model.yc = -3
             self.model.theta = 0
             self.x_turn = -10
@@ -43,7 +43,10 @@ class MovingObstacleTIntersection:
             self.model.theta = np.pi
             self.x_turn = 12
 
-    @property
+    # We are defining this function as a property because it basically returns 
+    # steering angle as an attribute but we need to check some conditions and 
+    # make some changes if necessary before returning it
+    @property 
     def steering_angle(self) -> float:
         steering_angle = 0.  # rad
 
@@ -84,9 +87,9 @@ if __name__ == "__main__":
                  MovingObstacleTIntersection(car_dimensions, -1, False, 5),
                  MovingObstacleTIntersection(car_dimensions, -1, True, 5)]
 
-    length = 600  # steps in the simulation
+    length = 1000  # steps in the simulation
     colors = np.array([np.zeros(length), np.linspace(0, 1, length), np.ones(length)]).T.astype(float)
-    positions = np.zeros((len(obstacles), length, 5))
+    positions = np.zeros((len(obstacles), length, 6))
 
     # Run the simulation
     for t in range(length):  # 5 seconds, because dt of bicycle model is 10e-3
@@ -153,7 +156,7 @@ if __name__ == "__main__":
     # FFwriter = animation.FFMpegWriter(fps=100)
     # ani.save('moving_obstacles_trajectory.mp4', writer=FFwriter)
 
-    plt.show()
+    #plt.show()
 
     ################# Create animation: Not possible with changing colors
     # fig, ax = plt.subplots()

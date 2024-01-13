@@ -22,7 +22,7 @@ class State:
 class Simulation:
     MAX_STEER = np.deg2rad(45.0)  # maximum steering angle [rad]
     MAX_SPEED = 30.0 / 3.6  # maximum speed [m/s]
-    MIN_SPEED = 0.  # minimum speed [m/s]
+    MIN_SPEED = -5.  # minimum speed [m/s]
 
     def __init__(self, car_dimensions: CarDimensions, sample_time: float, initial_state: State):
         self._bicycle = Bicycle(car_dimensions=car_dimensions, sample_time=sample_time)
@@ -51,9 +51,9 @@ class HistorySimulation(Simulation):
     """Simulation that also automatically keeps track of history"""
 
     def __init__(self, car_dimensions: CarDimensions, sample_time: float, initial_state: State):
-        super().__init__(car_dimensions, sample_time, initial_state)
-        self.history = History(sample_time=sample_time)
-        self.history.store(initial_state, a=0., delta=0., xref_deviation=0.)
+        super().__init__(car_dimensions, sample_time, initial_state) # loads from the Simulation Class
+        self.history = History(sample_time=sample_time) # initializing the History class to make the place holders for needed variables
+        self.history.store(initial_state, a=0., delta=0., xref_deviation=0.) # Storing the variables for the initial state
 
     def step(self, a: float, delta: float, xref_deviation: Optional[float] = None) -> State:
         new_state = super().step(a, delta)

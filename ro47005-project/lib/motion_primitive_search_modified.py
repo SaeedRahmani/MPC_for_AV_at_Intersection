@@ -23,6 +23,7 @@ class MotionPrimitiveSearch:
 
         self._start = scenario.start
         self._goal_area = scenario.goal_area
+        self._goal_point = scenario.goal_point
         self._allowed_goal_theta_difference = scenario.allowed_goal_theta_difference
         self._obstacles_hp: List[np.ndarray] = [o.to_convex(margin=margin) for o in scenario.obstacles]
         self._gx, self._gy, self._gtheta = scenario.goal_point
@@ -68,11 +69,24 @@ class MotionPrimitiveSearch:
 
         return result
 
+    # def distance_to_goal(self, node: Tuple[float, float, float]) -> float:
+    #     x, y, theta = node
+    #     distance_xy = self._goal_area.distance_to_point(node[:2])
+    #     distance_theta = max(0., abs(theta - self._gtheta) - self._allowed_goal_theta_difference)
+    #     return distance_xy + 2.7 * distance_theta # equaling the scales?
+    
+    # Using the previous method will result to non-efficient path because it calculates the distance to the whole
+    # goal area (a rectangle instead of a point)
     def distance_to_goal(self, node: Tuple[float, float, float]) -> float:
         x, y, theta = node
-        distance_xy = self._goal_area.distance_to_point(node[:2])
-        distance_theta = max(0., abs(theta - self._gtheta) - self._allowed_goal_theta_difference)
-        return distance_xy + 2.7 * distance_theta 
+        goal_x, goal_y, goal_orientation = self._goal_point
+        distance_xy = np.sqrt((x - goal_x)**2 + (y - goal_y)**2) 
+        # distance_theta = max(0., abs(theta - goal_orientation) - self._allowed_goal_theta_difference)
+        # distance_theta = abs(theta - goal_orientation)
+        distance_theta = min(abs(theta - goal_orientation), abs(theta - goal_orientation) - self._allowed_goal_theta_difference/2)
+
+        #distance_from_center = np.sqrt((x - 0)**2 + (y - 0)**2)
+        return distance_xy + 2.7 * distance_theta # + 5 * distance_from_center # equaling the scales?
 
     def collision_checking_points_at(self, mp_name: str, configuration: Tuple[float, float, float]) -> np.ndarray:
         cc_points = self._mp_collision_points[mp_name]
@@ -117,7 +131,7 @@ class MotionPrimitiveSearch:
                 self._points_to_mp_names[node, neighbor] = mp_name
 
                 # yield
-                cost = mp.total_length
+                cost = mp.total_length 
                 yield cost, neighbor
 
     def path_to_full_trajectory(self, path: List[NodeType]) -> np.ndarray:
@@ -131,5 +145,5 @@ class MotionPrimitiveSearch:
             points_this = self.motion_primitive_at(mp_name=mp_name, configuration=p1)[:-1]
             points.append(points_this)
 
-        # get the whole trajectory
+        # get the whole trajectory 
         return np.concatenate(points, axis=0)
