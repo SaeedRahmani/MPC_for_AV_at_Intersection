@@ -33,7 +33,7 @@ class MovingObstacleTIntersection:
         #     warnings.warn("The dt is most likely not compatible with the bicycle model!")
         self.counter = 0
         if self.direction == 1:
-            self.model.xc = -15
+            self.model.xc = -30
             self.model.yc = -3
             self.model.theta = 0
             self.x_turn = -10
