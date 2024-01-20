@@ -152,62 +152,62 @@ def intersection(turn_indicator: int=1, start_pos: int=1, start_lane: int=1, goa
         
     if start_pos == 1:
         obstacles.extend([
-            BoxObstacle(xy_width=(section_length, lane_width), height=obstacles_height,
-                        xy_center=(-(section_length / 2 + start_of_section), - (lane_width + median_width) / 2),
+            BoxObstacle(xy_width=(section_length, number_of_lanes*lane_width), height=obstacles_height,
+                        xy_center=(-(section_length / 2 + start_of_section), - (number_of_lanes*lane_width + median_width) / 2),
                         hidden=True),
-            BoxObstacle(xy_width=(section_length, lane_width), height=obstacles_height,
-                        xy_center=((section_length / 2 + start_of_section), (lane_width + median_width) / 2),
+            BoxObstacle(xy_width=(section_length, number_of_lanes*lane_width), height=obstacles_height,
+                        xy_center=((section_length / 2 + start_of_section), (number_of_lanes*lane_width + median_width) / 2),
                         hidden=True),
-            BoxObstacle(xy_width=(lane_width, section_length), height=obstacles_height,
-                        xy_center=(-(lane_width + median_width) / 2, -(section_length / 2 + start_of_section)),
+            BoxObstacle(xy_width=(number_of_lanes*lane_width, section_length), height=obstacles_height,
+                        xy_center=(-(number_of_lanes*lane_width + median_width) / 2, -(section_length / 2 + start_of_section)),
                         hidden=True),
-            BoxObstacle(xy_width=(lane_width, section_length), height=obstacles_height,
-                        xy_center=(-(lane_width + median_width) / 2, (section_length / 2 + start_of_section)),
+            BoxObstacle(xy_width=(number_of_lanes*lane_width, section_length), height=obstacles_height,
+                        xy_center=(-(number_of_lanes*lane_width + median_width) / 2, (section_length / 2 + start_of_section)),
                         hidden=True)
             ])
     elif start_pos == 2:
         obstacles.extend([
-            BoxObstacle(xy_width=(section_length, lane_width), height=obstacles_height,
-                        xy_center=(-(section_length / 2 + start_of_section), (lane_width + median_width) / 2),
+            BoxObstacle(xy_width=(section_length, number_of_lanes*lane_width), height=obstacles_height,
+                        xy_center=(-(section_length / 2 + start_of_section), (number_of_lanes*lane_width + median_width) / 2),
                         hidden=True),
-            BoxObstacle(xy_width=(section_length, lane_width), height=obstacles_height,
-                        xy_center=((section_length / 2 + start_of_section), (lane_width + median_width) / 2),
+            BoxObstacle(xy_width=(section_length, number_of_lanes*lane_width), height=obstacles_height,
+                        xy_center=((section_length / 2 + start_of_section), (number_of_lanes*lane_width + median_width) / 2),
                         hidden=True),
-            BoxObstacle(xy_width=(lane_width, section_length), height=obstacles_height,
-                        xy_center=((lane_width + median_width) / 2, -(section_length / 2 + start_of_section)),
+            BoxObstacle(xy_width=(number_of_lanes*lane_width, section_length), height=obstacles_height,
+                        xy_center=((number_of_lanes*lane_width + median_width) / 2, -(section_length / 2 + start_of_section)),
                         hidden=True),
-            BoxObstacle(xy_width=(lane_width, section_length), height=obstacles_height,
-                        xy_center=(-(lane_width + median_width) / 2, (section_length / 2 + start_of_section)),
+            BoxObstacle(xy_width=(number_of_lanes*lane_width, section_length), height=obstacles_height,
+                        xy_center=(-(number_of_lanes*lane_width + median_width) / 2, (section_length / 2 + start_of_section)),
                         hidden=True)
             ])
     elif start_pos == 3:
         obstacles.extend([
-            BoxObstacle(xy_width=(section_length, lane_width), height=obstacles_height,
-                        xy_center=(-(section_length / 2 + start_of_section), - (lane_width + median_width) / 2),
+            BoxObstacle(xy_width=(section_length, number_of_lanes*lane_width), height=obstacles_height,
+                        xy_center=(-(section_length / 2 + start_of_section), - (number_of_lanes*lane_width + median_width) / 2),
                         hidden=True),
-            BoxObstacle(xy_width=(section_length, lane_width), height=obstacles_height,
-                        xy_center=((section_length / 2 + start_of_section), (lane_width + median_width) / 2),
+            BoxObstacle(xy_width=(section_length, number_of_lanes*lane_width), height=obstacles_height,
+                        xy_center=((section_length / 2 + start_of_section), (number_of_lanes*lane_width + median_width) / 2),
                         hidden=True),
-            BoxObstacle(xy_width=(lane_width, section_length), height=obstacles_height,
-                        xy_center=((lane_width + median_width) / 2, -(section_length / 2 + start_of_section)),
+            BoxObstacle(xy_width=(number_of_lanes*lane_width, section_length), height=obstacles_height,
+                        xy_center=((number_of_lanes*lane_width + median_width) / 2, -(section_length / 2 + start_of_section)),
                         hidden=True),
-            BoxObstacle(xy_width=(lane_width, section_length), height=obstacles_height,
-                        xy_center=((lane_width + median_width) / 2, (section_length / 2 + start_of_section)),
+            BoxObstacle(xy_width=(number_of_lanes*lane_width, section_length), height=obstacles_height,
+                        xy_center=((number_of_lanes*lane_width + median_width) / 2, (section_length / 2 + start_of_section)),
                         hidden=True)
             ])
     else:
         obstacles.extend([
-            BoxObstacle(xy_width=(section_length, lane_width), height=obstacles_height,
-                        xy_center=(-(section_length / 2 + start_of_section), - (lane_width + median_width) / 2),
+            BoxObstacle(xy_width=(section_length, number_of_lanes*lane_width), height=obstacles_height,
+                        xy_center=(-(section_length / 2 + start_of_section), - (number_of_lanes*lane_width + median_width) / 2),
                         hidden=True),
-            BoxObstacle(xy_width=(section_length, lane_width), height=obstacles_height,
+            BoxObstacle(xy_width=(section_length, number_of_lanes*lane_width), height=obstacles_height,
                         xy_center=((section_length / 2 + start_of_section), -(lane_width + median_width) / 2),
                         hidden=True),
-            BoxObstacle(xy_width=(lane_width, section_length), height=obstacles_height,
-                        xy_center=((lane_width + median_width) / 2, -(section_length / 2 + start_of_section)),
+            BoxObstacle(xy_width=(number_of_lanes*lane_width, section_length), height=obstacles_height,
+                        xy_center=((number_of_lanes*lane_width + median_width) / 2, -(section_length / 2 + start_of_section)),
                         hidden=True),
-            BoxObstacle(xy_width=(lane_width, section_length), height=obstacles_height,
-                        xy_center=(-(lane_width + median_width) / 2, (section_length / 2 + start_of_section)),
+            BoxObstacle(xy_width=(number_of_lanes*lane_width, section_length), height=obstacles_height,
+                        xy_center=(-(number_of_lanes*lane_width + median_width) / 2, (section_length / 2 + start_of_section)),
                         hidden=True)
             ])
 
