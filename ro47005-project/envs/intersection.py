@@ -1,6 +1,8 @@
 import sys
+sys.path.append('..')
 
 import numpy as np
+from matplotlib import pyplot as plt
 
 from lib.obstacles import BoxObstacle, CircleObstacle
 from lib.scenario import Scenario
@@ -225,8 +227,7 @@ def plot_intersection():
     corner_radius = 6
     distance_center = corner_radius + width_road + width_traffic_island
 
-    fig, ax = plt.subplots(figsize=(10, 10))
-
+    fig, ax = plt.subplots(figsize=(10, 10))      
     # Function to add a box obstacle with label
     def add_box(center, width, height, label=None, color='gray'):
         lower_left_corner = (center[0] - width / 2, center[1] - height / 2)
@@ -278,4 +279,9 @@ def plot_intersection():
 
 # If you want to see how it looks like, uncomment the following and execute the py file
 if __name__ == '__main__':
+    scenario = intersection(start_pos=1, turn_indicator=1)
+    
+    for obstacle in scenario.obstacles:
+        obstacle.draw(plt.gca(), color='b')
+        
     plot_intersection()
