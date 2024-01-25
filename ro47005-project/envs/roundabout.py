@@ -165,7 +165,7 @@ def roundabout(turn_indicator: int, start_pos: int) -> Scenario:
             #roundabout traffic rule
             BoxObstacle(xy_width=(width_traffic_island/2, distance_center), height=height,
                         xy_center=(0, - (distance_center/2)),
-                        hidden=False)
+                        hidden=True)
             ])
     elif start_pos == 2:
         obstacles.extend([
@@ -184,7 +184,7 @@ def roundabout(turn_indicator: int, start_pos: int) -> Scenario:
             #roundabout traffic rule
             BoxObstacle(xy_width=(distance_center, width_traffic_island/2), height=height,
                         xy_center=(-(distance_center/2), 0),
-                        hidden=False)
+                        hidden=True)
             ])
     elif start_pos == 3:
         obstacles.extend([
@@ -203,7 +203,7 @@ def roundabout(turn_indicator: int, start_pos: int) -> Scenario:
             #roundabout traffic rule
             BoxObstacle(xy_width=(width_traffic_island/2, distance_center), height=height,
                         xy_center=(0, (distance_center/2)),
-                        hidden=False)
+                        hidden=True)
             ])
     else:
         obstacles.extend([
@@ -222,7 +222,7 @@ def roundabout(turn_indicator: int, start_pos: int) -> Scenario:
             #roundabout traffic rule
             BoxObstacle(xy_width=(distance_center, width_traffic_island/2), height=height,
                         xy_center=((distance_center/2), 0),
-                        hidden=False)
+                        hidden=True)
             ])
 
     return Scenario(
