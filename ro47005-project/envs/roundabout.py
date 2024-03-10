@@ -14,7 +14,8 @@ def roundabout(turn_indicator: int, start_pos: int) -> Scenario:
     length = 30
     height = 0.5
     corner_radius = 6
-    distance_center = corner_radius + width_road + width_traffic_island
+    scale_factor = 1 # Factor specifying how wide the intersection and its main elements are
+    distance_center = scale_factor * (corner_radius + width_road + width_traffic_island / 2)
     allowed_goal_theta_difference = np.pi / 16
 
     # 1: south, 2: west, 3: north, 4, east
@@ -64,7 +65,7 @@ def roundabout(turn_indicator: int, start_pos: int) -> Scenario:
         # Full roundabout
         
         # Center of the roundabout
-        CircleObstacle(radius= 2, height=height,xy_center=(0, 0)),
+        CircleObstacle(radius= scale_factor * 2, height=height,xy_center=(0, 0)),
         
         # Medians (Islands)
         # south median
