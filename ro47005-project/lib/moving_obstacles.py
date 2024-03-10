@@ -5,11 +5,104 @@ import matplotlib.animation as animation
 import numpy as np
 from typing import Tuple
 
+import sys
+sys.path.append('..')
+
 from bicycle.main import Bicycle
 import warnings
 
 from lib.car_dimensions import CarDimensions, BicycleModelDimensions
 
+def calculate_steering_angle_for_radius(radius, L=2.86) -> float:
+    """
+    Calculate the required constant steering angle for a vehicle to drive in a circle of a given radius.
+    
+    :param radius: The radius of the circle in meters
+    :return: Required steering angle in radians
+    """
+    curvature = 1 / radius  # Curvature is the inverse of the radius
+    steering_angle = np.arctan(curvature * L)  # Steering angle calculation
+    return steering_angle
+
+
+class MovingObstacleRoundabout:
+    def __init__(self, car_dimensions: CarDimensions, direction: int, turning: bool, speed: float, offset=None,
+                 dt=10e-3):
+        """
+        Function that creates moving obstacles
+        :param car_dimensions:
+        :param direction: positive for moving to the right, negative for moving to the left
+        :param turning: True for turning, False for going straight
+        :param speed: sets the forward speed and is not bounded
+        :param offset: sets the time in seconds it should start moving after the start of the simulation. None or 0 for no offset
+        :param dt: the dt used in the simulator. !WARNING! is 10e-3 in the Bicycle model
+        """
+        self.direction = 1 if direction >= 0 else -1
+        self.turning = turning
+        self.speed = speed
+        self.model = Bicycle(car_dimensions=car_dimensions, sample_time=dt)
+        self.offset = None if offset is None else offset if offset > 0 else None  # None except if offset > 0
+        self.dt = dt
+        # if abs(dt - 10e-3) > 1e-6:
+        #     warnings.warn("The dt is most likely not compatible with the bicycle model!")
+        self.counter = 0
+        if self.direction == 1:
+            self.model.xc = -30
+            self.model.yc = -3
+            self.model.theta = 0
+            self.x_turn = -10
+        else:
+            self.model.xc = 30
+            self.model.yc = 3
+            self.model.theta = np.pi
+            self.x_turn = 12
+
+    # We are defining this function as a property because it basically returns 
+    # steering angle as an attribute but we need to check some conditions and 
+    # make some changes if necessary before returning it
+    @property 
+    def steering_angle(self) -> float:
+        steering_angle = 0.0
+
+        if self.turning is not True:
+            return steering_angle
+        
+        if self.direction == 1: #left to right
+            if 0 <= self.model.xc and self.model.theta <= np.pi:
+                steering_angle = calculate_steering_angle_for_radius(4)
+            # if ((self.x_turn + 5) < self.model.xc < (self.x_turn + 6)) and (self.model.yc < 0):
+            #     steering_angle = -calculate_steering_angle_for_radius(4)
+            # elif self.model.xc > (self.x_turn + 6):
+            #     steering_angle = calculate_steering_angle_for_radius(4)
+            # elif (self.x_turn +5) <self.model.xc < (self.x_turn + 6) and self.model.yc >0:
+            #     steering_angle = -calculate_steering_angle_for_radius(4)
+            # else:
+            #     steering_angle = 0
+
+
+        else:
+            if self.model.xc <= self.x_turn :
+                # steering_angle = -0.19  # steering angle left (long turn)
+                steering_angle = calculate_steering_angle_for_radius(3)
+
+        return steering_angle
+
+    @property
+    def forward_velocity(self):
+        if self.offset is None or self.counter > (self.offset / self.dt):
+            forward_velocity = self.speed
+        else:
+            forward_velocity = 0
+        return forward_velocity
+
+    def step(self):
+        steering_angle = self.steering_angle
+        self.model.step(self.forward_velocity, steering_angle)
+        self.counter += 1
+
+    def get(self) -> Tuple[float, float, float, float, float, float]:
+        acceleration = 0.0
+        return self.model.xc, self.model.yc, self.forward_velocity, self.model.theta, acceleration, self.steering_angle
 
 class MovingObstacleTIntersection:
     def __init__(self, car_dimensions: CarDimensions, direction: int, turning: bool, speed: float, offset=None,
@@ -82,10 +175,10 @@ class MovingObstacleTIntersection:
 
 if __name__ == "__main__":
     car_dimensions: CarDimensions = BicycleModelDimensions()
-    obstacles = [MovingObstacleTIntersection(car_dimensions, 1, True, 5),
-                 MovingObstacleTIntersection(car_dimensions, 1, False, 5),
-                 MovingObstacleTIntersection(car_dimensions, -1, False, 5),
-                 MovingObstacleTIntersection(car_dimensions, -1, True, 5)]
+    obstacles = [MovingObstacleRoundabout(car_dimensions, 1, True, 15),
+                 MovingObstacleRoundabout(car_dimensions, 1, False, 15),
+                 MovingObstacleRoundabout(car_dimensions, -1, False, 15),
+                 MovingObstacleRoundabout(car_dimensions, -1, True, 15)]
 
     length = 1000  # steps in the simulation
     colors = np.array([np.zeros(length), np.linspace(0, 1, length), np.ones(length)]).T.astype(float)
@@ -146,7 +239,7 @@ if __name__ == "__main__":
 
     # Set the axis values
     ax.axis([-20, 20, -25, 5])
-    ani = animation.FuncAnimation(fig, animate, frames=600, interval=10e-3)
+    ani = animation.FuncAnimation(fig, animate, frames=1000, interval=10e-3)
 
     start = mlines.Line2D([], [], color=colors[0], marker='o', ls='', label='Start point')
     end = mlines.Line2D([], [], color=colors[-1], marker='o', ls='', label='End point')

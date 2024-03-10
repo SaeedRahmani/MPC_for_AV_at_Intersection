@@ -14,7 +14,7 @@ from lib.collision_avoidance import check_collision_moving_cars, get_cutoff_curv
 from lib.motion_primitive import load_motion_primitives
 # from lib.motion_primitive_search import MotionPrimitiveSearch
 from lib.motion_primitive_search_modified import MotionPrimitiveSearch
-from lib.moving_obstacles import MovingObstacleTIntersection
+from lib.moving_obstacles import MovingObstacleTIntersection, MovingObstacleRoundabout
 from lib.moving_obstacles_prediction import MovingObstaclesPrediction
 from lib.mpc import MPC, MAX_ACCEL
 from lib.plotting import draw_car
@@ -36,9 +36,9 @@ def main():
     scenario = roundabout(start_pos=start_pos, turn_indicator=turn_indicator)
     # scenario = t_intersection(turn_left=True)
 
-    moving_obstacles: List[MovingObstacleTIntersection] = [
-        MovingObstacleTIntersection(car_dimensions, direction=1, offset=2., turning=False, speed=25 / 3.6, dt=DT),
-        MovingObstacleTIntersection(car_dimensions, direction=-1, offset=4., turning=True, speed=25 / 3.6, dt=DT)
+    moving_obstacles: List[MovingObstacleRoundabout] = [
+        MovingObstacleRoundabout(car_dimensions, direction=1, offset=2., turning=True, speed=25 / 3.6, dt=DT),
+        MovingObstacleRoundabout(car_dimensions, direction=-1, offset=4., turning=True, speed=25 / 3.6, dt=DT)
     ]
     
     #########
