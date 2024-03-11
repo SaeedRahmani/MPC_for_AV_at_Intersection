@@ -31,14 +31,14 @@ def main():
     mps = load_motion_primitives(version='bicycle_model')
     car_dimensions: CarDimensions = BicycleModelDimensions(skip_back_circle_collision_checking=False)
 
-    start_pos = 2
+    start_pos = 1
     turn_indicator = 1
     scenario = roundabout(start_pos=start_pos, turn_indicator=turn_indicator)
     # scenario = t_intersection(turn_left=True)
 
     moving_obstacles: List[MovingObstacleRoundabout] = [
-        MovingObstacleRoundabout(car_dimensions, direction=1, offset=2., turning=True, speed=25 / 3.6, dt=DT),
-        MovingObstacleRoundabout(car_dimensions, direction=-1, offset=4., turning=True, speed=25 / 3.6, dt=DT)
+        MovingObstacleRoundabout(car_dimensions, direction=1, offset=0., turning=True, speed=25 / 3.6, dt=DT),
+        MovingObstacleRoundabout(car_dimensions, direction=-1, offset=0., turning=True, speed=25 / 3.6, dt=DT)
     ]
     
     #########
@@ -139,7 +139,7 @@ def main():
 
         # show the computation results
         visualize_frame(DT, FRAME_WINDOW, car_dimensions, collision_xy, i, moving_obstacles, mpc, scenario, simulation,
-                        state, tmp_trajectory, trajectory_res, trajs_moving_obstacles)
+                        state, tmp_trajectory, trajectory_res, trajs_moving_obstacles, pred_show=True)
 
         # move all obstacles forward
         for i_obs, o in enumerate(moving_obstacles):
@@ -262,7 +262,7 @@ def visualize_final(history: History):
     plt.show()
     
 def visualize_frame(dt, frame_window, car_dimensions, collision_xy, i, moving_obstacles, mpc, scenario, simulation,
-                    state, tmp_trajectory, trajectory_res, trajs_moving_obstacles):
+                    state, tmp_trajectory, trajectory_res, trajs_moving_obstacles, pred_show = False):
     if i >= 0:
         plt.cla()
         plt.plot(tmp_trajectory[:, 0], tmp_trajectory[:, 1], color='b')
@@ -273,8 +273,9 @@ def visualize_frame(dt, frame_window, car_dimensions, collision_xy, i, moving_ob
         plt.scatter([state.x], [state.y], color='r')
         plt.scatter([trajectory_res[0, 0]], [trajectory_res[0, 1]], color='b')
 
-        for tr in [*trajs_moving_obstacles]:
-            plt.plot(tr[:, 0], tr[:, 1], color='b')
+        if pred_show:
+            for tr in [*trajs_moving_obstacles]:
+                plt.plot(tr[:, 0], tr[:, 1], color='b')
 
         for obstacle in scenario.obstacles:
             obstacle.draw(plt.gca(), color='b')
