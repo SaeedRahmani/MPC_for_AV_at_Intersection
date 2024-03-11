@@ -151,7 +151,7 @@ def _linear_mpc_control(xref, xbar, x0, dref, reaches_end, dt, car_dimensions: C
     constraints = []
 
     L = car_dimensions.distance_back_to_front_wheel
-
+    ## Add a cost for colliding the road boundries for cases we cannot follow the ref traj
     for t in range(T + 1):
         if t > 0:
             if not reaches_end[t]:
