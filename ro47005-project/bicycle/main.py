@@ -1,6 +1,9 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
+import sys
+sys.path.append('..')
+
 from lib.car_dimensions import CarDimensions, BicycleModelDimensions
 
 
@@ -9,7 +12,7 @@ from lib.car_dimensions import CarDimensions, BicycleModelDimensions
 # see page 29/80 to see the bicycle model used
 
 class Bicycle:
-    def __init__(self, car_dimensions: CarDimensions, sample_time: float = 10e-3):
+    def __init__(self, car_dimensions: CarDimensions, sample_time: float = 0.2): # old: 10e-3
         self.xc = 0
         self.yc = 0
         self.theta = 0

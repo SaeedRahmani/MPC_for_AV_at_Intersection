@@ -42,7 +42,7 @@ class MovingObstacleRoundabout:
         self.speed = speed
         self.model = Bicycle(car_dimensions=car_dimensions, sample_time=dt)
         self.offset = None if offset is None else offset if offset > 0 else None  # None except if offset > 0
-        self.dt = dt
+        self.dt = dt = 0.2
         # if abs(dt - 10e-3) > 1e-6:
         #     warnings.warn("The dt is most likely not compatible with the bicycle model!")
         self.counter = 0
@@ -67,9 +67,19 @@ class MovingObstacleRoundabout:
         if self.turning is not True:
             return steering_angle
         
-        if self.direction == 1: #left to right
-            if 0 <= self.model.xc and self.model.theta <= np.pi:
-                steering_angle = calculate_steering_angle_for_radius(4)
+        elif self.direction == 1: #left to right
+            if -7 <= self.model.xc <= -4 and self.model.yc < 0:
+                steering_angle = -calculate_steering_angle_for_radius(5) 
+                print(self.model.xc, self.model.yc) 
+            if -3 < self.model.xc:
+                steering_angle = calculate_steering_angle_for_radius(5)
+            if self.model.yc > 0 and -5 <= self.model.xc <= -3:
+                steering_angle = -calculate_steering_angle_for_radius(5)
+            if self.model.xc <= -3 and self.model.yc > 0:
+                self.model.theta = -np.pi
+                steering_angle = 0
+            
+            
             # if ((self.x_turn + 5) < self.model.xc < (self.x_turn + 6)) and (self.model.yc < 0):
             #     steering_angle = -calculate_steering_angle_for_radius(4)
             # elif self.model.xc > (self.x_turn + 6):
@@ -81,9 +91,16 @@ class MovingObstacleRoundabout:
 
 
         else:
-            if self.model.xc <= self.x_turn :
-                # steering_angle = -0.19  # steering angle left (long turn)
-                steering_angle = calculate_steering_angle_for_radius(3)
+            if 4 <= self.model.xc <= 7 and self.model.yc > 0:
+                steering_angle = -calculate_steering_angle_for_radius(5) 
+                print(self.model.xc, self.model.yc) 
+            if  self.model.xc < 3:
+                steering_angle = calculate_steering_angle_for_radius(5)
+            if self.model.yc < 0 and 3 <= self.model.xc <= 5:
+                steering_angle = -calculate_steering_angle_for_radius(5)
+            if 3 <= self.model.xc and self.model.yc < 0:
+                self.model.theta = 0
+                steering_angle = 0
 
         return steering_angle
 
@@ -175,10 +192,10 @@ class MovingObstacleTIntersection:
 
 if __name__ == "__main__":
     car_dimensions: CarDimensions = BicycleModelDimensions()
-    obstacles = [MovingObstacleRoundabout(car_dimensions, 1, True, 15),
-                 MovingObstacleRoundabout(car_dimensions, 1, False, 15),
-                 MovingObstacleRoundabout(car_dimensions, -1, False, 15),
-                 MovingObstacleRoundabout(car_dimensions, -1, True, 15)]
+    obstacles = [MovingObstacleRoundabout(car_dimensions, 1, True, 25),
+                 MovingObstacleRoundabout(car_dimensions, 1, False, 25),
+                 MovingObstacleRoundabout(car_dimensions, -1, False, 25),
+                 MovingObstacleRoundabout(car_dimensions, -1, True, 25)]
 
     length = 1000  # steps in the simulation
     colors = np.array([np.zeros(length), np.linspace(0, 1, length), np.ones(length)]).T.astype(float)
@@ -239,7 +256,7 @@ if __name__ == "__main__":
 
     # Set the axis values
     ax.axis([-20, 20, -25, 5])
-    ani = animation.FuncAnimation(fig, animate, frames=1000, interval=10e-3)
+    ani = animation.FuncAnimation(fig, animate, frames=1000, interval=0.2) # old 10e-3
 
     start = mlines.Line2D([], [], color=colors[0], marker='o', ls='', label='Start point')
     end = mlines.Line2D([], [], color=colors[-1], marker='o', ls='', label='End point')
