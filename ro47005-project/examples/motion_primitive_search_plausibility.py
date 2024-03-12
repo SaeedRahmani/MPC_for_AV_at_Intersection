@@ -19,11 +19,12 @@ if __name__ == '__main__':
     #Scenario Parameters
     start_pos=0.
     angle = np.pi
+    goal_distance = 20
     
     for i in np.arange(0, 1 + 1/4, 1/4): # lopp over several angles from 0 to 2*pi at 45 degree intervals
         for version in ['bicycle_model']:
             mps = load_motion_primitives(version=version)
-            scenario = free_area(angle=i*np.pi, start_pos=start_pos, goal_distance = 20)
+            scenario = free_area(angle=i*np.pi, start_pos=start_pos, goal_distance = goal_distance)
             car_dimensions: CarDimensions = BicycleModelDimensions(skip_back_circle_collision_checking=False)
 
             search = MotionPrimitiveSearch(scenario, car_dimensions, mps, margin=car_dimensions.radius)
