@@ -27,7 +27,7 @@ def calculate_steering_angle_for_radius(radius, L=2.86) -> float:
 
 class MovingObstacleRoundabout:
     def __init__(self, car_dimensions: CarDimensions, direction: int, turning: bool, speed: float, offset=None,
-                 dt=10e-3):
+                 dt=10e-3, start_pos=2, end_pos=4):
         """
         Function that creates moving obstacles
         :param car_dimensions:
@@ -43,6 +43,8 @@ class MovingObstacleRoundabout:
         self.model = Bicycle(car_dimensions=car_dimensions, sample_time=dt)
         self.offset = None if offset is None else offset if offset > 0 else None  # None except if offset > 0
         self.dt = dt = 0.2
+        self.start_pos = start_pos
+        self.end_pos = end_pos
         # if abs(dt - 10e-3) > 1e-6:
         #     warnings.warn("The dt is most likely not compatible with the bicycle model!")
         self.counter = 0
