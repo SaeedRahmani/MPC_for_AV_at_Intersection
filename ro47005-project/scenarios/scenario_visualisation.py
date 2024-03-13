@@ -3,6 +3,9 @@ import matplotlib.animation as animation
 import matplotlib.lines as mlines
 import numpy as np
 
+import sys
+sys.path.append('..')
+
 from envs.t_intersection import t_intersection
 from lib.car_dimensions import BicycleModelDimensions, CarDimensions
 from lib.motion_primitive import load_motion_primitives

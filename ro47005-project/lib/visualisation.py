@@ -3,6 +3,9 @@ from typing import Callable, List, Tuple
 import matplotlib.pyplot as plt
 from matplotlib.markers import MarkerStyle
 
+import sys
+sys.path.append('..')
+
 from lib.car_dimensions import BicycleModelDimensions
 
 width_car, length_car = BicycleModelDimensions().bounding_box_size
