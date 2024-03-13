@@ -66,19 +66,26 @@ if __name__ == '__main__':
     # obstacles = mlines.Line2D([], [], color=(0.5, 0.5, 0.5), marker='o', ls='', label='Obstacles',
     #                           markersize=marker_size)
 
+    radius = 20  # Radius of the half-circle
+    theta = np.linspace(0, np.pi, 100)  # angles from 0 to 180 degrees
+    x = radius * np.cos(theta)  # x coordinates
+    y = radius * np.sin(theta)  # y coordinates
+    ax.plot(x, y, 'g-', label='Half-circle')  # Plotting the half-circle
+
+    
     marker_size = 10
     trajectory = mlines.Line2D([], [], color='b', marker='', ls='-', label='Path from MP', markeredgewidth=3,
-                               markersize=marker_size)
+                            markersize=marker_size)
     goal_area = mlines.Line2D([], [], color=(1, 0.8, 0.8), marker='s', ls='', label='Goal area', markersize=marker_size)
     goal_direction = mlines.Line2D([], [], color='r', marker='$\u279C$', ls='', label='Goal direction',
-                                   markersize=marker_size)
+                                markersize=marker_size)
     obstacles = mlines.Line2D([], [], color='b', marker='s', ls='', label='Obstacles', markersize=marker_size)
     forbidden = mlines.Line2D([], [], color=(0.8, 0.8, 0.8), marker='s', ls='', label='Forbidden by traffic rules',
-                              markersize=marker_size)
+                            markersize=marker_size)
     ego_vehicle = mlines.Line2D([], [], color='g', marker='s', ls='', label='Ego vehicle', markersize=marker_size,
                                 fillstyle='none')
     mp_search = mlines.Line2D([], [], color=(47 / 255, 108 / 255, 144 / 255), marker='.', ls='',
-                              label='Visited points A*', markersize=marker_size)
+                            label='Visited points A*', markersize=marker_size)
 
     plt.legend(handles=[trajectory, goal_area, goal_direction, obstacles, ego_vehicle, forbidden, mp_search])
 
