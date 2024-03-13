@@ -15,13 +15,13 @@ from lib.trajectories import calc_nearest_index, calc_nearest_index_in_direction
 
 NX = 4  # x = x, y, v, yaw
 NU = 2  # a = [accel, steer]
-T = 14  # horizon length
+T = 13  # horizon length
 
 # mpc parameters
 R = np.diag([0.01, 0.01])  # input cost matrix
 Rd = np.diag([0.01, 1.0])  # input difference cost matrix
 Q_v_yaw = np.diag([0., 0.5])  # state cost matrix [v, yaw]
-Qf = np.diag([1.0, 1.0, 0., 0.5]) * 10.  # state final matrix [x, y, v, yaw]
+Qf = np.diag([1.0, 1.0, 0., 0.5]) * T # state final matrix [x, y, v, yaw]
 GOAL_DIS = 1.5  # goal distance
 STOP_SPEED = 0.5 / 3.6  # stop speed
 MAX_TIME = 13.0  # max simulation time
@@ -32,7 +32,7 @@ DU_TH = 0.1  # iteration finish param
 
 MAX_DSTEER = np.deg2rad(30.0)  # maximum steering speed [rad/s]
 MAX_ACCEL = 2.0  # maximum accel [m/ss]
-MAX_DECEL = -3.5  # maximum deceleration [m/ss]
+MAX_DECEL = -5  # maximum deceleration [m/ss]
 
 
 class MPCSolutionNotFoundException(Exception):

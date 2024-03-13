@@ -139,7 +139,7 @@ def main():
 
         # show the computation results
         visualize_frame(DT, FRAME_WINDOW, car_dimensions, collision_xy, i, moving_obstacles, mpc, scenario, simulation,
-                        state, tmp_trajectory, trajectory_res, trajs_moving_obstacles, pred_show=True)
+                        state, tmp_trajectory, trajectory_res, trajs_moving_obstacles, pred_show=False)
 
         # move all obstacles forward
         for i_obs, o in enumerate(moving_obstacles):
