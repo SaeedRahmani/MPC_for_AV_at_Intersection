@@ -17,7 +17,7 @@ from lib.motion_primitive import load_motion_primitives
 from lib.motion_primitive_search_modified import MotionPrimitiveSearch
 from lib.moving_obstacles import MovingObstacleTIntersection
 from lib.moving_obstacles_prediction import MovingObstaclesPrediction
-from lib.mpc import MPC, MAX_ACCEL
+from lib.mpc_with_speed import MPC, MAX_ACCEL
 from lib.plotting import draw_car
 from lib.simulation import State, Simulation, History, HistorySimulation
 from lib.trajectories import resample_curve, calc_nearest_index_in_direction
@@ -29,6 +29,8 @@ def main():
     #########
     ###################### Scenario Parameters #####################
     DT = 0.2
+    MAX_SPEED = 30 / 3.6  # m/s
+    
     mps = load_motion_primitives(version='bicycle_model')
     car_dimensions: CarDimensions = BicycleModelDimensions(skip_back_circle_collision_checking=False)
 
@@ -38,7 +40,7 @@ def main():
     # scenario = t_intersection(turn_left=True)
 
     moving_obstacles: List[MovingObstacleTIntersection] = [
-        MovingObstacleTIntersection(car_dimensions, direction=1, offset=4., turning=True, speed=25 / 3.6, dt=DT),
+        MovingObstacleTIntersection(car_dimensions, direction=1, offset=2., turning=False, speed=25 / 3.6, dt=DT),
         MovingObstacleTIntersection(car_dimensions, direction=-1, offset=4., turning=True, speed=25 / 3.6, dt=DT)
     ]
     
@@ -60,7 +62,8 @@ def main():
     #########
     dl = np.linalg.norm(trajectory_full[0, :2] - trajectory_full[1, :2])
 
-    mpc = MPC(cx=trajectory_full[:, 0], cy=trajectory_full[:, 1], cyaw=trajectory_full[:, 2], dl=dl, dt=DT,
+    cv = np.full(trajectory_full[:, 1].shape, MAX_SPEED)
+    mpc = MPC(cx=trajectory_full[:, 0], cy=trajectory_full[:, 1], cv = cv, cyaw=trajectory_full[:, 2], dl=dl, dt=DT,
               car_dimensions=car_dimensions)
     state = State(x=trajectory_full[0, 0], y=trajectory_full[0, 1], yaw=trajectory_full[0, 2], v=0.0)
 
@@ -116,7 +119,7 @@ def main():
         # find the collision location
         collision_xy = check_collision_moving_cars(car_dimensions, trajectory_res, trajectory, trajs_moving_obstacles,
                                                    frame_window=FRAME_WINDOW)
-
+        cutoff_idx = 999
         # cutoff the curve such that it ends right before the collision (and some margin)
         if collision_xy is not None:
             cutoff_idx = get_cutoff_curve_by_position_idx(trajectory_full, collision_xy[0],
@@ -124,13 +127,16 @@ def main():
             cutoff_idx = max(traj_agent_idx + 1, cutoff_idx)
             # cutoff_idx = max(traj_agent_idx + 1, cutoff_idx)
             
-            tmp_trajectory = trajectory_full[:cutoff_idx]
+            # tmp_trajectory = trajectory_full[:cutoff_idx]
+            tmp_trajectory = trajectory_full
+            cutoff_idx = cutoff_idx 
             
         else:
+            cutoff_idx = 999
             tmp_trajectory = trajectory_full
 
         # pass the cut trajectory to the MPC
-        mpc.set_trajectory_fromarray(tmp_trajectory)
+        mpc.set_trajectory_fromarray(tmp_trajectory, cutoff_idx = cutoff_idx)
 
         # compute the MPC
         delta, acceleration = mpc.step(state)
