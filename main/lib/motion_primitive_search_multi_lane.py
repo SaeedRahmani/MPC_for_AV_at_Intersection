@@ -108,13 +108,14 @@ class MotionPrimitiveSearch:
         # distance_xy = self._goal_area.distance_to_point(node[:2])
         # distance_theta = max(0., abs(theta - self._gtheta) - self._allowed_goal_theta_difference)
         # return distance_xy + 2.7 * distance_theta 
-        
+        sterring_change_cost = 0.0
         x, y, theta = node
         goal_x, goal_y, goal_orientation = self._goal_point
         distance_xy = np.sqrt((x - goal_x)**2 + (y - goal_y)**2) 
         distance_theta = min(abs(theta - goal_orientation), abs(theta - goal_orientation) - self._allowed_goal_theta_difference/2)
         #distance_from_center = np.sqrt((x - 0)**2 + (y - 0)**2)
-        return distance_xy + 2.7 * distance_theta # + 5 * distance_from_center # equaling the scales?
+        sterring_change_cost = self.calculate_steering_change_cost(node, self._goal_point, steering_angle_weight=1.0)
+        return distance_xy + 2.7 * distance_theta + 8 * sterring_change_cost # + 5 * distance_from_center # equaling the scales?
 
     def collision_checking_points_at(self, mp_name: str, configuration: Tuple[float, float, float]) -> np.ndarray:
         cc_points = self._mp_collision_points[mp_name]
