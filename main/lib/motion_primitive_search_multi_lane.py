@@ -161,7 +161,7 @@ class MotionPrimitiveSearch:
                 # yield
                 sterring_change_cost = self.calculate_steering_change_cost(node, neighbor, steering_angle_weight=1.0)
                 
-                cost = mp.total_length + 10 * sterring_change_cost
+                cost = mp.total_length + 8 * sterring_change_cost
                 yield cost, neighbor
 
     def path_to_full_trajectory(self, path: List[NodeType]) -> np.ndarray:
