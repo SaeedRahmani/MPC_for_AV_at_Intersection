@@ -23,7 +23,7 @@ if __name__ == '__main__':
         scenario = intersection(
             turn_indicator=turn_indicator,
             start_pos=start_pos, 
-            start_lane=2,
+            start_lane=1,
             goal_lane=1, # Does not work
             number_of_lanes=2)
         car_dimensions: CarDimensions = BicycleModelDimensions(skip_back_circle_collision_checking=False)
