@@ -15,7 +15,7 @@ if __name__ == '__main__':
     fig, ax = plt.subplots()
     
     #Scenario Parameters
-    start_pos=4
+    start_pos=1
     turn_indicator=1
     
     for version in ['bicycle_model']:

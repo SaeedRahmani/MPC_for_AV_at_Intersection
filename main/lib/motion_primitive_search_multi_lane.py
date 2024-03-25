@@ -152,9 +152,10 @@ class MotionPrimitiveSearch:
         # print("Distance to obstacle:", distance_to_obstacle)       
         obstacle_avoidance_cost = 1 / distance_to_obstacle if distance_to_obstacle else float('inf')
         
-        distance_from_center = np.sqrt((x)**2 + (y)**2)
-        # heuristic_cost = distance_xy + 2.7 * distance_theta + 20 * sterring_change_cost + 0.2 * distance_from_center + 0.1 * obstacle_avoidance_cost # + 5 * distance_from_center # equaling the scales?
-        heuristic_cost = distance_xy + 2.7 * distance_theta + 15 * sterring_change_cost + 0.2 * obstacle_avoidance_cost + 0.2 * distance_from_center # equaling the scales?
+        distance_from_center = np.sqrt((x)**2 + (y)**2)        
+        
+        heuristic_cost = distance_xy + 2.7 * distance_theta + 15 * sterring_change_cost  #+ 0.2 * obstacle_avoidance_cost # + 0.2 * distance_from_center # equaling the scales?
+        # heuristic_cost = distance_xy + 2.7 * distance_theta + 15 * sterring_change_cost + 0.2 * obstacle_avoidance_cost + 0.2 * distance_from_center # equaling the scales?
         
         return heuristic_cost
 
@@ -209,9 +210,10 @@ class MotionPrimitiveSearch:
                 
                 # distance_from_center = np.sqrt((x)**2 + (y)**2)
                 distance_from_center = np.linalg.norm([x, y])
-                # cost = mp.total_length + 5 * sterring_change_cost + 0.15 * distance_from_center + 0.5 * obstacle_avoidance_cost
                 print("mp length:", mp.total_length, "Obstacle avoidance cost:", obstacle_avoidance_cost, "Steering change cost:", sterring_change_cost, "Distance from center:", distance_from_center)                
-                cost = mp.total_length + 5 * sterring_change_cost + 0.5 * obstacle_avoidance_cost # + 0.05 * distance_from_center               
+                
+                cost = mp.total_length + 5 * sterring_change_cost + 0.1 * obstacle_avoidance_cost # + 0.05 * distance_from_center               
+                # cost = mp.total_length + 5 * sterring_change_cost + 0.5 * obstacle_avoidance_cost # + 0.05 * distance_from_center               
                 yield cost, neighbor
 
     def path_to_full_trajectory(self, path: List[NodeType]) -> np.ndarray:
