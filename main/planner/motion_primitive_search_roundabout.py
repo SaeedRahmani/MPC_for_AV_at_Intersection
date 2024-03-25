@@ -3,24 +3,25 @@ import matplotlib.lines as mlines
 import sys
 sys.path.append('..')
 
-from envs.intersection import intersection
+# from envs.intersection import intersection
+from envs.roundabout import roundabout
 from lib.car_dimensions import BicycleModelDimensions, CarDimensions
 from lib.helpers import measure_time
 from lib.motion_primitive import load_motion_primitives
 #from lib.motion_primitive_search import MotionPrimitiveSearch
-from lib.motion_primitive_search_single_lane import MotionPrimitiveSearch
+from lib.motion_primitive_search_roundabout import MotionPrimitiveSearch
 from lib.plotting import draw_scenario, draw_astar_search_points
 
 if __name__ == '__main__':
     fig, ax = plt.subplots()
     
     #Scenario Parameters
-    start_pos=4
+    start_pos=2
     turn_indicator=1
     
     for version in ['bicycle_model']:
         mps = load_motion_primitives(version=version)
-        scenario = intersection(turn_indicator=turn_indicator, start_pos=start_pos)
+        scenario = roundabout(start_pos=start_pos, turn_indicator=turn_indicator)
         car_dimensions: CarDimensions = BicycleModelDimensions(skip_back_circle_collision_checking=False)
 
         search = MotionPrimitiveSearch(scenario, car_dimensions, mps, margin=car_dimensions.radius)
