@@ -13,7 +13,7 @@ from lib.plotting import draw_scenario, draw_astar_search_points
 
 if __name__ == '__main__':
     fig, ax = plt.subplots()
-    
+            
     #Scenario Parameters
     start_pos=1
     turn_indicator=1
