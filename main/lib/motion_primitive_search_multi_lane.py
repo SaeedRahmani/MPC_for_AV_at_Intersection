@@ -171,7 +171,7 @@ class MotionPrimitiveSearch:
         if self._wh_obstacle != 0.0:
             distance_to_obstacle = self.distance_to_nearest_obstacle(node) 
             obstacle_avoidance_cost = 1 / distance_to_obstacle if distance_to_obstacle else float('inf')
-        if self._wc_center != 0.0: 
+        if self._wh_center != 0.0: 
             distance_from_center = np.sqrt((x)**2 + (y)**2)        
         
         # Heuristic cost calculation

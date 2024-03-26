@@ -16,22 +16,24 @@ if __name__ == '__main__':
             
     #Scenario Parameters
     start_pos=1
-    turn_indicator=1
+    turn_indicator=3
     
     for version in ['bicycle_model']:
         mps = load_motion_primitives(version=version)
         scenario = intersection(
             turn_indicator=turn_indicator,
             start_pos=start_pos, 
-            start_lane=1,
-            goal_lane=1, # Does not work
-            number_of_lanes=2)
+            start_lane=3,
+            goal_lane=3, # Does not work
+            number_of_lanes=3)
         car_dimensions: CarDimensions = BicycleModelDimensions(skip_back_circle_collision_checking=False)
 
-        search = MotionPrimitiveSearch(scenario, car_dimensions, mps, margin=car_dimensions.radius)
+        search = MotionPrimitiveSearch(scenario, car_dimensions, mps, margin=car_dimensions.radius,
+                                       wh_dist=1, wh_theta=2.7, wh_steering=15, wh_obstacle=0.0, wh_center=0.0,
+                                       wc_dist=1, wc_steering=5, wc_obstacle=0.0, wc_center=0.1)
 
         draw_scenario(scenario, mps, car_dimensions, search, ax,
-                      draw_obstacles=True, draw_goal=True, draw_car=True, draw_mps=True, draw_collision_checking=False,
+                      draw_obstacles=True, draw_goal=True, draw_car=True, draw_mps=False, draw_collision_checking=False,
                       draw_car2=False, draw_mps2=False, mp_name='right1')
 
 
