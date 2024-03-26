@@ -36,24 +36,24 @@ def intersection(turn_indicator: int=1, start_pos: int=1, start_lane: int=1, goa
     # 1: turn left, 2: go straight, 3: turn right
     goal_positions = {
         1: {
-            1: (-goal_distance, (median_width + lane_width) / 2 + (start_lane-1)*lane_width, -np.pi),
-            2: ((median_width + lane_width) / 2+ (start_lane-1)*lane_width, goal_distance, 0.5 * np.pi),
-            3: (goal_distance, -((median_width + lane_width) / 2 + (start_lane-1)*lane_width), 0)
+            1: (-goal_distance, (median_width + lane_width) / 2 + (goal_lane-1)*lane_width, -np.pi),
+            2: ((median_width + lane_width) / 2+ (goal_lane-1)*lane_width, goal_distance, 0.5 * np.pi),
+            3: (goal_distance, -((median_width + lane_width) / 2 + (goal_lane-1)*lane_width), 0)
         },
         2: {
-            1: ((median_width + lane_width) / 2 + (start_lane-1)*lane_width, goal_distance, 0.5 * np.pi),
-            2: (goal_distance, -((median_width + lane_width) / 2 + (start_lane-1)*lane_width), 0),
-            3: (-((median_width + lane_width) / 2 + (start_lane-1)*lane_width), -goal_distance, -0.5 * np.pi)
+            1: ((median_width + lane_width) / 2 + (goal_lane-1)*lane_width, goal_distance, 0.5 * np.pi),
+            2: (goal_distance, -((median_width + lane_width) / 2 + (goal_lane-1)*lane_width), 0),
+            3: (-((median_width + lane_width) / 2 + (goal_lane-1)*lane_width), -goal_distance, -0.5 * np.pi)
         },
         3: {
-            1: (goal_distance, -((median_width + lane_width) / 2 + (start_lane-1)*lane_width), 0),
-            2: (-((median_width + lane_width) / 2 + (start_lane-1)*lane_width), -goal_distance, -0.5 * np.pi),
-            3: (-goal_distance, (median_width + lane_width) / 2 + (start_lane-1)*lane_width, -np.pi)
+            1: (goal_distance, -((median_width + lane_width) / 2 + (goal_lane-1)*lane_width), 0),
+            2: (-((median_width + lane_width) / 2 + (goal_lane-1)*lane_width), -goal_distance, -0.5 * np.pi),
+            3: (-goal_distance, (median_width + lane_width) / 2 + (goal_lane-1)*lane_width, -np.pi)
         },
         4: {
-            1: (-((median_width + lane_width) / 2 + (start_lane-1)*lane_width), -goal_distance, -0.5 * np.pi),
-            2: (-goal_distance, (median_width + lane_width) / 2 + (start_lane-1)*lane_width, -np.pi),
-            3: ((median_width + lane_width) / 2 + (start_lane-1)*lane_width, goal_distance, 0.5 * np.pi)
+            1: (-((median_width + lane_width) / 2 + (goal_lane-1)*lane_width), -goal_distance, -0.5 * np.pi),
+            2: (-goal_distance, (median_width + lane_width) / 2 + (goal_lane-1)*lane_width, -np.pi),
+            3: ((median_width + lane_width) / 2 + (goal_lane-1)*lane_width, goal_distance, 0.5 * np.pi)
         }
     }
 
