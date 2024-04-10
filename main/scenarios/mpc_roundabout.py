@@ -32,7 +32,7 @@ def main():
     car_dimensions: CarDimensions = BicycleModelDimensions(skip_back_circle_collision_checking=False)
 
     start_pos = 1
-    turn_indicator = 1
+    turn_indicator = 2
     scenario = roundabout(start_pos=start_pos, turn_indicator=turn_indicator)
     # scenario = t_intersection(turn_left=True)
 
