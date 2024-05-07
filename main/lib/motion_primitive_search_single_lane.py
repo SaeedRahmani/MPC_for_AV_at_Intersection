@@ -1,3 +1,6 @@
+import sys
+sys.path.append('..')
+
 from typing import Dict, Tuple, List, Iterable
 
 import numpy as np
@@ -33,6 +36,7 @@ class MotionPrimitiveSearch:
         # for each motion primitive, create collision points
         self._mp_collision_points: Dict[str, np.ndarray] = self._create_collision_points()
         
+        self.visited_nodes = 0
 
     def calculate_steering_change_cost(self, current_node: NodeType, next_node: NodeType, steering_angle_weight: float = 1.0) -> float:
         """
@@ -111,6 +115,7 @@ class MotionPrimitiveSearch:
         cost, path = self._a_star.run(self._start, is_goal_function=self.is_goal,
                                       heuristic_function=self.distance_to_goal, debug=debug)
         trajectory = self.path_to_full_trajectory(path)
+        print("Total visited nodes:", self.visited_nodes)
         return cost, path, trajectory
 
     @property
@@ -168,7 +173,8 @@ class MotionPrimitiveSearch:
 
     def neighbor_function(self, node: NodeType) -> Iterable[Tuple[float, NodeType]]:
         node_rel_to_world_mtx = create_2d_transform_mtx(*node)
-
+        self.visited_nodes += 1
+        
         for mp_name, mp in self._mps.items():
             # Transform Collision Checking Points Given Existing Matrix
             collision_checking_points = transform_2d_pts(node[2], node_rel_to_world_mtx,
