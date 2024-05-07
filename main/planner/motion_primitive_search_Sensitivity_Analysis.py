@@ -29,7 +29,8 @@ if __name__ == '__main__':
     start_pos = 1
     turn_indicator = 1
     scenario = intersection(turn_indicator=turn_indicator, start_pos=start_pos, 
-                            start_lane=1, goal_lane=1, number_of_lanes=2)
+                           start_lane=1, goal_lane=1, number_of_lanes=2)
+    
     mps = load_motion_primitives(version='bicycle_model')
     car_dimensions: CarDimensions = BicycleModelDimensions(skip_back_circle_collision_checking=False)
 
@@ -68,9 +69,7 @@ if __name__ == '__main__':
                   draw_car=True, draw_mps=False, draw_collision_checking=False, draw_car2=False, draw_mps2=False, 
                   mp_name='right1')
 
-    plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), ncol=3)
+    plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
     ax.axis('equal')
     plt.tight_layout()
     plt.show()
-
-
