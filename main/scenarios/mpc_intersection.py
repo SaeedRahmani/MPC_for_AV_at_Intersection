@@ -36,10 +36,11 @@ def main():
     scenario = intersection(start_pos=start_pos, turn_indicator=turn_indicator)
     # scenario = t_intersection(turn_left=True)
 
-    moving_obstacles: List[MovingObstacleTIntersection] = [
-        MovingObstacleTIntersection(car_dimensions, direction=1, offset=2., turning=True, speed=25 / 3.6, dt=DT),
-        MovingObstacleTIntersection(car_dimensions, direction=-1, offset=4., turning=True, speed=25 / 3.6, dt=DT)
-    ]
+    moving_obstacles: List[MovingObstacleTIntersection] = []
+    # moving_obstacles: List[MovingObstacleTIntersection] = [
+    #     MovingObstacleTIntersection(car_dimensions, direction=1, offset=2., turning=True, speed=25 / 3.6, dt=DT),
+    #     MovingObstacleTIntersection(car_dimensions, direction=-1, offset=4., turning=True, speed=25 / 3.6, dt=DT)
+    # ]
     
     #########
     # MOTION PRIMITIVE SEARCH
