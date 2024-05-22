@@ -16,43 +16,83 @@ from lib.plotting import draw_scenario, draw_astar_search_points
 if __name__ == '__main__':
     fig, ax = plt.subplots()
     
+    ##### TYPE OF ANALYSIS #####
+    test_no = 2 # 1: circle; 2: forward 3: backward
+    ############################
+    
     #Scenario Parameters
     start_pos=0.
-    angle = np.pi
     goal_distance = 20
+    angle = np.pi
+
     
-    for i in np.arange(0, 1 + 1/4, 1/4): # lopp over several angles from 0 to 2*pi at 45 degree intervals
-        for version in ['bicycle_model']:
-            mps = load_motion_primitives(version=version)
-            scenario = free_area(angle=i*np.pi, start_pos=start_pos, goal_distance = goal_distance)
-            car_dimensions: CarDimensions = BicycleModelDimensions(skip_back_circle_collision_checking=False)
+    match test_no:
+        case 1:   
+            goal_distance = 20
+            for i in np.arange(0, 1 + 1/4, 1/4): # lopp over several angles from 0 to 2*pi at 45 degree intervals
+                for version in ['bicycle_model']:
+                    mps = load_motion_primitives(version=version)
+                    scenario = free_area(test_no, angle=i*np.pi, start_pos=start_pos, goal_distance = goal_distance)
+                    car_dimensions: CarDimensions = BicycleModelDimensions(skip_back_circle_collision_checking=False)
 
-            search = MotionPrimitiveSearch(scenario, car_dimensions, mps, margin=car_dimensions.radius)
+                    search = MotionPrimitiveSearch(scenario, car_dimensions, mps, margin=car_dimensions.radius)
 
-            draw_scenario(scenario, mps, car_dimensions, search, ax,
-                        draw_obstacles=False, draw_goal=False, draw_car=True, draw_mps=False, draw_collision_checking=False,
-                        draw_car2=False, draw_mps2=False, mp_name='right1')
+                    draw_scenario(scenario, mps, car_dimensions, search, ax,
+                                draw_obstacles=False, draw_goal=False, draw_car=True, draw_mps=False, draw_collision_checking=False,
+                                draw_car2=False, draw_mps2=False, mp_name='right1')
+                                        # Perform The Search:
 
-
-            # Perform The Search:
-
-            @measure_time
-            def run_search():
-                return search.run(debug=True)
+                    @measure_time
+                    def run_search():
+                        return search.run(debug=True)
 
 
-            try:
-                cost, path, trajectory = run_search()
+                    try:
+                        cost, path, trajectory = run_search()
 
-                cx = trajectory[:, 0]
-                cy = trajectory[:, 1]
-                # cyaw = trajectory[:, 2]
-                # sp = np.ones_like(cyaw) * 8.3
+                        cx = trajectory[:, 0]
+                        cy = trajectory[:, 1]
+                        # cyaw = trajectory[:, 2]
+                        # sp = np.ones_like(cyaw) * 8.3
 
-                # Draw trajectory
-                ax.plot(cx, cy, color='b')
-            except KeyboardInterrupt:
-                pass  # Break The Search On Keyboard Interrupt
+                        # Draw trajectory
+                        ax.plot(cx, cy, color='b')
+                    except KeyboardInterrupt:
+                        pass  # Break The Search On Keyboard Interrupt
+        case 2:
+            goal_distance = 15
+            for i in (0, 1/16, -1/16, 2/16, -2/16, 3/16, -3/16): # lopp over several angles from 0 to 2*pi at 45 degree intervals
+                print(i)
+                for version in ['bicycle_model']:
+                    mps = load_motion_primitives(version=version)
+                    scenario = free_area(test_no, angle=i*np.pi, start_pos=start_pos, goal_distance = goal_distance, acceptable_error=0.1)
+                    car_dimensions: CarDimensions = BicycleModelDimensions(skip_back_circle_collision_checking=False)
+
+                    search = MotionPrimitiveSearch(scenario, car_dimensions, mps, margin=car_dimensions.radius)
+
+                    draw_scenario(scenario, mps, car_dimensions, search, ax,
+                                draw_obstacles=False, draw_goal=False, draw_car=True, draw_mps=False, draw_collision_checking=False,
+                                draw_car2=False, draw_mps2=False, mp_name='right1')
+
+                    # Perform The Search:
+
+                    @measure_time
+                    def run_search():
+                        return search.run(debug=True)
+
+
+                    try:
+                        cost, path, trajectory = run_search()
+
+                        cx = trajectory[:, 0]
+                        cy = trajectory[:, 1]
+                        # cyaw = trajectory[:, 2]
+                        # sp = np.ones_like(cyaw) * 8.3
+
+                        # Draw trajectory
+                        ax.plot(cx, cy, color='b')
+                    except KeyboardInterrupt:
+                        pass  # Break The Search On Keyboard Interrupt
 
             # Draw All Search Points
             # sc = draw_astar_search_points(search, ax, visualize_heuristic=True, visualize_cost_to_come=False)
@@ -66,11 +106,15 @@ if __name__ == '__main__':
     # obstacles = mlines.Line2D([], [], color=(0.5, 0.5, 0.5), marker='o', ls='', label='Obstacles',
     #                           markersize=marker_size)
 
-    radius = 20  # Radius of the half-circle
-    theta = np.linspace(0, np.pi, 100)  # angles from 0 to 180 degrees
-    x = radius * np.cos(theta)  # x coordinates
-    y = radius * np.sin(theta)  # y coordinates
-    ax.plot(x, y, 'g-', label='Half-circle')  # Plotting the half-circle
+    match test_no:
+        case 1:
+            radius = 20  # Radius of the half-circle
+            theta = np.linspace(0, np.pi, 100)  # angles from 0 to 180 degrees
+            x = radius * np.cos(theta)  # x coordinates
+            y = radius * np.sin(theta)  # y coordinates
+            ax.plot(x, y, 'g-', label='Half-circle')  # Plotting the half-circle
+        case 2:
+            pass
 
     
     marker_size = 10
