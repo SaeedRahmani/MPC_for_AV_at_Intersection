@@ -26,7 +26,7 @@ if __name__ == '__main__':
         search = MotionPrimitiveSearch(scenario, car_dimensions, mps, margin=car_dimensions.radius)
 
         draw_scenario(scenario, mps, car_dimensions, search, ax,
-                      draw_obstacles=True, draw_goal=True, draw_car=True, draw_mps=True, draw_collision_checking=False,
+                      draw_obstacles=True, draw_goal=True, draw_car=True, draw_mps=False, draw_collision_checking=False,
                       draw_car2=False, draw_mps2=False, mp_name='right1')
 
 
