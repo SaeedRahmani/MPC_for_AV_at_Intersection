@@ -32,10 +32,11 @@ def main():
     car_dimensions: CarDimensions = BicycleModelDimensions(skip_back_circle_collision_checking=False)
 
     start_pos = 1
-    turn_indicator = 2
+    turn_indicator = 3
     scenario = roundabout(start_pos=start_pos, turn_indicator=turn_indicator)
     # scenario = t_intersection(turn_left=True)
 
+    # moving_obstacles: List[MovingObstacleRoundabout] = []
     moving_obstacles: List[MovingObstacleRoundabout] = [
         MovingObstacleRoundabout(car_dimensions, direction=1, offset=0., turning=True, speed=25 / 3.6, dt=DT),
         MovingObstacleRoundabout(car_dimensions, direction=-1, offset=0., turning=True, speed=25 / 3.6, dt=DT)
