@@ -1,6 +1,7 @@
 from matplotlib import pyplot as plt
 import matplotlib.lines as mlines
 import numpy as np
+import json
 
 import sys
 sys.path.append('..')
@@ -13,11 +14,15 @@ from lib.motion_primitive import load_motion_primitives
 from lib.motion_primitive_search_modified import MotionPrimitiveSearch
 from lib.plotting import draw_scenario, draw_astar_search_points
 
-if __name__ == '__main__':
+def main():
     fig, ax = plt.subplots()
     
+    # Load the configuration
+    with open('config.json', 'r') as f:
+        config = json.load(f)
     ##### TYPE OF ANALYSIS #####
-    test_no = 2 # 1: circle; 2: forward 3: backward
+    test_no = config['test_no']
+    # test_no = 2 # 1: circle; 2: forward 3: backward
     ############################
     
     #Scenario Parameters
@@ -136,3 +141,9 @@ if __name__ == '__main__':
 
     ax.axis('equal')
     plt.show()
+    
+    return fig
+
+if __name__ == '__main__':
+    fig = main()
+    plot.show(fig)
