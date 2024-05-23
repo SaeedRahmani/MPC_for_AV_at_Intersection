@@ -34,17 +34,23 @@ def main():
     mps = load_motion_primitives(version='bicycle_model')
     car_dimensions: CarDimensions = BicycleModelDimensions(skip_back_circle_collision_checking=False)
 
-    start_pos = 1
-    turn_indicator = 3
+    with open('config.json', 'r') as f:
+        config = json.load(f)
+    # Get the start_pos and turn_indicator variables
+    start_pos = config['start_pos']
+    turn_indicator = config['turn_indicator']
+    other_cars = config['other_cars']
+    
     scenario = roundabout(start_pos=start_pos, turn_indicator=turn_indicator)
     # scenario = t_intersection(turn_left=True)
-
-    # moving_obstacles: List[MovingObstacleRoundabout] = []
-    moving_obstacles: List[MovingObstacleRoundabout] = [
-        MovingObstacleRoundabout(car_dimensions, direction=1, offset=0., turning=True, speed=25 / 3.6, dt=DT),
-        MovingObstacleRoundabout(car_dimensions, direction=-1, offset=0., turning=True, speed=25 / 3.6, dt=DT)
-    ]
-    
+    if other_cars:
+        moving_obstacles: List[MovingObstacleRoundabout] = [
+            MovingObstacleRoundabout(car_dimensions, direction=1, offset=0., turning=True, speed=25 / 3.6, dt=DT),
+            MovingObstacleRoundabout(car_dimensions, direction=-1, offset=0., turning=True, speed=25 / 3.6, dt=DT)
+        ]
+    else:
+        moving_obstacles = []
+        
     #########
     # MOTION PRIMITIVE SEARCH
     #########
@@ -153,7 +159,6 @@ def main():
         # step the simulation (i.e. move our agent forward)
         state = simulation.step(a=acceleration, delta=delta, xref_deviation=mpc.get_current_xref_deviation())
         yield fig
-        
     # printing runtimes
     end_time = time.time()
     loops_total_runtime = sum(loop_runtimes)

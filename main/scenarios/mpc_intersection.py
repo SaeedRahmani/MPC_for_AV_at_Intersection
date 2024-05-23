@@ -36,21 +36,24 @@ def main():
 
     with open('config.json', 'r') as f:
         config = json.load(f)
-
     # Get the start_pos and turn_indicator variables
     start_pos = config['start_pos']
     turn_indicator = config['turn_indicator']
+    other_cars = config['other_cars']
+
 
     #start_pos = 1
     #turn_indicator = 1
     scenario = intersection(start_pos=start_pos, turn_indicator=turn_indicator)
     # scenario = t_intersection(turn_left=True)
 
-    moving_obstacles: List[MovingObstacleTIntersection] = []
-    # moving_obstacles: List[MovingObstacleTIntersection] = [
-    #     MovingObstacleTIntersection(car_dimensions, direction=1, offset=2., turning=True, speed=25 / 3.6, dt=DT),
-    #     MovingObstacleTIntersection(car_dimensions, direction=-1, offset=4., turning=True, speed=25 / 3.6, dt=DT)
-    # ]
+    if other_cars:
+        moving_obstacles: List[MovingObstacleTIntersection] = [
+        MovingObstacleTIntersection(car_dimensions, direction=1, offset=2., turning=True, speed=25 / 3.6, dt=DT),
+        MovingObstacleTIntersection(car_dimensions, direction=-1, offset=4., turning=True, speed=25 / 3.6, dt=DT)
+        ]
+    else:
+        moving_obstacles: List[MovingObstacleTIntersection] = []
     
     #########
     # MOTION PRIMITIVE SEARCH

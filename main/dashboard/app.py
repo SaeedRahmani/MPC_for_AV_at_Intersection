@@ -25,12 +25,14 @@ file = st.sidebar.selectbox('File', list(file_paths.keys()))
 # Depending on the selected file, show different options
 if file == 'Plausibility':
     config['test_no'] = st.sidebar.slider('Test No', min_value=1, max_value=2, value=config.get('test_no', 1))
-elif file == 'Intersection':
+if file == 'Intersection':
     config['start_pos'] = st.sidebar.slider('Start Pos', min_value=1, max_value=3, value=config.get('start_pos', 1))
     config['turn_indicator'] = st.sidebar.slider('Turn Indicator', min_value=1, max_value=3, value=config.get('turn_indicator', 1))
+    config['other_cars'] = st.sidebar.checkbox('Other Cars', value=config.get('other_cars', False))
 elif file == 'Roundabout':
     config['start_pos'] = st.sidebar.slider('Start Pos', min_value=1, max_value=3, value=config.get('start_pos', 1))
     config['turn_indicator'] = st.sidebar.slider('Turn Indicator', min_value=1, max_value=3, value=config.get('turn_indicator', 1))
+    config['other_cars'] = st.sidebar.checkbox('Other Cars', value=config.get('other_cars', False))
 
 # Write the new configuration to the file
 with open(config_path, 'w') as f:
