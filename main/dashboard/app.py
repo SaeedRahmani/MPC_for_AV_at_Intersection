@@ -15,7 +15,8 @@ with open(config_path, 'r') as f:
 # Define a dictionary with the file paths
 file_paths = {
     'Plausibility': '../planner/motion_primitive_search_plausibility.py',
-    'Intersection': '../scenarios/mpc_intersection.py'  # Replace with the actual path
+    'Intersection': '../scenarios/mpc_intersection.py',
+    'Roundabout': '../scenarios/mpc_roundabout.py'# Replace with the actual path
 }
 
 # Use Streamlit's sidebar to create a selectbox for the file
@@ -25,6 +26,9 @@ file = st.sidebar.selectbox('File', list(file_paths.keys()))
 if file == 'Plausibility':
     config['test_no'] = st.sidebar.slider('Test No', min_value=1, max_value=2, value=config.get('test_no', 1))
 elif file == 'Intersection':
+    config['start_pos'] = st.sidebar.slider('Start Pos', min_value=1, max_value=3, value=config.get('start_pos', 1))
+    config['turn_indicator'] = st.sidebar.slider('Turn Indicator', min_value=1, max_value=3, value=config.get('turn_indicator', 1))
+elif file == 'Roundabout':
     config['start_pos'] = st.sidebar.slider('Start Pos', min_value=1, max_value=3, value=config.get('start_pos', 1))
     config['turn_indicator'] = st.sidebar.slider('Turn Indicator', min_value=1, max_value=3, value=config.get('turn_indicator', 1))
 

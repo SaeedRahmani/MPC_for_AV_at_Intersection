@@ -7,6 +7,8 @@ sys.path.append('..')
 import numpy as np
 from matplotlib import pyplot as plt
 
+import json
+
 # from envs.t_intersection import t_intersection
 from envs.roundabout import roundabout, plot_roundabout
 from lib.car_dimensions import CarDimensions, BicycleModelDimensions
@@ -23,6 +25,7 @@ from lib.trajectories import resample_curve, calc_nearest_index_in_direction
 import time
 
 def main():
+    fig, ax = plt.subplots()
     #########
     # INIT ENVIRONMENT
     #########
@@ -149,7 +152,8 @@ def main():
 
         # step the simulation (i.e. move our agent forward)
         state = simulation.step(a=acceleration, delta=delta, xref_deviation=mpc.get_current_xref_deviation())
-
+        yield fig
+        
     # printing runtimes
     end_time = time.time()
     loops_total_runtime = sum(loop_runtimes)
