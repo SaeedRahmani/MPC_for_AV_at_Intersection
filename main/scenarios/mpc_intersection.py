@@ -7,6 +7,8 @@ sys.path.append('..')
 import numpy as np
 from matplotlib import pyplot as plt
 
+import json
+
 # from envs.t_intersection import t_intersection
 from envs.intersection import intersection, plot_intersection
 from lib.car_dimensions import CarDimensions, BicycleModelDimensions
@@ -23,6 +25,7 @@ from lib.trajectories import resample_curve, calc_nearest_index_in_direction
 import time
 
 def main():
+    fig, ax = plt.subplots()
     #########
     # INIT ENVIRONMENT
     #########
@@ -31,8 +34,15 @@ def main():
     mps = load_motion_primitives(version='bicycle_model')
     car_dimensions: CarDimensions = BicycleModelDimensions(skip_back_circle_collision_checking=False)
 
-    start_pos = 1
-    turn_indicator = 1
+    with open('config.json', 'r') as f:
+        config = json.load(f)
+
+    # Get the start_pos and turn_indicator variables
+    start_pos = config['start_pos']
+    turn_indicator = config['turn_indicator']
+
+    #start_pos = 1
+    #turn_indicator = 1
     scenario = intersection(start_pos=start_pos, turn_indicator=turn_indicator)
     # scenario = t_intersection(turn_left=True)
 
@@ -149,7 +159,8 @@ def main():
 
         # step the simulation (i.e. move our agent forward)
         state = simulation.step(a=acceleration, delta=delta, xref_deviation=mpc.get_current_xref_deviation())
-
+        yield fig
+        
     # printing runtimes
     end_time = time.time()
     loops_total_runtime = sum(loop_runtimes)
