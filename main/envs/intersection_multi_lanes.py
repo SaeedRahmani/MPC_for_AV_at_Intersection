@@ -10,10 +10,10 @@ def intersection(turn_indicator: int=1, start_pos: int=1, start_lane: int=1, goa
     number_of_lanes = number_of_lanes
    
     start_lane = start_lane
-    start_distance = 30
+    start_distance = 35
 
     goal_lane = goal_lane
-    goal_distance = 30
+    goal_distance = 35
     
     lane_width = 4
     median_width = 2

@@ -25,8 +25,9 @@ def intersection(turn_indicator: int, start_pos: int) -> Scenario:
         4: (30, width_traffic_island / 2 + width_road / 2, np.pi),
     }
     
-    # 1: turn left, 2: go straight, 3: turn right
+    # 1: turn left, 2: go straight, 3: turn right, 4: U-turn
     goal_distance = 30
+    # first element starting pos, second element turn indicator
     goal_positions = {
         1: {
             1: (-goal_distance, (width_traffic_island + width_road) / 2, -np.pi),
