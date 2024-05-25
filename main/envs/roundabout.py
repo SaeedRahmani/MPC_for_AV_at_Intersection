@@ -17,37 +17,45 @@ def roundabout(turn_indicator: int, start_pos: int) -> Scenario:
     scale_factor = 1 # Factor specifying how wide the intersection and its main elements are
     distance_center = scale_factor * (corner_radius + width_road + width_traffic_island / 2)
     allowed_goal_theta_difference = np.pi / 16
-
+    
+    initial_distance = 30
     # 1: south, 2: west, 3: north, 4, east
     start_positions = {
-        1: (width_traffic_island / 2 + width_road / 2, -30, 0.5 * np.pi),
-        2: (-30, -(width_traffic_island / 2 + width_road / 2), 0),
-        3: (-(width_traffic_island / 2 + width_road / 2), 30, -0.5 * np.pi),
-        4: (30, width_traffic_island / 2 + width_road / 2, np.pi),
+        1: (width_traffic_island / 2 + width_road / 2, -initial_distance, 0.5 * np.pi),
+        2: (-initial_distance, -(width_traffic_island / 2 + width_road / 2), 0),
+        3: (-(width_traffic_island / 2 + width_road / 2), initial_distance, -0.5 * np.pi),
+        4: (initial_distance, width_traffic_island / 2 + width_road / 2, np.pi),
     }
     
-    # 1: turn left, 2: go straight, 3: turn right
+    # 1: turn left, 2: go straight, 3: turn right, 4: U-turn
     goal_distance = 30
     goal_positions = {
         1: {
             1: (-goal_distance, (width_traffic_island + width_road) / 2, -np.pi),
             2: ((width_traffic_island + width_road) / 2, goal_distance, 0.5 * np.pi),
-            3: (goal_distance, -(width_traffic_island + width_road) / 2, 0)
+            3: (goal_distance, -(width_traffic_island + width_road) / 2, 0),
+            4: (- (width_traffic_island + width_road) / 2, -goal_distance, -0.5 * np.pi)
+
         },
         2: {
             1: ((width_traffic_island + width_road) / 2, goal_distance, 0.5 * np.pi),
             2: (goal_distance, -(width_traffic_island + width_road) / 2, 0),
-            3: (-(width_traffic_island + width_road) / 2, -goal_distance, -0.5 * np.pi)
+            3: (-(width_traffic_island + width_road) / 2, -goal_distance, -0.5 * np.pi),
+            4: (-goal_distance, (width_traffic_island + width_road) / 2, -np.pi)
+
         },
         3: {
             1: (goal_distance, -(width_traffic_island + width_road) / 2, 0),
             2: (-(width_traffic_island + width_road) / 2, -goal_distance, -0.5 * np.pi),
-            3: (-goal_distance, (width_traffic_island + width_road) / 2, -np.pi)
+            3: (-goal_distance, (width_traffic_island + width_road) / 2, -np.pi),
+            4: ((width_traffic_island + width_road) / 2, goal_distance, 0.5 * np.pi)
+
         },
         4: {
             1: (-(width_traffic_island + width_road) / 2, -goal_distance, -0.5 * np.pi),
             2: (-goal_distance, (width_traffic_island + width_road) / 2, -np.pi),
-            3: ((width_traffic_island + width_road) / 2, goal_distance, 0.5 * np.pi)
+            3: ((width_traffic_island + width_road) / 2, goal_distance, 0.5 * np.pi),
+            4: (goal_distance, -(width_traffic_island + width_road) / 2, 0)
         }
     }
 
@@ -146,9 +154,25 @@ def roundabout(turn_indicator: int, start_pos: int) -> Scenario:
                             ))
     ]
     
+    # Non-searchable areas
+    obstacles.extend([
+            BoxObstacle(xy_width=(1, 100), height=height,
+                        xy_center=(40, 0),
+                        hidden=True),
+            BoxObstacle(xy_width=(1, 100), height=height,
+                        xy_center=(-40, 0),
+                        hidden=True),
+            BoxObstacle(xy_width=(100, 1), height=height,
+                        xy_center=(0, 40),
+                        hidden=True),
+            BoxObstacle(xy_width=(100, 1), height=height,
+                        xy_center=(0, -40),
+                        hidden=True),
+            ])
+    
     # We should also add some hidden obstacles in for prohibitting the traffic rules. But because this is a general scenario,
     # we should make it conditional to the vehicle's start and goal positions. Therefore, I will add it to Motion Primitives.
-        
+    
     if start_pos == 1:
         obstacles.extend([
             BoxObstacle(xy_width=(length, width_road), height=height,
@@ -157,9 +181,9 @@ def roundabout(turn_indicator: int, start_pos: int) -> Scenario:
             BoxObstacle(xy_width=(length, width_road), height=height,
                         xy_center=((length / 2 + distance_center), (width_road + width_traffic_island) / 2),
                         hidden=True),
-            BoxObstacle(xy_width=(width_road, length), height=height,
-                        xy_center=(-(width_road + width_traffic_island) / 2, -(length / 2 + distance_center)),
-                        hidden=True),
+            # BoxObstacle(xy_width=(width_road, length), height=height,
+            #             xy_center=(-(width_road + width_traffic_island) / 2, -(length / 2 + distance_center)),
+            #             hidden=True),
             BoxObstacle(xy_width=(width_road, length), height=height,
                         xy_center=(-(width_road + width_traffic_island) / 2, (length / 2 + distance_center)),
                         hidden=True),
