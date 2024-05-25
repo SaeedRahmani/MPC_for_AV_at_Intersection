@@ -4,7 +4,8 @@ import sys
 sys.path.append('..')
 
 # from envs.intersection import intersection
-from envs.roundabout import roundabout
+from envs.roundabout_big import roundabout
+# from envs.roundabout import roundabout
 from lib.car_dimensions import BicycleModelDimensions, CarDimensions
 from lib.helpers import measure_time
 from lib.motion_primitive import load_motion_primitives
@@ -16,8 +17,8 @@ if __name__ == '__main__':
     fig, ax = plt.subplots()
     
     #Scenario Parameters
-    start_pos=2
-    turn_indicator=1
+    start_pos=1
+    turn_indicator=4
     
     for version in ['bicycle_model']:
         mps = load_motion_primitives(version=version)
