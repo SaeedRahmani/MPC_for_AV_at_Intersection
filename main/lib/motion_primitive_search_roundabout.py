@@ -138,21 +138,21 @@ class MotionPrimitiveSearch:
         # distance_xy = self._goal_area.distance_to_point(node[:2])
         # distance_theta = max(0., abs(theta - self._gtheta) - self._allowed_goal_theta_difference)
         # return distance_xy + 2.7 * distance_theta 
-        sterring_change_cost = 0.0
+        steering_change_cost = 0.0
         x, y, theta = node
         goal_x, goal_y, goal_orientation = self._goal_point
         distance_xy = np.sqrt((x - goal_x)**2 + (y - goal_y)**2) 
         distance_theta = min(abs(theta - goal_orientation), abs(theta - goal_orientation) - self._allowed_goal_theta_difference/2)
                     
-        sterring_change_cost = self.calculate_steering_change_cost(node, self._goal_point, steering_angle_weight=1.0)
+        steering_change_cost = self.calculate_steering_change_cost(node, self._goal_point, steering_angle_weight=1.0)
         
         distance_to_obstacle = self.distance_to_nearest_obstacle(node) 
         # print("Distance to obstacle:", distance_to_obstacle)       
         obstacle_avoidance_cost = 1 / distance_to_obstacle if distance_to_obstacle else float('inf')
         
         distance_from_center = np.sqrt((x)**2 + (y)**2)
-        # heuristic_cost = distance_xy + 2.7 * distance_theta + 20 * sterring_change_cost + 0.2 * distance_from_center + 0.1 * obstacle_avoidance_cost # + 5 * distance_from_center # equaling the scales?
-        heuristic_cost = distance_xy + 2.7 * distance_theta + 15 * sterring_change_cost  #+ 0.2 * obstacle_avoidance_cost # + 0.2 * distance_from_center # equaling the scales?
+        # heuristic_cost = distance_xy + 2.7 * distance_theta + 20 * steering_change_cost + 0.2 * distance_from_center + 0.1 * obstacle_avoidance_cost # + 5 * distance_from_center # equaling the scales?
+        heuristic_cost = distance_xy + 2.7 * distance_theta # + 15 * steering_change_cost  #+ 0.2 * obstacle_avoidance_cost # + 0.2 * distance_from_center # equaling the scales?
         
         return heuristic_cost
 
@@ -199,7 +199,7 @@ class MotionPrimitiveSearch:
                 self._points_to_mp_names[node, neighbor] = mp_name
 
                 # yield
-                sterring_change_cost = self.calculate_steering_change_cost(node, neighbor, steering_angle_weight=1.0)
+                steering_change_cost = self.calculate_steering_change_cost(node, neighbor, steering_angle_weight=1.0)
                 
                 distance_to_obstacle = self.distance_to_nearest_obstacle(neighbor)
                 # print(distance_to_obstacle)
@@ -207,9 +207,9 @@ class MotionPrimitiveSearch:
                 
                 # distance_from_center = np.sqrt((x)**2 + (y)**2)
                 distance_from_center = np.linalg.norm([x, y])
-                # cost = mp.total_length + 5 * sterring_change_cost + 0.15 * distance_from_center + 0.5 * obstacle_avoidance_cost
-                print("mp length:", mp.total_length, "Obstacle avoidance cost:", obstacle_avoidance_cost, "Steering change cost:", sterring_change_cost, "Distance from center:", distance_from_center)                
-                cost = mp.total_length + 5 * sterring_change_cost + 0.1 * obstacle_avoidance_cost # + 0.05 * distance_from_center               
+                # cost = mp.total_length + 5 * steering_change_cost + 0.15 * distance_from_center + 0.5 * obstacle_avoidance_cost
+                print("mp length:", mp.total_length, "Obstacle avoidance cost:", obstacle_avoidance_cost, "Steering change cost:", steering_change_cost, "Distance from center:", distance_from_center)                
+                cost = mp.total_length + 0.1 * obstacle_avoidance_cost + 5 * steering_change_cost # + 0.05 * distance_from_center               
                 yield cost, neighbor
 
     def path_to_full_trajectory(self, path: List[NodeType]) -> np.ndarray:
