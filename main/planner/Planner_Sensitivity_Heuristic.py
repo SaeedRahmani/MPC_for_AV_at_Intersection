@@ -73,14 +73,17 @@ if __name__ == '__main__':
                 line_color = 'green'
             else:
                 line_width = 1
-                line_color = 'yellow'
+                line_color = 'orange'
                 line_style = ':'
         else:
             line_width = 1
             if wh_theta == 0:
                 line_color = 'black'
+                line_width = 2
+                if wh_steering == 0:
+                    line_style = '--'
             elif wh_steering == 0:
-                line_color = 'purple'
+                line_color = 'blue'
             else:
                 line_color = 'orange'
                 line_style = '-.'
