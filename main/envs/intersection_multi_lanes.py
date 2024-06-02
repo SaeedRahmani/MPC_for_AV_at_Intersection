@@ -10,10 +10,11 @@ def intersection(turn_indicator: int=1, start_pos: int=1, start_lane: int=1, goa
     number_of_lanes = number_of_lanes
    
     start_lane = start_lane
-    start_distance = 35
+    start_distance = 30
 
     goal_lane = goal_lane
-    goal_distance = 35
+    goal_distance = 30
+    goal_area_width = 1.5
     
     lane_width = 4
     median_width = 2
@@ -62,9 +63,9 @@ def intersection(turn_indicator: int=1, start_pos: int=1, start_lane: int=1, goa
     
     # Because the goal area is a rectangle and depends on the end position
     if ((start_pos == 1 or start_pos == 3) and (turn_indicator == 1 or turn_indicator == 3)) or ((start_pos == 2 or start_pos == 4) and (turn_indicator == 2 or turn_indicator == 4)):
-        goal_area = BoxObstacle(xy_width=(lane_width * 1.8, lane_width), height=obstacles_height, xy_center=(goal[0], goal[1]))
+        goal_area = BoxObstacle(xy_width=(lane_width * 1.8, goal_area_width), height=obstacles_height, xy_center=(goal[0], goal[1]))
     else:
-        goal_area = BoxObstacle(xy_width=(lane_width, lane_width * 1.8), height=obstacles_height, xy_center=(goal[0], goal[1]))
+        goal_area = BoxObstacle(xy_width=(goal_area_width, lane_width * 1.8), height=obstacles_height, xy_center=(goal[0], goal[1]))
     
     # Obstacles for defining the intersection
     obstacles = [
