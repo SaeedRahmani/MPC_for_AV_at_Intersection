@@ -21,7 +21,7 @@ def draw_scenario(scenario: Scenario, mps: Dict[str, MotionPrimitive], car_dimen
     if draw_obstacles:
         for obstacle in scenario.obstacles:
             # obstacle.draw(ax, color=(0.5, 0.5, 0.5))
-            obstacle.draw(ax, color='b', hidden_color=(0.8, 0.8, 0.8))
+            obstacle.draw(ax, color='b', hidden_color=(1.0, 1.0, 1.0, 0.0))
 
     if draw_goal:
         scenario.goal_area.draw(ax, color=(1, 0.8, 0.8))
