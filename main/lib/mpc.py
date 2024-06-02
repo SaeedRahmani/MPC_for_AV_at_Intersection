@@ -18,6 +18,8 @@ NU = 2  # a = [accel, steer]
 T = 13  # horizon length
 
 # mpc parameters
+w_perp = 10.0
+w_para = 1.0
 R = np.diag([0.01, 0.01])  # input cost matrix
 Rd = np.diag([0.01, 1.0])  # input difference cost matrix
 Q_v_yaw = np.diag([0., 0.5])  # state cost matrix [v, yaw]
@@ -157,11 +159,11 @@ def _linear_mpc_control(xref, xbar, x0, dref, reaches_end, dt, car_dimensions: C
             if not reaches_end[t]:
                 # penalize difference from reference perpendicular to yaw strongly
                 ref_yaw_perp = xref[3, t] + 0.5 * np.pi
-                cost += cvxpy.quad_form(xref[:2, t] - x[:2, t], _get_xy_cost_mtx_for_orientation(ref_yaw_perp) * 10.)
+                cost += cvxpy.quad_form(xref[:2, t] - x[:2, t], _get_xy_cost_mtx_for_orientation(ref_yaw_perp) * w_perp)
 
                 # penalize difference from reference parallel to yaw weakly
                 ref_yaw = xref[3, t]
-                cost += cvxpy.quad_form(xref[:2, t] - x[:2, t], _get_xy_cost_mtx_for_orientation(ref_yaw) * 1.0)
+                cost += cvxpy.quad_form(xref[:2, t] - x[:2, t], _get_xy_cost_mtx_for_orientation(ref_yaw) * w_para)
 
                 # penalize velocity and yaw itself
                 cost += cvxpy.quad_form(xref[2:, t] - x[2:, t], Q_v_yaw)
