@@ -52,7 +52,7 @@ if __name__ == '__main__':
         line_style = '--' if wc_steering == 0 else '-'
         color = 'red' if wc_dist == 0 else 'blue'
         
-        label_text = f'W_Distance: {wc_dist}, W_Steering: {wc_steering}'
+        label_text = f'$W_{{c,d}}: {wc_dist}, W_{{c,\\phi}}: {wc_steering}$'
         ax.plot(cx, cy, label=label_text, linestyle=line_style, color=color)
 
     draw_scenario(scenario, mps, car_dimensions, search, ax, draw_obstacles=False, draw_goal=True, 

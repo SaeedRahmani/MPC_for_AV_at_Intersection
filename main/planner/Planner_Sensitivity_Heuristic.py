@@ -110,8 +110,9 @@ if __name__ == '__main__':
         #     line_style = '-.'
         # elif wh_dist != 1 & wh_steering != 0:
         #     line_style = '--'
-            
-        label_text = f'W_Distance: {wh_dist}, W_Theta: {wh_theta}, W_Steering: {wh_steering}, Time: {runtime:.2f}s'
+        
+        label_text = f'$W_{{h,d}}: {wh_dist}, W_{{h,\\theta}}: {wh_theta}, W_{{h,\\phi}}: {wh_steering}, \\mathrm{{Time}}: {runtime:.2f}\\,\\mathrm{{s}}$'
+        #label_text = f'W_Distance: {wh_dist}, W_Theta: {wh_theta}, W_Steering: {wh_steering}, Time: {runtime:.2f}s'
         ax.plot(cx, cy, color=line_color, label=label_text, linestyle=line_style, linewidth=line_width)
 
     draw_scenario(scenario, mps, car_dimensions, search, ax, draw_obstacles=False, draw_goal=True, 
