@@ -24,7 +24,7 @@ def run_search(search):
     return search.run(debug=True)
 
 if __name__ == '__main__':
-    fig, ax = plt.subplots(figsize=(12, 8))
+    fig, ax = plt.subplots(figsize=(6, 6))
 
     start_pos = 1
     turn_indicator = 1
@@ -35,41 +35,31 @@ if __name__ == '__main__':
     car_dimensions: CarDimensions = BicycleModelDimensions(skip_back_circle_collision_checking=False)
 
     # Parameter values
-    wh_steering_values = [10, 15, 20]
-    wh_dist_values = [1, 1.5, 2]
-    wc_obstacle_values = [0.1, 0.5, 1]
+    wc_dist = [0, 1] 
+    wc_steering = [0, 10]
 
-    # Colors for each parameter
-    colors = ['red', 'green', 'blue']
-    # Line styles for different values
-    line_styles = ['-', '--', ':']
+    parameter_combinations = list(product(wc_dist, wc_steering))
 
-    parameter_combinations = list(product(wh_steering_values, wh_dist_values, wc_obstacle_values))
-
-    for index, (wh_steering, wh_dist, wc_obstacle) in enumerate(parameter_combinations):
+    for index, (wc_dist, wc_steering) in enumerate(parameter_combinations):
         search = MotionPrimitiveSearch(scenario, car_dimensions, mps, margin=car_dimensions.radius,
-                                       wh_dist=wh_dist, wh_theta=2.7, wh_steering=wh_steering, 
-                                       wh_obstacle=0, wh_center=0, wc_dist=1, wc_steering=5, 
-                                       wc_obstacle=wc_obstacle, wc_center=0)
+                                       wc_dist=wc_dist, wc_steering=wc_steering)
 
         runtime, (cost, path, trajectory) = run_search(search)
         cx = trajectory[:, 0]
         cy = trajectory[:, 1]
 
-        # Determine color and style
-        color_index = index // 9  # 9 combinations per parameter (3^2)
-        style_index = index % 3  # 3 values per parameter
-        color = colors[color_index]
-        line_style = line_styles[style_index]
+        # Determine line style and color
+        line_style = '--' if wc_steering == 0 else '-'
+        color = 'red' if wc_dist == 0 else 'blue'
         
-        label_text = f'Steering: {wh_steering}, Dist: {wh_dist}, Obstacle: {wc_obstacle}, Time: {runtime:.2f}s'
-        ax.plot(cx, cy, color=color, linestyle=line_style, label=label_text)
+        label_text = f'W_Distance: {wc_dist}, W_Steering: {wc_steering}'
+        ax.plot(cx, cy, label=label_text, linestyle=line_style, color=color)
 
-    draw_scenario(scenario, mps, car_dimensions, search, ax, draw_obstacles=True, draw_goal=True, 
+    draw_scenario(scenario, mps, car_dimensions, search, ax, draw_obstacles=False, draw_goal=True, 
                   draw_car=True, draw_mps=False, draw_collision_checking=False, draw_car2=False, draw_mps2=False, 
                   mp_name='right1')
 
-    plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+    plt.legend(loc='lower left')
     ax.axis('equal')
     plt.tight_layout()
     plt.show()
