@@ -1,7 +1,4 @@
-"""
-Path tracking simulation with iterative linear model predictive control for speed and steer control
-author: Atsushi Sakai (@Atsushi_twi)
-"""
+import json
 import math
 import sys
 from typing import Tuple, List, Optional
@@ -13,28 +10,30 @@ from lib.car_dimensions import CarDimensions
 from lib.simulation import State, Simulation
 from lib.trajectories import calc_nearest_index, calc_nearest_index_in_direction
 
-NX = 4  # x = x, y, v, yaw
-NU = 2  # a = [accel, steer]
-T = 13  # horizon length
+with open('../config/mpc_config.json', 'r') as f:
+    config = json.load(f)
 
-# mpc parameters
-w_perp = 20.0
-w_para = 1.0
-R = np.diag([0.01, 0.01])  # input cost matrix
-Rd = np.diag([0.01, 1.0])  # input difference cost matrix
-Q_v_yaw = np.diag([0., 0.5])  # state cost matrix [v, yaw]
-Qf = np.diag([1.0, 1.0, 0., 0.5]) * T # state final matrix [x, y, v, yaw]
-GOAL_DIS = 1.5  # goal distance
-STOP_SPEED = 0.5 / 3.6  # stop speed
-MAX_TIME = 13.0  # max simulation time
+# Extract parameters from config
+NX = config['NX']
+NU = config['NU']
+T = config['T']
+w_perp = config['w_perp']
+w_para = config['w_para']
+R = np.diag(config['R'])  # input cost matrix
+Rd = np.diag(config['Rd'])  # input difference cost matrix
+Q_v_yaw = np.diag(config['Q_v_yaw'])  # state cost matrix [v, yaw]
+Qf = np.diag(config['Qf']) * T  # state final matrix [x, y, v, yaw]
+GOAL_DIS = config['GOAL_DIS']  # goal distance
+STOP_SPEED = config['STOP_SPEED']  # stop speed
+MAX_TIME = config['MAX_TIME']  # max simulation time
 
-# iterative paramter
-MAX_ITER = 1  # Max iteration
-DU_TH = 0.1  # iteration finish param
+# iterative parameter
+MAX_ITER = config['MAX_ITER']  # Max iteration
+DU_TH = config['DU_TH']  # iteration finish param
 
-MAX_DSTEER = np.deg2rad(30.0)  # maximum steering speed [rad/s]
-MAX_ACCEL = 2.0  # maximum accel [m/ss]
-MAX_DECEL = -10  # maximum deceleration [m/ss]
+MAX_DSTEER = np.deg2rad(config['MAX_DSTEER'])  # maximum steering speed [rad/s]
+MAX_ACCEL = config['MAX_ACCEL']  # maximum accel [m/ss]
+MAX_DECEL = config['MAX_DECEL']  # maximum deceleration [m/ss]
 
 
 class MPCSolutionNotFoundException(Exception):
