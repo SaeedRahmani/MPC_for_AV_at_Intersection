@@ -8,7 +8,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 # from envs.t_intersection import t_intersection
-from envs.roundabout import roundabout
+from envs.roundabout_big import roundabout
 # from envs.roundabout_big import roundabout
 
 from lib.car_dimensions import CarDimensions, BicycleModelDimensions
@@ -37,12 +37,20 @@ def main():
     turn_indicator = 4
     scenario = roundabout(start_pos=start_pos, turn_indicator=turn_indicator)
     # scenario = t_intersection(turn_left=True)
+    other_vehicles = True
 
-    # moving_obstacles: List[MovingObstacleRoundabout] = []
-    moving_obstacles: List[MovingObstacleRoundabout] = [
-        MovingObstacleRoundabout(car_dimensions, direction=1, offset=0., turning=True, speed=25 / 3.6, dt=DT),
-        MovingObstacleRoundabout(car_dimensions, direction=-1, offset=0., turning=True, speed=25 / 3.6, dt=DT)
+    
+    if other_vehicles:
+        moving_obstacles: List[MovingObstacleRoundabout] = [
+        MovingObstacleRoundabout(car_dimensions, direction=1, offset=1., turning=True, speed=25 / 3.6, dt=DT),
+        MovingObstacleRoundabout(car_dimensions, direction=-1, offset=4., turning=True, speed=25 / 3.6, dt=DT)
     ]
+    else:
+        moving_obstacles: List[MovingObstacleRoundabout] = []
+    # moving_obstacles: List[MovingObstacleTIntersection] = [
+    #     MovingObstacleTIntersection(car_dimensions, direction=1, offset=2., turning=True, speed=25 / 3.6, dt=DT),
+    #     MovingObstacleTIntersection(car_dimensions, direction=-1, offset=4., turning=True, speed=25 / 3.6, dt=DT)
+    # ]
     
     #########
     # MOTION PRIMITIVE SEARCH
