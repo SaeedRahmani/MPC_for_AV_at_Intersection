@@ -8,7 +8,6 @@ import numpy as np
 from matplotlib import pyplot as plt
 import matplotlib.ticker as ticker
 
-
 # from envs.t_intersection import t_intersection
 from envs.intersection import intersection, plot_intersection
 from lib.car_dimensions import CarDimensions, BicycleModelDimensions
@@ -77,6 +76,7 @@ def main():
     trajectory_ress = []
     trajs_moving_obstacles_list = []
     obstacles_positions_list = []
+    total_runtimes = []
 
     for w_perp in w_perp_list:
         mpc = MPC(cx=trajectory_full[:, 0], cy=trajectory_full[:, 1], cyaw=trajectory_full[:, 2], dl=dl, dt=DT,
@@ -152,6 +152,7 @@ def main():
         end_time = time.time()
         loops_total_runtime = sum(loop_runtimes)
         total_runtime = end_time - start_time
+        total_runtimes.append(total_runtime)
         print('total loops run time is: {}'.format(loops_total_runtime))
         print('total run time is: {}'.format(total_runtime))
         print('each mpc runtime is: {}'.format(loops_total_runtime / len(loop_runtimes)))
@@ -165,11 +166,11 @@ def main():
 
     # plot the trajectories and conflicts for all runs
     plot_trajectories(obstacles_positions_list, histories)
-    plot_trajectories_comparison(obstacles_positions_list, histories, trajectory_full, w_perp_list)
+    plot_trajectories_comparison(obstacles_positions_list, histories, trajectory_full, w_perp_list, total_runtimes)
 
 
 def plot_trajectories(obstacles_positions_list: List[List[List[tuple]]], ego_positions_list: List[History]):
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(8, 6))  # Adjust figure size here
 
     cmap = plt.cm.get_cmap('viridis')
 
@@ -200,19 +201,22 @@ def plot_trajectories(obstacles_positions_list: List[List[List[tuple]]], ego_pos
     cb.locator = tick_locator
     cb.update_ticks()
 
-    cb.set_label('Time (seconds)', size=12)
-    cb.ax.tick_params(labelsize=10)
+    cb.set_label('Time (seconds)', size=10)
+    cb.ax.tick_params(labelsize=8)
 
     ax.set_xlabel('X', fontsize=10)
     ax.set_ylabel('Y', fontsize=10)
     ax.set_title('Trajectories of Moving Obstacles', fontsize=12)
-    ax.legend()
+    ax.legend(fontsize=8)
+    plt.xticks(fontsize=8)
+    plt.yticks(fontsize=8)
     plt.show()
+    plt.close()
 
 def visualize_final(histories: List[History], labels: List[str]):
-    fontsize = 25
+    fontsize = 12
 
-    plt.figure()
+    plt.figure(figsize=(8, 6))  # Adjust figure size here
     plt.rcParams['font.size'] = fontsize
 
     for history, label in zip(histories, labels):
@@ -220,31 +224,34 @@ def visualize_final(histories: List[History], labels: List[str]):
     plt.grid(True)
     plt.xlabel("Time [s]", fontsize=fontsize)
     plt.ylabel("Speed [km/h]", fontsize=fontsize)
-    plt.legend()
+    plt.legend(fontsize=8)
     plt.tight_layout()
     plt.show()
+    plt.close()
 
-    plt.figure()
+    plt.figure(figsize=(8, 6))  # Adjust figure size here
     plt.rcParams['font.size'] = fontsize
     for history, label in zip(histories, labels):
         plt.plot(history.t, history.a, label=f"Acceleration {label}")
     plt.grid(True)
     plt.xlabel("Time [s]", fontsize=fontsize)
     plt.ylabel("Acceleration [$m/s^2$]", fontsize=fontsize)
-    plt.legend()
+    plt.legend(fontsize=8)
     plt.tight_layout()
     plt.show()
+    plt.close()
 
-    plt.figure()
+    plt.figure(figsize=(8, 6))  # Adjust figure size here
     plt.rcParams['font.size'] = fontsize
     for history, label in zip(histories, labels):
         plt.plot(history.t, history.xref_deviation, label=f"Deviation {label}")
     plt.grid(True)
     plt.xlabel("Time [s]", fontsize=fontsize)
     plt.ylabel("Deviation [m]", fontsize=fontsize)
-    plt.legend()
+    plt.legend(fontsize=8)
     plt.tight_layout()
     plt.show()
+    plt.close()
 
 def visualize_frame(dt, frame_window, car_dimensions, collision_xy, i, moving_obstacles, mpcs, scenarios, simulations, states, tmp_trajectories, trajectory_ress, trajs_moving_obstacles):
     if i >= 0:
@@ -270,21 +277,22 @@ def visualize_frame(dt, frame_window, car_dimensions, collision_xy, i, moving_ob
         plt.title("Time: %.2f [s]" % (i * dt))
         plt.axis("equal")
         plt.grid(False)
-        plt.legend()
+        plt.legend(fontsize=8)
 
         plt.xlim((-40, 10))
         plt.ylim((-45, 20))
         plt.pause(0.001)
+        plt.close()
 
-def plot_trajectories_comparison(obstacles_positions_list: List[List[List[tuple]]], ego_positions_list: List[History], reference_trajectory: np.ndarray, w_perp_list: List[int]):
-    fig, ax = plt.subplots()
+def plot_trajectories_comparison(obstacles_positions_list: List[List[List[tuple]]], ego_positions_list: List[History], reference_trajectory: np.ndarray, w_perp_list: List[int], total_runtimes: List[float]):
+    fig, ax = plt.subplots(figsize=(8, 6))  # Adjust figure size here
 
     # Define line styles and colors
     line_styles = ['--', '-.', ':']
     colors = ['b', 'k', 'r', 'c', 'm', 'y', 'g']
 
     # Plot the reference trajectory
-    ax.plot(reference_trajectory[:, 0], reference_trajectory[:, 1], '-', color='k', linewidth=1.5, label='Reference Trajectory')
+    ax.plot(reference_trajectory[:, 0], reference_trajectory[:, 1], '-', color='k', linewidth=1, label='Reference Trajectory')
 
     for idx, (ego_positions, obstacles_positions) in enumerate(zip(ego_positions_list, obstacles_positions_list)):
         times, ego_x, ego_y = ego_positions.t, ego_positions.x, ego_positions.y
@@ -292,7 +300,8 @@ def plot_trajectories_comparison(obstacles_positions_list: List[List[List[tuple]
         line_style = line_styles[idx % len(line_styles)]
         color = colors[idx % len(colors)]
         w_perp_value = w_perp_list[idx]
-        ax.plot(ego_positions_arr[:, 0], ego_positions_arr[:, 1], line_style, color=color, linewidth=1, label=f'Ego Trajectory w_perp={w_perp_value}')
+        runtime = total_runtimes[idx]
+        ax.plot(ego_positions_arr[:, 0], ego_positions_arr[:, 1], line_style, color=color, linewidth=1, label=f'Ego Trajectory w_perp={w_perp_value} (Runtime: {runtime:.2f}s)')
 
         for i_obstacle, obstacle_positions in enumerate(obstacles_positions):
             times, positions = zip(*obstacle_positions)
@@ -306,6 +315,7 @@ def plot_trajectories_comparison(obstacles_positions_list: List[List[List[tuple]
     plt.xticks(fontsize=8)
     plt.yticks(fontsize=8)
     plt.show()
+    plt.close()
 
 if __name__ == '__main__':
     main()
