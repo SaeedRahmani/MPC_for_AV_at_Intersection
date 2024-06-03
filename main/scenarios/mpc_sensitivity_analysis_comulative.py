@@ -1,3 +1,4 @@
+import json
 import itertools
 import math
 from typing import List
@@ -25,16 +26,40 @@ from lib.simulation import State, Simulation, History, HistorySimulation
 from lib.trajectories import resample_curve, calc_nearest_index_in_direction
 import time
 
+
+
 def main():
     #########
     # INIT ENVIRONMENT
     #########    
     # w_perp_list = [0, 1, 5, 20, 50]
-    w_perp = 20
-    w_para = 1
-    parameter_in_study_name = '$w_{{\\perp}}$'
-    parameter_in_study_name_save = 'w_perp' # Because latex names cannot be saved in MacOS
-    parameter_in_study = [0, 1, 5, 20, 50] # NOTE: Change line 88: mpc = MPC in order to specify the parameter to be studied
+    
+    with open('../config/mpc_config_sensitivity.json', 'r') as f:
+        config = json.load(f)
+        
+#     {
+#     "NX": 4,
+#     "NU": 2,
+#     "T": 13,
+#     "w_perp": 20.0,
+#     "w_para": 1.0,
+#     "R": [0.01, 0.01],
+#     "Rd": [0.01, 1.0],
+#     "Q_v_yaw": [0.0, 0.5],
+#     "Qf": [1.0, 1.0, 0.0, 0.5],
+#     "GOAL_DIS": 1.5,
+#     "STOP_SPEED": 0.1389,
+#     "MAX_TIME": 13.0,
+#     "MAX_ITER": 1,
+#     "DU_TH": 0.1,
+#     "MAX_DSTEER": 30.0,
+#     "MAX_ACCEL": 2.0,
+#     "MAX_DECEL": -10
+#   }
+    # parameter_in_study_name = '$w_{{\\parallel}}$' # NOTE: for plots
+    parameter_in_study_name = '$R_{{d}}$' # NOTE: for plots
+    parameter_in_study_name_save = 'Rd' # NOTE: Should match the key in the config file
+    parameter_in_study = [[0.01, 1.0]] # NOTE: Change 'Parameter' in line 88: mpc = MPC in order to specify the parameter to be studied
     
 
     ###################### Scenario Parameters #####################
@@ -85,8 +110,14 @@ def main():
     total_runtimes = []
 
     for parameter in parameter_in_study:
+        config[parameter_in_study_name_save] = parameter
+        
+        # Save the updated configuration
+        with open('../config/mpc_config_sensitivity.json', 'w') as f:
+            json.dump(config, f, indent=4)    
+        
         mpc = MPC(cx=trajectory_full[:, 0], cy=trajectory_full[:, 1], cyaw=trajectory_full[:, 2], dl=dl, dt=DT,
-                  car_dimensions=car_dimensions, w_perp=w_perp, w_para=parameter)
+                  car_dimensions=car_dimensions)
         state = State(x=trajectory_full[0, 0], y=trajectory_full[0, 1], yaw=trajectory_full[0, 2], v=0.0)
         simulation = HistorySimulation(car_dimensions=car_dimensions, sample_time=DT, initial_state=state)
         history = simulation.history

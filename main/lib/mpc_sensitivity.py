@@ -21,12 +21,12 @@ with open('../config/mpc_config_sensitivity.json', 'r') as f:
 NX = config['NX']
 NU = config['NU']
 T = config['T']
-w_perp = config['w_perp']
-w_para = config['w_para']
-R = np.diag(config['R'])  # input cost matrix
-Rd = np.diag(config['Rd'])  # input difference cost matrix
-Q_v_yaw = np.diag(config['Q_v_yaw'])  # state cost matrix [v, yaw]
-Qf = np.diag(config['Qf']) * T  # state final matrix [x, y, v, yaw]
+# w_perp = config['w_perp']
+# w_para = config['w_para']
+# R = np.diag(config['R'])  # input cost matrix
+# Rd = np.diag(config['Rd'])  # input difference cost matrix
+# Q_v_yaw = np.diag(config['Q_v_yaw'])  # state cost matrix [v, yaw]
+# Qf = np.diag(config['Qf']) * T  # state final matrix [x, y, v, yaw]
 GOAL_DIS = config['GOAL_DIS']  # goal distance
 STOP_SPEED = config['STOP_SPEED']  # stop speed
 MAX_TIME = config['MAX_TIME']  # max simulation time
@@ -138,7 +138,7 @@ def _get_xy_cost_mtx_for_orientation(angle: float):
     ])
 
 
-def _linear_mpc_control(xref, xbar, x0, dref, reaches_end, dt, car_dimensions: CarDimensions, w_perp=20.0, w_para=1.0):
+def _linear_mpc_control(xref, xbar, x0, dref, reaches_end, dt, car_dimensions: CarDimensions):
     """
     linear mpc control
     xref: reference point
@@ -147,15 +147,26 @@ def _linear_mpc_control(xref, xbar, x0, dref, reaches_end, dt, car_dimensions: C
     dref: reference steer angle
     :param reaches_end:
     """
+    with open('../config/mpc_config_sensitivity.json', 'r') as f:
+        config = json.load(f)
+
+    # Extract parameters from config
+    w_perp = config['w_perp']
+    w_para = config['w_para']
+    R = np.diag(config['R'])  # input cost matrix
+    Rd = np.diag(config['Rd'])  # input difference cost matrix
+    Q_v_yaw = np.diag(config['Q_v_yaw'])  # state cost matrix [v, yaw]
+    Qf = np.diag(config['Qf']) * T  # state final matrix [x, y, v, yaw]
+
+    MAX_DSTEER = np.deg2rad(config['MAX_DSTEER'])  # maximum steering speed [rad/s]
+    MAX_ACCEL = config['MAX_ACCEL']  # maximum accel [m/ss]
+    MAX_DECEL = config['MAX_DECEL']  # maximum deceleration [m/ss]
 
     x = cvxpy.Variable((NX, T + 1))
     u = cvxpy.Variable((NU, T))
 
     cost = 0.0
     constraints = []
-    
-    w_perp = w_perp
-    w_para = w_para
 
     L = car_dimensions.distance_back_to_front_wheel
     ## Add a cost for colliding the road boundries for cases we cannot follow the ref traj
@@ -214,7 +225,7 @@ def _linear_mpc_control(xref, xbar, x0, dref, reaches_end, dt, car_dimensions: C
     return oa, odelta, ox, oy, oyaw, ov
 
 
-def _iterative_linear_mpc_control(x0, oa, od, state, cx, cy, cyaw, dl, dt, target_ind, car_dimensions: CarDimensions, w_perp=20.0, w_para=1.0):
+def _iterative_linear_mpc_control(x0, oa, od, state, cx, cy, cyaw, dl, dt, target_ind, car_dimensions: CarDimensions):
     """
     MPC contorl with updating operational point iteraitvely
     :param state:
@@ -224,9 +235,6 @@ def _iterative_linear_mpc_control(x0, oa, od, state, cx, cy, cyaw, dl, dt, targe
     :param dl:
     :param target_ind:
     """
-
-    w_para = w_para
-    w_perp = w_perp
     
     if oa is None or od is None:
         oa = [0.0] * T
@@ -238,7 +246,7 @@ def _iterative_linear_mpc_control(x0, oa, od, state, cx, cy, cyaw, dl, dt, targe
         xref, target_ind, dref, reaches_end = _calc_ref_trajectory(state, cx, cy, cyaw, dl, dt, target_ind, ov)
         xbar = _predict_motion(x0, oa, od, xref, car_dimensions=car_dimensions, dt=dt)
         # poa, pod = oa, od
-        oa, od, ox, oy, oyaw, ov = _linear_mpc_control(xref, xbar, x0, dref, reaches_end, dt, car_dimensions, w_perp, w_para)
+        oa, od, ox, oy, oyaw, ov = _linear_mpc_control(xref, xbar, x0, dref, reaches_end, dt, car_dimensions)
         # du = sum(abs(oa - poa)) + sum(abs(od - pod))  # calc u change value
         # if du <= DU_TH:
         #     break
@@ -250,7 +258,7 @@ def _iterative_linear_mpc_control(x0, oa, od, state, cx, cy, cyaw, dl, dt, targe
 
 class MPC:
     def __init__(self, cx: np.ndarray, cy: np.ndarray, cyaw: np.ndarray, dl: float, car_dimensions: CarDimensions,
-                 w_perp=20.0, w_para=1.0, dt: float = 0.2):
+                dt: float = 0.2):
         """
         Simulation
         cx: course x position list
@@ -259,9 +267,6 @@ class MPC:
         dl: course tick [m]
         dt: delta time [s]
         """
-        # For sensitivity analysis
-        self.w_perp = w_perp
-        self.w_para = w_para
         
         # Other parameters
         self.cx = cx
@@ -303,7 +308,7 @@ class MPC:
         self.oa, self.odelta, self.ox, self.oy, self.oyaw, self.ov, self.xref, self.target_ind = \
             _iterative_linear_mpc_control(x0, self.oa, self.odelta, state, self.cx, self.cy,
                                           self.cyaw, self.dl, self.dt, self.target_ind,
-                                          car_dimensions=self.car_dimensions, w_perp = self.w_perp, w_para = self.w_para)
+                                          car_dimensions=self.car_dimensions)
 
         if self.odelta is not None:
             self.di, self.ai = self.odelta[0], self.oa[0]
