@@ -4,10 +4,10 @@ import matplotlib.pyplot as plt
 # Bicycle parameters
 L = 1.0  # Length of the bicycle (adjust as needed)
 v = 1.0  # Constant velocity (adjust as needed)
-delta_angles = np.linspace(-30, 30, 9)  # Steering angles in degrees
+delta_angles = np.linspace(-30, 30, 5)  # Steering angles in degrees
 delta_angles_rad = np.deg2rad(delta_angles)  # Convert to radians
 delta_t = 0.1  # Time step (adjust as needed)
-total_time = 2.0  # Total time for simulation
+total_time = 1.0  # Total time for simulation
 
 # Initial state
 x0, y0, theta0 = 0.0, 0.0, 0.0

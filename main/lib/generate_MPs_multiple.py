@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 # Define parameters here
 num_mps = 5           # Number of motion primitives to generate
 angle_range = 45      # Range of steering angles (from -x to +x degrees)
-mp_length = 1       # Length of each motion primitive (total time) in seconds
-steps = 1            # Number of steps to repeat generating the motion primitives
+mp_length = 0.2       # Length of each motion primitive (total time) in seconds
+steps = 5            # Number of steps to repeat generating the motion primitives
 
 # Bicycle parameters
 L = 1.0  # Length of the bicycle (adjust as needed)
@@ -55,11 +55,25 @@ trajectories = recursive_generate_primitives(x0, y0, theta0, L, v, delta_t, mp_l
 # Plot the trajectories
 plt.figure(figsize=(10, 8))
 for trajectory in trajectories:
-    plt.plot(trajectory[:, 0], trajectory[:, 1], linewidth=0.5)
+    plt.plot(trajectory[:, 0], trajectory[:, 1], linewidth=0.2)
 
 plt.xlabel('x')
 plt.ylabel('y')
 plt.title('Bicycle Model Trajectories Over Multiple Steps')
 plt.grid(True)
 plt.axis('equal')
+plt.savefig(f'trajectories_step_{step + 1}.pdf')
 plt.show()
+
+# Plot the trajectories and save them as separate images
+for step in range(steps):
+    plt.figure(figsize=(10, 8))
+    for i, trajectory in enumerate(trajectories[step * num_mps:(step + 1) * num_mps]):
+        plt.plot(trajectory[:, 0], trajectory[:, 1], linewidth=0.5)
+    plt.xlabel('x')
+    plt.ylabel('y')
+    plt.title(f'Bicycle Model Trajectories Step {step + 1}')
+    plt.grid(True)
+    plt.axis('equal')
+    plt.savefig(f'trajectories_step_{step + 1}.png')
+    plt.close()
