@@ -26,40 +26,104 @@ from lib.simulation import State, Simulation, History, HistorySimulation
 from lib.trajectories import resample_curve, calc_nearest_index_in_direction
 import time
 
+def reset_config(config_file_path: str):
+    # Define the default configuration
+    default_config = {
+        "NX": 4,
+        "NU": 2,
+        "T": 13,
+        "w_perp": 20.0,
+        "w_para": 1.0,
+        "R": [0.1, 0.01],
+        "Rd": [10, 1.0],
+        "Q_v_yaw": [0.0, 0.5],
+        "Qf": [1.0, 1.0, 0.0, 0.5],
+        "GOAL_DIS": 1.5,
+        "STOP_SPEED": 0.1389,
+        "MAX_TIME": 13.0,
+        "MAX_ITER": 1,
+        "DU_TH": 0.1,
+        "MAX_DSTEER": 30.0,
+        "MAX_ACCEL": 2.0,
+        "MAX_DECEL": -10
+    }
+    # Old configuration
+    # {
+    #     "NX": 4,
+    #     "NU": 2,
+    #     "T": 13,
+    #     "w_perp": 20.0,
+    #     "w_para": 1.0,
+    #     "R": [0.1, 0.01],
+    #     "Rd": [10, 1.0],
+    #     "Q_v_yaw": [0.0, 0.5],
+    #     "Qf": [1.0, 1.0, 0.0, 0.5],
+    #     "GOAL_DIS": 1.5,
+    #     "STOP_SPEED": 0.1389,
+    #     "MAX_TIME": 13.0,
+    #     "MAX_ITER": 1,
+    #     "DU_TH": 0.1,
+    #     "MAX_DSTEER": 30.0,
+    #     "MAX_ACCEL": 2.0,
+    #     "MAX_DECEL": -10
+    # }
+
+    # Read the existing configuration file
+    with open(config_file_path, 'r') as file:
+        config = json.load(file)
+
+    # Overwrite with default configuration
+    config.update(default_config)
+
+    # Save the updated configuration back to the file
+    with open(config_file_path, 'w') as file:
+        json.dump(config, file, indent=4)
 
 
 def main():
     #########
     # INIT ENVIRONMENT
     #########    
-    # w_perp_list = [0, 1, 5, 20, 50]
     
-    with open('../config/mpc_config_sensitivity.json', 'r') as f:
+    # Reseting the configuration file
+    config_file_path = '../config/mpc_config_sensitivity.json'
+    reset_config(config_file_path)
+    # Loading the configuration file
+    with open(config_file_path, 'r') as f:
         config = json.load(f)
-        
-#     {
-#     "NX": 4,
-#     "NU": 2,
-#     "T": 13,
-#     "w_perp": 20.0,
-#     "w_para": 1.0,
-#     "R": [0.01, 0.01],
-#     "Rd": [0.01, 1.0],
-#     "Q_v_yaw": [0.0, 0.5],
-#     "Qf": [1.0, 1.0, 0.0, 0.5],
-#     "GOAL_DIS": 1.5,
-#     "STOP_SPEED": 0.1389,
-#     "MAX_TIME": 13.0,
-#     "MAX_ITER": 1,
-#     "DU_TH": 0.1,
-#     "MAX_DSTEER": 30.0,
-#     "MAX_ACCEL": 2.0,
-#     "MAX_DECEL": -10
-#   }
+    
     # parameter_in_study_name = '$w_{{\\parallel}}$' # NOTE: for plots
-    parameter_in_study_name = '$R_{{d}}$' # NOTE: for plots
-    parameter_in_study_name_save = 'Rd' # NOTE: Should match the key in the config file
-    parameter_in_study = [[0.01, 1.0]] # NOTE: Change 'Parameter' in line 88: mpc = MPC in order to specify the parameter to be studied
+    
+    # Parameters:
+    # parameter_in_study_name = '$w_{{\\perp}}$' # NOTE: for plots
+    # parameter_name = 'w_perp' # NOTE: Should match the key in the config file
+    # parameter_in_study_name_save = 'w_perp' # NOTE: for saving the plots
+    # parameter_in_study = [0, 1, 10, 20, 50] # NOTE: Change 'Parameter' in line 88: mpc = MPC in order to specify the parameter to be studied
+    
+    # parameter_in_study_name = '$w_{{\\parallel}}$' # NOTE: for plots
+    # parameter_name = 'w_para' # NOTE: Should match the key in the config file
+    # parameter_in_study_name_save = 'w_para' # NOTE: for saving the plots
+    # parameter_in_study = [0, 0.1, 1, 5, 10] # NOTE: Change 'Parameter' in line 88: mpc = MPC in order to specify the parameter to be studied
+    
+    # parameter_in_study_name = '$R_{{acc}}$' # NOTE: for plots
+    # parameter_name = 'R' # NOTE: Should match the key in the config file
+    # parameter_in_study_name_save = 'R_acc' # NOTE: for saving the plots
+    # parameter_in_study = [[0, 0.01],[0.01, 0.01],[0.1, 0.01],[1, 0.01],[10, 0.01]] # NOTE: Change 'Parameter' in line 88: mpc = MPC in order to specify the parameter to be studied
+    
+    # parameter_in_study_name = '$R_{{steer}}$' # NOTE: for plots
+    # parameter_name = 'R' # NOTE: Should match the key in the config file
+    # parameter_in_study_name_save = 'R_steer' # NOTE: for saving the plots
+    # parameter_in_study = [[0.1, 0.0],[0.1, 0.01],[0.1, 0.1],[0.1, 1],[0.1, 10]] # NOTE: Change 'Parameter' in line 88: mpc = MPC in order to specify the parameter to be studied
+    
+    # parameter_in_study_name = '$Rd_{{acc}}$' # NOTE: for plots
+    # parameter_name = 'Rd' # NOTE: Should match the key in the config file
+    # parameter_in_study_name_save = 'Rd_acc' # NOTE: for saving the plots
+    # parameter_in_study = [[0, 1.0],[1, 1.0],[5, 1.0],[10, 1.0],[20, 1.0]] # NOTE: Change 'Parameter' in line 88: mpc = MPC in order to specify the parameter to be studied
+    
+    parameter_in_study_name = '$Rd_{{steer}}$' # NOTE: for plots
+    parameter_name = 'Rd' # NOTE: Should match the key in the config file
+    parameter_in_study_name_save = 'Rd_steer' # NOTE: for saving the plots
+    parameter_in_study = [[10, 0],[10, 0.01],[10, 0.1],[10, 1],[10, 10]] # NOTE: Change 'Parameter' in line 88: mpc = MPC in order to specify the parameter to be studied
     
 
     ###################### Scenario Parameters #####################
@@ -110,7 +174,7 @@ def main():
     total_runtimes = []
 
     for parameter in parameter_in_study:
-        config[parameter_in_study_name_save] = parameter
+        config[parameter_name] = parameter
         
         # Save the updated configuration
         with open('../config/mpc_config_sensitivity.json', 'w') as f:
@@ -208,7 +272,7 @@ def main():
 
 def plot_trajectories(obstacles_positions_list: List[List[List[tuple]]], ego_positions_list: List[History]):
     fig, ax = plt.subplots(figsize=(6, 4))  # Adjust figure size here
-    font_size = 12
+    font_size = 14
     cmap = plt.cm.get_cmap('viridis')
 
     dt = 0.2  # seconds
@@ -251,7 +315,7 @@ def plot_trajectories(obstacles_positions_list: List[List[List[tuple]]], ego_pos
     plt.close()
 
 def visualize_final(histories: List[History], labels: List[str], parameter_in_study_name_save):
-    fontsize = 12
+    fontsize = 14
     parameter_in_study_name_save = parameter_in_study_name_save
     plt.figure(figsize=(6, 4))  # Adjust figure size here
     plt.rcParams['font.size'] = fontsize
@@ -303,7 +367,7 @@ def visualize_final(histories: List[History], labels: List[str], parameter_in_st
     plt.close()
 
 def visualize_frame(dt, frame_window, car_dimensions, collision_xy, i, moving_obstacles, mpcs, scenarios, simulations, states, tmp_trajectories, trajectory_ress, trajs_moving_obstacles):
-    fontsize = 12
+    fontsize = 14
     if i >= 0:
         plt.cla()
         for mpc, scenario, simulation, state, tmp_trajectory, trajectory_res, trajs_moving_obstacle in zip(mpcs, scenarios, simulations, states, tmp_trajectories, trajectory_ress, trajs_moving_obstacles):
@@ -337,7 +401,7 @@ def visualize_frame(dt, frame_window, car_dimensions, collision_xy, i, moving_ob
 def plot_trajectories_comparison(obstacles_positions_list: List[List[List[tuple]]], ego_positions_list: List[History], reference_trajectory: np.ndarray, parameter_in_study: List[int], parameter_in_study_name, parameter_in_study_name_save, total_runtimes: List[float]):
     
     fig, ax = plt.subplots(figsize=(6, 4))  # Adjust figure size here
-    fontsize = 12
+    fontsize = 14
     # Define line styles and colors
     line_styles = ['--', '-.', ':']
     colors = ['b', 'k', 'r', 'c', 'm', 'y', 'g']
@@ -353,7 +417,7 @@ def plot_trajectories_comparison(obstacles_positions_list: List[List[List[tuple]
         parameter_in_study_name = parameter_in_study_name
         parameter_value = parameter_in_study[idx]
         runtime = total_runtimes[idx]
-        ax.plot(ego_positions_arr[:, 0], ego_positions_arr[:, 1], line_style, color=color, linewidth=1, label=f'Trajectory with {parameter_in_study_name}={parameter_value} (Runtime: {runtime:.2f}s)')
+        ax.plot(ego_positions_arr[:, 0], ego_positions_arr[:, 1], line_style, color=color, linewidth=1, label=f'{parameter_in_study_name}={parameter_value} (t: {runtime:.2f}s)')
         for i_obstacle, obstacle_positions in enumerate(obstacles_positions):
             times, positions = zip(*obstacle_positions)
             positions = np.array(positions)
