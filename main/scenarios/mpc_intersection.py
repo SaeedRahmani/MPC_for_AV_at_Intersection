@@ -17,6 +17,7 @@ from lib.motion_primitive_search_modified import MotionPrimitiveSearch
 from lib.moving_obstacles import MovingObstacleTIntersection
 from lib.moving_obstacles_prediction import MovingObstaclesPrediction
 from lib.mpc import MPC, MAX_ACCEL
+# from lib.mpc_jerk import MPC, MAX_ACCEL
 from lib.plotting import draw_car
 from lib.simulation import State, Simulation, History, HistorySimulation
 from lib.trajectories import resample_curve, calc_nearest_index_in_direction
@@ -31,7 +32,7 @@ def main():
     mps = load_motion_primitives(version='bicycle_model')
     car_dimensions: CarDimensions = BicycleModelDimensions(skip_back_circle_collision_checking=False)
 
-    start_pos = 1
+    start_pos = 4
     turn_indicator = 1
     scenario = intersection(start_pos=start_pos, turn_indicator=turn_indicator)
     # scenario = t_intersection(turn_left=True)
@@ -39,7 +40,7 @@ def main():
 
     if other_vehicles:
         moving_obstacles: List[MovingObstacleTIntersection] = [
-        MovingObstacleTIntersection(car_dimensions, direction=1, offset=2., turning=True, speed=25 / 3.6, dt=DT),
+        MovingObstacleTIntersection(car_dimensions, direction=1, offset=2., turning=False, speed=25 / 3.6, dt=DT),
         MovingObstacleTIntersection(car_dimensions, direction=-1, offset=4., turning=True, speed=25 / 3.6, dt=DT)
     ]
     else:
