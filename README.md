@@ -21,3 +21,6 @@ This project uses Poetry for dependency management. To install the project depen
 
 ```sh
 poetry install
+
+
+To be completed...
