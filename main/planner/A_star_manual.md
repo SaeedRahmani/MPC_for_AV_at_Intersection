@@ -33,7 +33,9 @@ You can find the pseudocode [here](https://en.wikipedia.org/wiki/A*_search_algor
 
 ## How the end result looks
 
-![image](https://github.com/user-attachments/assets/473f1be7-2ccd-46b3-95ac-a1f860319eec)
+![a-star](https://github.com/user-attachments/assets/77197fc2-6f57-420d-82bf-dba7d22f2bbf)
+
+
 
 
 
