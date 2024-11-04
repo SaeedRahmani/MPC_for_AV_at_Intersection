@@ -33,7 +33,8 @@ You can find the pseudocode [here](https://en.wikipedia.org/wiki/A*_search_algor
 
 ## How the end result looks
 
-![](a-star.gif)
+![image](https://github.com/user-attachments/assets/473f1be7-2ccd-46b3-95ac-a1f860319eec)
+
 
 
 
