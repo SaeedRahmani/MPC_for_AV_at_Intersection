@@ -18,10 +18,19 @@ def plot_intersection(scenario):
         min_y = min(min_y, y - height / 2)
         max_y = max(max_y, y + height / 2)
 
+    # Plot the goal area and update min/max coordinates
+    scenario.goal_area.draw(ax, color='green')
+    x, y = scenario.goal_area.xy_center
+    width, height = scenario.goal_area.xy_width if hasattr(scenario.goal_area, 'xy_width') else (scenario.goal_area.radius * 2, scenario.goal_area.radius * 2)
+    min_x = min(min_x, x - width / 2)
+    max_x = max(max_x, x + width / 2)
+    min_y = min(min_y, y - height / 2)
+    max_y = max(max_y, y + height / 2)
+
     # Set the aspect of the plot to be equal
     ax.set_aspect('equal', 'box')
 
-    # Set the plot limits based on the obstacles
+    # Set the plot limits based on the obstacles and goal area
     ax.set_xlim(min_x - 10, max_x + 10)
     ax.set_ylim(min_y - 10, max_y + 10)
 
