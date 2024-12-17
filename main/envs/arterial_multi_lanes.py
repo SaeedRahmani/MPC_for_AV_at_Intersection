@@ -39,8 +39,8 @@ class ArterialMultiLanes:
             return None
 
         left_pavement, right_pavement, lane_offset = self.calculate_offsets()
-        start = (lane_offset, -self.length / 2, 0)
-        goal = (lane_offset, self.length / 2, 0)
+        start = (lane_offset, -self.length / 2, np.pi/2)
+        goal = (lane_offset, self.length / 2, np.pi/2)
         goal_area = BoxObstacle(xy_width=(self.width_road, self.width_road), height=1, xy_center=(goal[0], goal[1]))
 
         obstacles = [
@@ -57,7 +57,7 @@ class ArterialMultiLanes:
         )
 
 if __name__ == '__main__':
-    arterial = ArterialMultiLanes(num_lanes=3, goal_lane=2)
+    arterial = ArterialMultiLanes(num_lanes=2, goal_lane=1)
     scenario = arterial.create_scenario()
     if scenario:
         plot_intersection(scenario)
