@@ -123,6 +123,45 @@ class MovingObstacleRoundabout:
         acceleration = 0.0
         return self.model.xc, self.model.yc, self.forward_velocity, self.model.theta, acceleration, self.steering_angle
 
+class MovingObstacleArterial:
+    def __init__(self, car_dimensions: CarDimensions, x_init: float, y_init: float, speed: float, offset=None, dt=10e-3):
+        """
+        Function that creates moving obstacles that only go up
+        :param car_dimensions:
+        :param speed: sets the forward speed and is not bounded
+        :param offset: sets the time in seconds it should start moving after the start of the simulation. None or 0 for no offset
+        :param dt: the dt used in the simulator. !WARNING! is 10e-3 in the Bicycle model
+        """
+        self.speed = speed
+        self.model = Bicycle(car_dimensions=car_dimensions, sample_time=dt)
+        self.offset = None if offset is None else offset if offset > 0 else None  # None except if offset > 0
+        self.dt = dt
+        self.counter = 0
+        self.model.xc = x_init
+        self.model.yc = y_init
+        self.model.theta = np.pi / 2  # Facing up
+
+    @property
+    def steering_angle(self) -> float:
+        return 0.0  # No steering, goes straight up
+
+    @property
+    def forward_velocity(self):
+        if self.offset is None or self.counter > (self.offset / self.dt):
+            forward_velocity = self.speed
+        else:
+            forward_velocity = 0
+        return forward_velocity
+
+    def step(self):
+        steering_angle = self.steering_angle
+        self.model.step(self.forward_velocity, steering_angle)
+        self.counter += 1
+
+    def get(self) -> Tuple[float, float, float, float, float, float]:
+        acceleration = 0.0
+        return self.model.xc, self.model.yc, self.forward_velocity, self.model.theta, acceleration, self.steering_angle
+
 class MovingObstacleTIntersection:
     def __init__(self, car_dimensions: CarDimensions, direction: int, turning: bool, speed: float, offset=None,
                  dt=10e-3):
