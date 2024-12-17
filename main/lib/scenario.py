@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Tuple, List
 
-from lib.obstacles import Obstacle
+from main.lib.obstacles import Obstacle
 
 
 @dataclass
