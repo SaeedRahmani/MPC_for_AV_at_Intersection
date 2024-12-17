@@ -27,6 +27,11 @@ def plot_intersection(scenario):
     min_y = min(min_y, y - height / 2)
     max_y = max(max_y, y + height / 2)
 
+    # Plot the start location as a point
+    start_x, start_y, _ = scenario.start
+    ax.scatter(start_x, start_y, color='blue', label='Start')
+    plt.legend()
+
     # Set the aspect of the plot to be equal
     ax.set_aspect('equal', 'box')
 
